@@ -1,6 +1,6 @@
 package io.sugo.http;
 
-import com.sun.jersey.spi.container.servlet.ServletContainer;
+import org.glassfish.jersey.servlet.ServletContainer;
 import io.sugo.http.filter.CrossDomainSupportFilter;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -33,15 +33,16 @@ public class ResourcesManager {
     public static void main(String[] args) throws Exception {
 
         Configure configure = Configure.getConfigure();
-        port = configure.getInt("druid.properties","server.port");
+        port = configure.getInt("system.properties","http.port");
         developMode = configure.getBoolean("system.properties","develop.mode");
 
+        LOG.info("initializing server");
         Server server = null;
         try {
             server = makeJettyServer();
             initialize(server);
             server.start();
-            LOG.warn("start...in " + port);
+            LOG.info("start...in " + port);
             latch.await();
         } finally {
             if (server != null) {
@@ -98,13 +99,12 @@ public class ResourcesManager {
                 )
         );
 
-
         final ServletContextHandler apiHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         apiHandler.setContextPath("/api");
 
         ServletHolder servletHolder = new ServletHolder(ServletContainer.class);
-        servletHolder.setInitParameter("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
-        servletHolder.setInitParameter("com.sun.jersey.config.property.packages", "io.sugo.http.resource");
+        //servletHolder.setInitParameter("org.glassfish.jersey.server.ResourceConfig", "org.glassfish.jersey.server.ResourceConfig");
+        servletHolder.setInitParameter("jersey.config.server.provider.packages", "io.sugo.http.resource");
         apiHandler.addServlet(servletHolder, "/*");
         if(developMode){
             apiHandler.addFilter(CrossDomainSupportFilter.class,"/*", EnumSet.of(DispatcherType.REQUEST));
