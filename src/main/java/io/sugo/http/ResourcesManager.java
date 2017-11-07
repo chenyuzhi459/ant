@@ -90,10 +90,6 @@ public class ResourcesManager {
         htmlHandler.addServlet(htmlHolder, "/*");
 
 
-
-
-
-
         htmlHandler.setBaseResource(
                 new ResourceCollection(
                         new String[]{
