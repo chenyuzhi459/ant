@@ -50,7 +50,7 @@ public class MetadataResource extends ForwardResource {
             @QueryParam("includeDisabled") String includeDisabled,
             @QueryParam("sortDimension") String sortDimension,
             @QueryParam("isDescending") @DefaultValue("true") boolean isDescending,
-            @QueryParam("searchValue") String searchValue,
+            @QueryParam("searchDatasource") String searchDatasource,
             @Context final HttpServletRequest req
     ){
         String url = String.format("%s/datasources/sortAndSearch", pathPre);
@@ -67,8 +67,8 @@ public class MetadataResource extends ForwardResource {
         if(sortDimension != null){
             queryParams.put("sortDimension",sortDimension);
         }
-        if(searchValue != null){
-            queryParams.put("searchValue",searchValue);
+        if(searchDatasource != null){
+            queryParams.put("searchDatasource",searchDatasource);
         }
         queryParams.put("isDescending",isDescending);
         return httpMethod.get(url,queryParams);
@@ -90,7 +90,7 @@ public class MetadataResource extends ForwardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatabaseSegmentDataSourceSegments(
             @PathParam("dataSourceName") String dataSourceName,
-            @QueryParam("searchValue") String searchValue,
+            @QueryParam("searchSegment") String searchSegment,
             @QueryParam("sortDimension") @DefaultValue("id") String sortDimension,   //可取值:id,size
             @QueryParam("isDescending") @DefaultValue("false") boolean isDescending,
             @QueryParam("full") String full
@@ -100,8 +100,8 @@ public class MetadataResource extends ForwardResource {
         if(full != null){
             queryParams.put("full",full);
         }
-        if(searchValue != null){
-            queryParams.put("searchValue",searchValue);
+        if(searchSegment != null){
+            queryParams.put("searchSegment",searchSegment);
         }
         if(sortDimension != null){
             queryParams.put("sortDimension",sortDimension);
@@ -116,7 +116,7 @@ public class MetadataResource extends ForwardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatabaseSegmentDataSourceSegments(
             @PathParam("dataSourceName") String dataSourceName,
-            @QueryParam("searchValue") String searchValue,
+            @QueryParam("searchSegment") String searchSegment,
             @QueryParam("isDescending") @DefaultValue("false") boolean isDescending,
             @QueryParam("full") String full,
             final String intervals
@@ -126,8 +126,8 @@ public class MetadataResource extends ForwardResource {
         if(full != null){
             queryParams.put("full",full);
         }
-        if(searchValue != null){
-            queryParams.put("searchValue",searchValue);
+        if(searchSegment != null){
+            queryParams.put("searchSegment",searchSegment);
         }
         queryParams.put("isDescending",isDescending);
         String url = String.format("%s/datasources/%s/segments", pathPre, dataSourceName);
@@ -151,8 +151,7 @@ public class MetadataResource extends ForwardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatabaseSegmentDataSourceIntervals(
             @PathParam("dataSourceName") String dataSourceName,
-            @QueryParam("searchDimension") String searchDimension,
-            @QueryParam("searchValue") String searchValue,
+            @QueryParam("searchInterval") String searchInterval,
             @QueryParam("sortDimension") String sortDimension,
             @QueryParam("isDescending")  boolean isDescending,
             @QueryParam("simple") String simple,
@@ -166,11 +165,8 @@ public class MetadataResource extends ForwardResource {
         if(simple != null){
             queryParams.put("simple",simple);
         }
-        if(searchDimension != null){
-            queryParams.put("searchDimension",searchDimension);
-        }
-        if(searchValue != null){
-            queryParams.put("searchValue",searchValue);
+        if(searchInterval != null){
+            queryParams.put("searchInterval",searchInterval);
         }
         if(sortDimension != null){
             queryParams.put("sortDimension",sortDimension);
@@ -219,12 +215,12 @@ public class MetadataResource extends ForwardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDisableSegmentDataSourceSegments(
             @PathParam("dataSourceName") String dataSourceName,
-            @QueryParam("searchValue") String searchValue,
+            @QueryParam("searchSegment") String searchSegment,
             @QueryParam("isDescending") @DefaultValue("false") boolean isDescending
     ){
         Map<String,Object> queryParams = Maps.newHashMap();
-        if(searchValue != searchValue){
-            queryParams.put("searchValue",searchValue);
+        if(null != searchSegment){
+            queryParams.put("searchSegment",searchSegment);
         }
         queryParams.put("isDescending",isDescending);
         String url = String.format("%s/datasources/%s/disableSegments", pathPre, dataSourceName);
@@ -235,13 +231,13 @@ public class MetadataResource extends ForwardResource {
     @Path("/disableDatasources")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDisableDatabaseDataSources(
-            @QueryParam("searchValue") String searchValue,
+            @QueryParam("searchDatasource") String searchDatasource,
             @QueryParam("isDescending") @DefaultValue("false") boolean isDescending
     )
     {
         Map<String,Object> queryParams = Maps.newHashMap();
-        if(searchValue != null){
-            queryParams.put("searchValue",searchValue);
+        if(searchDatasource != null){
+            queryParams.put("searchDatasource",searchDatasource);
         }
         queryParams.put("isDescending", isDescending);
         String url = String.format("%s/disableDatasources", pathPre);
@@ -253,13 +249,13 @@ public class MetadataResource extends ForwardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatabaseSegmentDataSourceDisableIntervals(
             @PathParam("dataSourceName") String dataSourceName,
-            @QueryParam("searchValue") String searchValue,
+            @QueryParam("searchDiasbleInterval") String searchDiasbleInterval,
             @QueryParam("isDescending") @DefaultValue("true")  boolean isDescending
     )
     {
         Map<String,Object> queryParams = Maps.newHashMap();
-        if(searchValue != null){
-            queryParams.put("searchValue",searchValue);
+        if(searchDiasbleInterval != null){
+            queryParams.put("searchDiasbleInterval",searchDiasbleInterval);
         }
         queryParams.put("isDescending", isDescending);
         String url = String.format("%s/datasources/%s/disableIntervals", pathPre, dataSourceName);
@@ -272,7 +268,7 @@ public class MetadataResource extends ForwardResource {
     public Response getDisableSegmentsByInterval(
             @PathParam("dataSourceName") String dataSourceName,
             @QueryParam("full") String full,
-            @QueryParam("searchValue") String searchValue,
+            @QueryParam("searchDisableSegment") String searchDisableSegment,
             @QueryParam("isDescending") @DefaultValue("false") boolean isDescending,
             final String intervals
     )
@@ -281,8 +277,8 @@ public class MetadataResource extends ForwardResource {
         if(full != null){
             queryParams.put("full",full);
         }
-        if(searchValue != null){
-            queryParams.put("searchValue",searchValue);
+        if(searchDisableSegment != null){
+            queryParams.put("searchDisableSegment",searchDisableSegment);
         }
         queryParams.put("isDescending",isDescending);
         String url = String.format("%s/datasources/%s/disableSegments", pathPre, dataSourceName);

@@ -46,10 +46,10 @@ public class JersyClientFactory {
 		clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, pcm);
 
 		clientConfig.connectorProvider(new ApacheConnectorProvider());
-//		clientConfig.register(JacksonFeature.class);
+		clientConfig.register(JacksonFeature.class);
 
 		Client client = ClientBuilder.newClient(clientConfig);
-		client.register(JacksonFeature.class);
+//		client.register(JacksonFeature.class);
 		return client;
 
 	}

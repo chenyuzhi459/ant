@@ -22,7 +22,7 @@ public class DataSourcesResource extends ForwardResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getQueryableDataSources(
-            @QueryParam("searchValue") @DefaultValue("") String searchValue,
+            @QueryParam("searchDatasource") @DefaultValue("") String searchDatasource,
             @QueryParam("full") String full,
             @QueryParam("simple") String simple,
             @QueryParam("isDescending") @DefaultValue("true") boolean isDescending
@@ -36,8 +36,8 @@ public class DataSourcesResource extends ForwardResource {
         if(full != null) {
             queryParams.put("full",full);
         }
-        if(searchValue != null) {
-            queryParams.put("searchValue",searchValue);
+        if(searchDatasource != null) {
+            queryParams.put("searchDatasource",searchDatasource);
         }
         String url = String.format("%s", pathPre);
         return httpMethod.get(url,queryParams);

@@ -27,14 +27,7 @@ public class ForwardResource extends Resource{
     }
 
     private void init() {
-//        ClientConfig clientConfig = new ClientConfig();
-//
-//        clientConfig.register(JacksonFeature.class);
-//
-//
-//        client = ClientBuilder.newClient(clientConfig);
-
-            client = JersyClientFactory.create();
+        client = JersyClientFactory.create();
         httpMethod = new HttpMethodProxy(client);
     }
 }

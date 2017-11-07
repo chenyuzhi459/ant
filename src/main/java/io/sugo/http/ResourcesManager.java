@@ -91,7 +91,6 @@ public class ResourcesManager {
         htmlHandler.addServlet(htmlHolder, "/*");
 
 
-
         htmlHandler.setBaseResource(
                 new ResourceCollection(
                         new String[]{
@@ -99,7 +98,6 @@ public class ResourcesManager {
                         }
                 )
         );
-
 
         final ServletContextHandler apiHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         apiHandler.setContextPath("/api");

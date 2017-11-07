@@ -116,14 +116,14 @@ public class LookupCoordinatorResource extends ForwardResource {
     @Path("/{tier}/details")
     public Response getSpecificTierDetails(
             @PathParam("tier") String tier,
-            @QueryParam("searchValue") String searchValue,
+            @QueryParam("searchLookup") String searchLookup,
             @QueryParam("isDescending") @DefaultValue("false") boolean isDescending
     )
     {
         String url = String.format("%s/%s/details", pathPre, tier);
         Map<String,Object> queryParams = Maps.newHashMap();
-        if(searchValue != null){
-            queryParams.put("searchValue",searchValue);
+        if(searchLookup != null){
+            queryParams.put("searchLookup",searchLookup);
         }
         queryParams.put("isDescending",isDescending);
         return httpMethod.get(url,queryParams);
