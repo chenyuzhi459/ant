@@ -10,5 +10,6 @@ public abstract class Resource {
     protected static Configure configure = Configure.getConfigure();
 
     public Resource() {
+        LOG.info("Resource created");
     }
 }

@@ -16,11 +16,10 @@ import javax.ws.rs.core.Configuration;
 public class ForwardResource extends Resource{
 
     private static final Logger LOG = Logger.getLogger(ForwardResource.class);
-    protected static Client client;
-    protected static HttpMethodProxy httpMethod;
-    protected static String ip;
-    protected static String pathPre;
-    private static final int TIME_OUT = 5*1000;
+    protected  Client client;
+    protected  HttpMethodProxy httpMethod;
+    protected  String ip;
+    protected  String pathPre;
 
     public ForwardResource() {
         init();

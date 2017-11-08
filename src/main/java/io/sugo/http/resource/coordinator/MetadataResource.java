@@ -249,13 +249,13 @@ public class MetadataResource extends ForwardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatabaseSegmentDataSourceDisableIntervals(
             @PathParam("dataSourceName") String dataSourceName,
-            @QueryParam("searchDiasbleInterval") String searchDiasbleInterval,
+            @QueryParam("searchInterval") String searchInterval,
             @QueryParam("isDescending") @DefaultValue("true")  boolean isDescending
     )
     {
         Map<String,Object> queryParams = Maps.newHashMap();
-        if(searchDiasbleInterval != null){
-            queryParams.put("searchDiasbleInterval",searchDiasbleInterval);
+        if(searchInterval != null){
+            queryParams.put("searchInterval",searchInterval);
         }
         queryParams.put("isDescending", isDescending);
         String url = String.format("%s/datasources/%s/disableIntervals", pathPre, dataSourceName);
@@ -268,7 +268,7 @@ public class MetadataResource extends ForwardResource {
     public Response getDisableSegmentsByInterval(
             @PathParam("dataSourceName") String dataSourceName,
             @QueryParam("full") String full,
-            @QueryParam("searchDisableSegment") String searchDisableSegment,
+            @QueryParam("searchSegment") String searchSegment,
             @QueryParam("isDescending") @DefaultValue("false") boolean isDescending,
             final String intervals
     )
@@ -277,8 +277,8 @@ public class MetadataResource extends ForwardResource {
         if(full != null){
             queryParams.put("full",full);
         }
-        if(searchDisableSegment != null){
-            queryParams.put("searchDisableSegment",searchDisableSegment);
+        if(searchSegment != null){
+            queryParams.put("searchSegment",searchSegment);
         }
         queryParams.put("isDescending",isDescending);
         String url = String.format("%s/datasources/%s/disableSegments", pathPre, dataSourceName);

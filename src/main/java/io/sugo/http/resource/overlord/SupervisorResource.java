@@ -84,24 +84,21 @@ public class SupervisorResource extends ForwardResource {
     @Path("/history/part")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSupervisorHistoryNum(
-            @QueryParam("searchDimension1") final String searchDimension1, //defaultValue: spec_id
-            @QueryParam("searchValue1")  @DefaultValue("") final String searchValue1,
-            @QueryParam("searchDimension2") final String searchDimension2, //defaultValue: payload/created_date
-            @QueryParam("searchValue2") @DefaultValue("") final String searchValue2,
+            @QueryParam("keyId")  final String keyId,
+            @QueryParam("keyType") final String keyType,
             @QueryParam("sortDimension") @DefaultValue("created_date") final String sortDimension,
             @QueryParam("isDescending") @DefaultValue("true") final boolean isDescending,
             @QueryParam("offset") @DefaultValue("0") final int offset,
             @QueryParam("size") @DefaultValue("10") final int size
     ){
         Map<String,Object> queryParams = Maps.newHashMap();
-        if(null != searchDimension1){
-            queryParams.put("searchDimension1",searchDimension1);
+        if(null != keyId){
+            queryParams.put("keyId",keyId);
         }
-        if(null != searchDimension2){
-            queryParams.put("searchDimension2",searchDimension2);
+        if(null != keyType){
+            queryParams.put("keyType",keyType);
         }
-        queryParams.put("searchValue1",searchValue1);
-        queryParams.put("searchValue2",searchValue2);
+
         queryParams.put("sortDimension",sortDimension);
         queryParams.put("isDescending",isDescending);
         queryParams.put("offset",offset);
@@ -116,21 +113,18 @@ public class SupervisorResource extends ForwardResource {
     @Path("/history/count")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSupervisorHistoryNum(
-            @QueryParam("searchDimension1") final String searchDimension1, //defaultValue: spec_id
-            @QueryParam("searchValue1")  @DefaultValue("") final String searchValue1,
-            @QueryParam("searchDimension2") final String searchDimension2, //defaultValue: payload/created_date
-            @QueryParam("searchValue2") @DefaultValue("") final String searchValue2
+            @QueryParam("keyId")  final String keyId,
+            @QueryParam("keyType") final String keyType
     )
     {
         Map<String,Object> queryParams = Maps.newHashMap();
-        if(null != searchDimension1){
-            queryParams.put("searchDimension1",searchDimension1);
+        if(null != keyId){
+            queryParams.put("keyId",keyId);
         }
-        if(null != searchDimension2){
-            queryParams.put("searchDimension2",searchDimension2);
+        if(null != keyType){
+            queryParams.put("keyType",keyType);
         }
-        queryParams.put("searchValue1",searchValue1);
-        queryParams.put("searchValue2",searchValue2);
+
         String url = String.format("%s/history/count", pathPre);
         return httpMethod.get(url,queryParams);
     }

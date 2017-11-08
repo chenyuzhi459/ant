@@ -3,6 +3,7 @@ package io.sugo.http.resource.coordinator;
 import com.google.common.collect.Maps;
 
 import io.sugo.http.resource.ForwardResource;
+import org.apache.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 @Path("/druid/coordinator/v1/servers")
 public class ServersResource extends ForwardResource {
+    protected static final Logger LOG = Logger.getLogger(ServersResource.class);
 
     public ServersResource() throws IOException {
         ip = configure.getProperty("druid.properties","coordinator.ip");
@@ -86,14 +88,14 @@ public class ServersResource extends ForwardResource {
             @PathParam("serverName") String serverName,
             @QueryParam("full") String full,
             @QueryParam("isDescending") @DefaultValue("false") boolean isDscending,
-            @QueryParam("searchValue") String searchValue
+            @QueryParam("searchSegment") String searchSegment
     ){
         Map<String,Object> queryParams = Maps.newHashMap();
         if(full != null){
             queryParams.put("full",full);
         }
-        if(searchValue != null){
-            queryParams.put("searchValue",searchValue);
+        if(searchSegment != null){
+            queryParams.put("searchSegment",searchSegment);
         }
         queryParams.put("isDescending",isDscending);
         String url = String.format("%s/%s/segments/sortAndSearch", pathPre, serverName);
