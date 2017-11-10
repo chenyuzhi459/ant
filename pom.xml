@@ -143,8 +143,6 @@
             <artifactId>jersey-container-servlet-core</artifactId>
             <version>${jersey.version}</version>
         </dependency>
-
-
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
@@ -155,7 +153,6 @@
             <groupId>org.glassfish.jersey.connectors</groupId>
             <artifactId>jersey-apache-connector</artifactId>
             <version>${jersey.version}</version>
-
         </dependency>
 
 
@@ -236,12 +233,17 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
+        <dependency>
+            <groupId>com.metamx</groupId>
+            <artifactId>java-util</artifactId>
+            <version>0.27.9</version>
+        </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.apache.httpcomponents</groupId>-->
-            <!--<artifactId>httpclient</artifactId>-->
-            <!--<version>4.3.5</version>-->
-        <!--</dependency>-->
+        <!--<dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.5</version>
+        </dependency>-->
         <!--TODO can't add this relavent ,will cause java.lang.NoSuchMethodsExcepiton(may be crash with the jersey's httpClient[its version is 4.5])-->
 
     </dependencies>

@@ -1,9 +1,12 @@
 package io.sugo.http.resource.overlord;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import com.metamx.common.Pair;
 import io.sugo.http.audit.AuditManager;
 import io.sugo.http.resource.ForwardResource;
+import io.sugo.http.resource.overlord.condition.TaskSearchCondition;
 import io.sugo.http.util.HttpMethodProxy;
 
 import javax.servlet.http.HttpServletRequest;
@@ -68,7 +71,6 @@ public class OverlordResource extends ForwardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTaskSegments(@PathParam("taskid") String taskid)
     {
-//        localhost:6660/druid/indexer/v1/task/lucene_index_kafka_wuxianjiRT_5d0772c1d88e862_ebeeegoc/segments
         String url = String.format("%s/task/%s/segments", pathPre,taskid);
         return httpMethod.get(url);
     }
@@ -209,132 +211,94 @@ public class OverlordResource extends ForwardResource {
     @GET
     @Path("/completeTasks")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCompleteTasks(
-            @QueryParam("offset") @DefaultValue("0") final int offset,
-            @QueryParam("size") @DefaultValue("-1") final int size,
-            @QueryParam("sortDimension") @DefaultValue("createdTime") final String sortDimension,
-            @QueryParam("isDescending") @DefaultValue("true") final String isDescending,
-            @Context final HttpServletRequest req
-    )
+    public Response getCompleteTasks(@Context final HttpServletRequest req)
     {
-        Map<String,Object> queryParams = Maps.newHashMap();
-        queryParams.put("offset",offset);
-        queryParams.put("size",size);
-        if(sortDimension != null){
-            queryParams.put("sortDimension",sortDimension);
-        }
-        queryParams.put("isDescending",isDescending);
-
         String url = String.format("%s/completeTasks", pathPre);
-
-        return httpMethod.get(url,queryParams);
+        return httpMethod.get(url);
     }
 
-    @GET
+    @POST
     @Path("/completeTasks/custom/list")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCompleteTasks(
-            @QueryParam("keyId") @DefaultValue("") final String keyId,
-            @QueryParam("keyTopic") @DefaultValue("") final String keyTopic,
-            @QueryParam("keyStatus") @DefaultValue("") final String keyStatus,
-            @QueryParam("sortDimension") @DefaultValue("created_date") final String sortDimension,
-            @QueryParam("isDescending") @DefaultValue("true") final boolean isDescending,
-            @QueryParam("offset") @DefaultValue("0") final int offset,
-            @QueryParam("size") @DefaultValue("10") final int size,
-            @Context final HttpServletRequest req)
+            @Context final HttpServletRequest req,
+            TaskSearchCondition taskSearchCondition)
     {
-        Map<String,Object> queryParams = Maps.newHashMap();
-        if(null != keyId){
-            queryParams.put("keyId",keyId);
+        if(null == taskSearchCondition){
+            taskSearchCondition = new TaskSearchCondition();
         }
-        if(null != keyTopic){
-            queryParams.put("keyTopic",keyTopic);
+        if(null == taskSearchCondition.getTaskSortItem()){
+            taskSearchCondition.setTaskSortItem(
+                    ImmutableMap.of("sortDimension","created_date", "sortDirection","DESC")
+            );
         }
-        if(null != keyStatus){
-            queryParams.put("keyStatus",keyStatus);
+        if(null == taskSearchCondition.getTaskPageItem()){
+            taskSearchCondition.setTaskPageItem(
+                    ImmutableMap.of("size",10,"offset",0)
+            );
         }
-        queryParams.put("sortDimension",sortDimension);
-        queryParams.put("isDescending",isDescending);
-        queryParams.put("offset",offset);
-        queryParams.put("size",size);
-
         String url = String.format("%s/completeTasks/custom/list", pathPre);
 
-        return httpMethod.get(url,queryParams);
+        return httpMethod.postWithObjectParam(url,taskSearchCondition);
     }
 
-    @GET
+    @POST
     @Path("/completeTasks/custom/count")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCompleteTasksNum(
-            @QueryParam("keyId") @DefaultValue("") final String keyId,
-            @QueryParam("keyTopic") @DefaultValue("") final String keyTopic,
-            @QueryParam("keyStatus") @DefaultValue("") final String keyStatus,
-            @Context final HttpServletRequest req
+            @Context final HttpServletRequest req,
+            TaskSearchCondition taskSearchCondition
     ){
-        Map<String,Object> queryParams = Maps.newHashMap();
-        if(null != keyId){
-            queryParams.put("keyId",keyId);
+        if(null == taskSearchCondition){
+            taskSearchCondition = new TaskSearchCondition();
         }
-        if(null != keyTopic){
-            queryParams.put("keyTopic",keyTopic);
-        }
-        if(null != keyStatus){
-            queryParams.put("keyStatus",keyStatus);
-        }
+
         String url = String.format("%s/completeTasks/custom/count", pathPre);
-        return httpMethod.get(url,queryParams);
+        return httpMethod.postWithObjectParam(url,taskSearchCondition);
     }
 
-    @GET
+    @POST
     @Path("/completeTasks/{supervisorId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInactiveSupervisorTasks(
             @PathParam("supervisorId") final String supervisorId,
-            @QueryParam("keyId")  final String keyId,
-            @QueryParam("keyStatus") final String keyStatus,
-            @QueryParam("sortDimension") @DefaultValue("created_date") final String sortDimension,
-            @QueryParam("isDescending") @DefaultValue("true") final boolean isDescending,
-            @QueryParam("offset") @DefaultValue("0") final int offset,
-            @QueryParam("size") @DefaultValue("10") final int size,
-            @Context final HttpServletRequest req)
+            @Context final HttpServletRequest req,
+            TaskSearchCondition taskSearchCondition)
     {
-        Map<String,Object> queryParams = Maps.newHashMap();
-        if(null != keyId){
-            queryParams.put("keyId",keyId);
+        if(null == taskSearchCondition){
+            taskSearchCondition = new TaskSearchCondition();
         }
-        if(null != keyStatus){
-            queryParams.put("keyStatus",keyStatus);
+        if(null == taskSearchCondition.getTaskSortItem()){
+            taskSearchCondition.setTaskSortItem(
+                    ImmutableMap.of("sortDimension","created_date", "sortDirection","DESC")
+            );
         }
-        queryParams.put("sortDimension",sortDimension);
-        queryParams.put("isDescending",isDescending);
-        queryParams.put("offset",offset);
-        queryParams.put("size",size);
+        if(null == taskSearchCondition.getTaskPageItem()){
+            taskSearchCondition.setTaskPageItem(
+                    ImmutableMap.of("size",10,"offset",0)
+            );
+        }
 
         String url = String.format("%s/completeTasks/%s", pathPre,supervisorId);
 
-        return httpMethod.get(url,queryParams);
+        return httpMethod.postWithObjectParam(url,taskSearchCondition);
 
     }
 
-    @GET
+    @POST
     @Path("/completeTasks/{supervisorId}/count")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSupervisorCompleteTasksNum(
             @PathParam("supervisorId") final String supervisorId,
-            @QueryParam("keyId")  final String keyId,
-            @QueryParam("keyStatus") final String keyStatus,
-            @Context final HttpServletRequest req)
+            @Context final HttpServletRequest req,
+            TaskSearchCondition taskSearchCondition)
     {
-        Map<String,Object> queryParams = Maps.newHashMap();
-        if(null != keyId){
-            queryParams.put("keyId",keyId);
+        if(null == taskSearchCondition){
+            taskSearchCondition = new TaskSearchCondition();
         }
-        if(null != keyStatus){
-            queryParams.put("keyStatus",keyStatus);
-        }
+
         String url = String.format("%s/completeTasks/%s/count", pathPre,supervisorId);
-        return httpMethod.get(url,queryParams);
+        return httpMethod.postWithObjectParam(url,taskSearchCondition);
     }
 
     @GET

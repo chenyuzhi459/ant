@@ -72,6 +72,13 @@ public class HttpMethodProxy {
         return rep;
     }
 
+    public Response postWithObjectParam(String url,Object objectParam){
+        LOG.info(url);
+        target = httpMethod.getClient().target(url);
+        Response rep = httpMethod.postWithObjectParam(target,objectParam);
+        return rep;
+    }
+
     public Response delete(String url) {
         LOG.info(url);
         target = httpMethod.getClient().target(url);

@@ -37,6 +37,17 @@ public class LookupListeningResource extends ForwardResource {
         return httpMethod.post(url, data);
     }
 
+    @GET
+    @Produces({MediaType.APPLICATION_JSON, SmileMediaTypes.APPLICATION_JACKSON_SMILE})
+    public Response getAll(@QueryParam("ip") String ip)
+    {
+        if(Strings.isNullOrEmpty(ip)) {
+            return Response.status(400).build();
+        }
+        String url = String.format("http://%s%s", ip, pathPre);
+        return httpMethod.get(url);
+    }
+
     @Path("/sortAndSearch")
     @GET
     @Produces({MediaType.APPLICATION_JSON, SmileMediaTypes.APPLICATION_JACKSON_SMILE})

@@ -1,17 +1,11 @@
 package io.sugo.http.resource;
 
 
-import io.sugo.http.ResourcesManager;
-import io.sugo.http.jersy.JersyClientFactory;
+import io.sugo.http.jersey.JerseyClientFactory;
 import io.sugo.http.util.HttpMethodProxy;
 import org.apache.log4j.Logger;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.jackson.JacksonFeature;
-import sun.misc.Cleaner;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Configuration;
 
 public class ForwardResource extends Resource{
 
@@ -26,7 +20,7 @@ public class ForwardResource extends Resource{
     }
 
     private void init() {
-        client = JersyClientFactory.create();
+        client = JerseyClientFactory.create();
         httpMethod = new HttpMethodProxy(client);
     }
 }

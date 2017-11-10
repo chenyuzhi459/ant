@@ -3,6 +3,7 @@ package io.sugo.http.util;
 
 
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.client.ClientResponse;
 
@@ -89,6 +90,13 @@ public class HttpMethod {
         Response rep = target.request()
                 .accept(MediaType.APPLICATION_JSON)
                 .build("POST").invoke(Response.class);
+        return rep;
+    }
+
+    public Response postWithObjectParam(WebTarget target, Object objParam){
+        Response rep = target.request()
+                .accept(MediaType.APPLICATION_JSON)
+                .post(Entity.entity(objParam,MediaType.APPLICATION_JSON),Response.class);
         return rep;
     }
 
