@@ -25,7 +25,8 @@ public class HttpMethod {
     }
 
     public Response get(WebTarget target) {
-        Response rep = target.request().get(Response.class);
+//        Response rep = target.request().get(Response.class);
+        Response rep = getShortConnRequest(target).get(Response.class);
         return rep;
     }
 
@@ -34,22 +35,12 @@ public class HttpMethod {
         for(Map.Entry<String,Object> param: queryParams.entrySet()){
             withQueryParamTaget = withQueryParamTaget.queryParam(param.getKey(),param.getValue());
         }
-        Response rep = withQueryParamTaget.request().get(Response.class);
-        return rep;
-    }
-
-
-    public Response getDirectly(WebTarget target, Map<String,Object> queryParams) {
-        WebTarget withQueryParamTaget = target;
-        for(Map.Entry<String,Object> param: queryParams.entrySet()){
-            withQueryParamTaget = withQueryParamTaget.queryParam(param.getKey(),param.getValue());
-        }
-        Response rep = withQueryParamTaget.request().get(Response.class);
+        Response rep = getShortConnRequest(withQueryParamTaget).get(Response.class);
         return rep;
     }
 
     public Response getWithHeader(WebTarget target,Map<String,Object> header) {
-        Invocation.Builder builder = target.request();
+        Invocation.Builder builder = getShortConnRequest(target);
         for(String key : header.keySet()){
             builder.header(key,header.get(key));
         }
@@ -62,7 +53,7 @@ public class HttpMethod {
         for(Map.Entry<String,Object> param: queryParams.entrySet()){
             withQueryParamTaget = withQueryParamTaget.queryParam(param.getKey(),param.getValue());
         }
-        Response rep = withQueryParamTaget.request()
+        Response rep = getShortConnRequest(withQueryParamTaget)
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(data,MediaType.APPLICATION_JSON),Response.class);
         return rep;
@@ -73,35 +64,35 @@ public class HttpMethod {
         for(Map.Entry<String,Object> param: queryParams.entrySet()){
             withQueryParamTaget = withQueryParamTaget.queryParam(param.getKey(),param.getValue());
         }
-        Response rep = withQueryParamTaget.request()
+        Response rep = getShortConnRequest(withQueryParamTaget)
                 .accept(MediaType.APPLICATION_JSON)
                 .build("POST").invoke(Response.class);
         return rep;
     }
 
     public Response post(WebTarget target, String data) {
-        Response rep = target.request()
+        Response rep = getShortConnRequest(target)
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(data,MediaType.APPLICATION_JSON),Response.class);
         return rep;
     }
 
     public Response post(WebTarget target) {
-        Response rep = target.request()
+        Response rep = getShortConnRequest(target)
                 .accept(MediaType.APPLICATION_JSON)
                 .build("POST").invoke(Response.class);
         return rep;
     }
 
     public Response postWithObjectParam(WebTarget target, Object objParam){
-        Response rep = target.request()
+        Response rep = getShortConnRequest(target)
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(objParam,MediaType.APPLICATION_JSON),Response.class);
         return rep;
     }
 
     public Response delete(WebTarget target) {
-        Response rep = target.request().delete(Response.class);
+        Response rep = getShortConnRequest(target).delete(Response.class);
         return rep;
     }
 
@@ -110,17 +101,9 @@ public class HttpMethod {
         for(Map.Entry<String,Object> param: queryParams.entrySet()){
             withQueryParamTaget = withQueryParamTaget.queryParam(param.getKey(),param.getValue());
         }
-        Response rep = withQueryParamTaget.request().delete(Response.class);
+        Response rep = getShortConnRequest(withQueryParamTaget).delete(Response.class);
         return rep;
     }
-
-//    public Response delete(WebTarget target, String data) {
-//        Response rep = target.request()
-//                .accept(MediaType.APPLICATION_JSON)
-//                .type(MediaType.APPLICATION_JSON)
-//                .delete(Response.class, data);
-//        return rep;
-//    }
 
     public Client getClient() {
         return client;
@@ -128,5 +111,9 @@ public class HttpMethod {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    private Invocation.Builder getShortConnRequest(WebTarget target){
+        return target.request().header("Connection","close");
     }
 }

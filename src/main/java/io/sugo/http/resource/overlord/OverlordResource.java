@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.metamx.common.Pair;
 import io.sugo.http.audit.AuditManager;
 import io.sugo.http.resource.ForwardResource;
+import io.sugo.http.resource.Resource;
 import io.sugo.http.resource.overlord.condition.TaskSearchCondition;
 import io.sugo.http.util.HttpMethodProxy;
 
@@ -318,7 +319,6 @@ public class OverlordResource extends ForwardResource {
         return httpMethod.get(url);
     }
 
-
     @GET
     @Path("/task/{taskid}/log")
     @Produces("text/plain")
@@ -332,7 +332,5 @@ public class OverlordResource extends ForwardResource {
         queryParams.put("offset",offset);
         return httpMethod.get(url,queryParams);
     }
-
-
 
 }

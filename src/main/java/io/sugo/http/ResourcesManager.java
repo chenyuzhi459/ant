@@ -103,7 +103,7 @@ public class ResourcesManager {
         apiHandler.setContextPath("/api");
 
         ServletHolder servletHolder = new ServletHolder(ServletContainer.class);
-        //servletHolder.setInitParameter("org.glassfish.jersey.server.ResourceConfig", "org.glassfish.jersey.server.ResourceConfig");
+        servletHolder.setInitParameter("org.glassfish.jersey.server.ResourceConfig", "org.glassfish.jersey.server.ResourceConfig");
         servletHolder.setInitParameter("jersey.config.server.provider.packages", "io.sugo.http.resource");
         apiHandler.addServlet(servletHolder, "/*");
         if(developMode){

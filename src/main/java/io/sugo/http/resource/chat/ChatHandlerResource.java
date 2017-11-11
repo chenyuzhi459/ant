@@ -1,6 +1,8 @@
 package io.sugo.http.resource.chat;
 
 import io.sugo.http.resource.ForwardResource;
+import io.sugo.http.util.HttpMethodProxy;
+import org.apache.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -14,6 +16,7 @@ import java.util.Map;
  */
 @Path("/druid/worker/v1/task")
 public class ChatHandlerResource extends ForwardResource {
+	protected static final Logger LOG = Logger.getLogger(ChatHandlerResource.class);
 	public ChatHandlerResource(){
 		pathPre = "http://{0}/druid/worker/v1";
 	}
@@ -30,9 +33,8 @@ public class ChatHandlerResource extends ForwardResource {
 	{
 		String url = MessageFormat.format("{0}/chat/{1}/summary",MessageFormat.format(pathPre,location),handlerId);
 		System.out.println("url:" + url);
-		Map<String,Object> header = new HashMap<>();
-		header.put("Connection","close");
-		return httpMethod.getWithHeader(url,header);
+
+		return httpMethod.get(url);
 	}
 
 

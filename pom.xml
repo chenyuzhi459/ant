@@ -239,13 +239,6 @@
             <version>0.27.9</version>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.3.5</version>
-        </dependency>-->
-        <!--TODO can't add this relavent ,will cause java.lang.NoSuchMethodsExcepiton(may be crash with the jersey's httpClient[its version is 4.5])-->
-
     </dependencies>
 
 </project>
