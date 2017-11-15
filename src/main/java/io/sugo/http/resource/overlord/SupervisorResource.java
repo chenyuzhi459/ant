@@ -1,8 +1,10 @@
 package io.sugo.http.resource.overlord;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import io.sugo.http.resource.ForwardResource;
+import io.sugo.http.resource.overlord.condition.SupervisorSearchCondition;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -80,59 +82,40 @@ public class SupervisorResource extends ForwardResource {
     }
 
 
-    @GET
+    @POST
     @Path("/history/part")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getSupervisorHistoryNum(
-            @QueryParam("searchDimension1") final String searchDimension1, //defaultValue: spec_id
-            @QueryParam("searchValue1")  @DefaultValue("") final String searchValue1,
-            @QueryParam("searchDimension2") final String searchDimension2, //defaultValue: payload/created_date
-            @QueryParam("searchValue2") @DefaultValue("") final String searchValue2,
-            @QueryParam("sortDimension") @DefaultValue("created_date") final String sortDimension,
-            @QueryParam("isDescending") @DefaultValue("true") final boolean isDescending,
-            @QueryParam("offset") @DefaultValue("0") final int offset,
-            @QueryParam("size") @DefaultValue("10") final int size
-    ){
-        Map<String,Object> queryParams = Maps.newHashMap();
-        if(null != searchDimension1){
-            queryParams.put("searchDimension1",searchDimension1);
+    public Response getSupervisorHistoryPart(SupervisorSearchCondition supervisorSearchCondition){
+        if(null == supervisorSearchCondition){
+            supervisorSearchCondition = new SupervisorSearchCondition();
         }
-        if(null != searchDimension2){
-            queryParams.put("searchDimension2",searchDimension2);
+        if(null == supervisorSearchCondition.getSupervisorSortItem()){
+            supervisorSearchCondition.setSupervisorSortItem(
+                    ImmutableMap.of("sortDimension","created_date", "sortDirection","DESC")
+            );
         }
-        queryParams.put("searchValue1",searchValue1);
-        queryParams.put("searchValue2",searchValue2);
-        queryParams.put("sortDimension",sortDimension);
-        queryParams.put("isDescending",isDescending);
-        queryParams.put("offset",offset);
-        queryParams.put("size",size);
-
+        if(null == supervisorSearchCondition.getSupervisorPageItem()){
+            supervisorSearchCondition.setSupervisorPageItem(
+                    ImmutableMap.of("size",10,"offset",0)
+            );
+        }
         String url = String.format("%s/history/part", pathPre);
 
-        return httpMethod.get(url,queryParams);
+        return httpMethod.postWithObjectParam(url,supervisorSearchCondition);
     }
 
-    @GET
+    @POST
     @Path("/history/count")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSupervisorHistoryNum(
-            @QueryParam("searchDimension1") final String searchDimension1, //defaultValue: spec_id
-            @QueryParam("searchValue1")  @DefaultValue("") final String searchValue1,
-            @QueryParam("searchDimension2") final String searchDimension2, //defaultValue: payload/created_date
-            @QueryParam("searchValue2") @DefaultValue("") final String searchValue2
+            SupervisorSearchCondition supervisorSearchCondition
     )
     {
-        Map<String,Object> queryParams = Maps.newHashMap();
-        if(null != searchDimension1){
-            queryParams.put("searchDimension1",searchDimension1);
+        if(null == supervisorSearchCondition){
+            supervisorSearchCondition = new SupervisorSearchCondition();
         }
-        if(null != searchDimension2){
-            queryParams.put("searchDimension2",searchDimension2);
-        }
-        queryParams.put("searchValue1",searchValue1);
-        queryParams.put("searchValue2",searchValue2);
         String url = String.format("%s/history/count", pathPre);
-        return httpMethod.get(url,queryParams);
+        return httpMethod.postWithObjectParam(url,supervisorSearchCondition);
     }
 
     @GET

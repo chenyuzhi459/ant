@@ -43,7 +43,6 @@ public class HttpMethodProxy {
     }
 
 
-
     public Response post(String url, String data ,Map<String,Object> queryParams) {
         LOG.info(url);
         target = httpMethod.getClient().target(url);
@@ -72,6 +71,13 @@ public class HttpMethodProxy {
         return rep;
     }
 
+    public Response postWithObjectParam(String url,Object objectParam){
+        LOG.info(url);
+        target = httpMethod.getClient().target(url);
+        Response rep = httpMethod.postWithObjectParam(target,objectParam);
+        return rep;
+    }
+
     public Response delete(String url) {
         LOG.info(url);
         target = httpMethod.getClient().target(url);
@@ -93,16 +99,4 @@ public class HttpMethodProxy {
 //        return rep;
 //    }
 
-
-    public static Response convertResponse2Response(ClientResponse r) {
-        Response.ResponseBuilder rb = Response.status(r.getStatus());
-        for (Map.Entry<String, List<String>> entry : r.getHeaders().entrySet()) {
-            for (String value : entry.getValue()) {
-                rb.header(entry.getKey(), value);
-            }
-        }
-//        rb.entity(r.getEntityInputStream());
-        rb.entity(r.getEntity());
-        return rb.build();
-    }
 }
