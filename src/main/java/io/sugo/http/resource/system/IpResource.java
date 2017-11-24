@@ -1,8 +1,6 @@
 package io.sugo.http.resource.system;
 
-import io.sugo.http.resource.ForwardResource;
 import io.sugo.http.resource.Resource;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

@@ -2,8 +2,6 @@ package io.sugo.kafka;
 
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.log4j.Logger;
-import sun.rmi.runtime.Log;
-
 import java.util.concurrent.locks.ReentrantLock;
 
 /**

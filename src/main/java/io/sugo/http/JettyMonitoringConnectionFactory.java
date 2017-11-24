@@ -5,7 +5,6 @@ import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.util.component.ContainerLifeCycle;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class JettyMonitoringConnectionFactory extends ContainerLifeCycle implements ConnectionFactory

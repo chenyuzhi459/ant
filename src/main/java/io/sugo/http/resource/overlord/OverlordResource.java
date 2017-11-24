@@ -2,14 +2,9 @@ package io.sugo.http.resource.overlord;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
-import com.metamx.common.Pair;
 import io.sugo.http.audit.AuditManager;
-import io.sugo.http.resource.ForwardResource;
-import io.sugo.http.resource.Resource;
 import io.sugo.http.resource.overlord.condition.TaskSearchCondition;
 import io.sugo.http.util.HttpMethodProxy;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -17,10 +12,9 @@ import java.io.IOException;
 import java.util.Map;
 
 @Path("/druid/indexer/v1")
-public class OverlordResource extends ForwardResource {
+public class OverlordResource extends OverlordForwardResource {
 
     public OverlordResource() throws IOException {
-        ip = configure.getProperty("druid.properties","overlord.ip");
         pathPre = "http://" + ip + "/druid/indexer/v1";
     }
 
@@ -30,7 +24,7 @@ public class OverlordResource extends ForwardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response taskPost(
             final String taskSpec,
-            @Context final HttpServletRequest req
+            @Context final HttpServletRequest req1
     )
     {
         String url = String.format("%s/task", pathPre);

@@ -1,20 +1,13 @@
 package io.sugo.zookeeper.client;
 
-
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-
 import com.google.common.collect.ImmutableMap;
-
 import io.sugo.http.Configure;
-import io.sugo.zookeeper.ZkStateListener;
 import org.apache.commons.lang.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
@@ -23,10 +16,7 @@ import org.apache.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher.Event;
-
 import org.apache.zookeeper.data.Stat;
-
-
 
 /**
  * Created by chenyuzhi on 17-10-23.
@@ -36,7 +26,6 @@ public class CuratorZookeeperClient {
 
 	public static final String NONE_DATA = "None";
 	private CuratorFramework curator;
-
 
 	/**
 	 * key:父路径，如/jobcenter/client/goodscenter
@@ -59,7 +48,6 @@ public class CuratorZookeeperClient {
 				.retryPolicy(new RetryNTimes(retryTime, retryInterval))
 				.connectionTimeoutMs(connectTimeout).build();
 	}
-
 
 	public CuratorZookeeperClient(Configure configure) {
 

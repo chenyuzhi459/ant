@@ -1,19 +1,11 @@
 package io.sugo.http.util;
 
-
-
-
-import com.sun.org.apache.regexp.internal.RE;
-import org.apache.log4j.Logger;
-import org.glassfish.jersey.client.ClientResponse;
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.Map;
 
 public class HttpMethod {
@@ -25,7 +17,6 @@ public class HttpMethod {
     }
 
     public Response get(WebTarget target) {
-//        Response rep = target.request().get(Response.class);
         Response rep = getShortConnRequest(target).get(Response.class);
         return rep;
     }

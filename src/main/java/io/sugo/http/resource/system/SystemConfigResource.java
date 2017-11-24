@@ -8,7 +8,6 @@ import io.sugo.http.resource.Resource;
 import io.sugo.kafka.ConsumerHandler;
 import io.sugo.kafka.factory.KafkaFactory;
 import org.apache.log4j.Logger;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

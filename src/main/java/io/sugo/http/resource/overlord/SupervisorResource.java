@@ -2,22 +2,17 @@ package io.sugo.http.resource.overlord;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
-import io.sugo.http.resource.ForwardResource;
 import io.sugo.http.resource.overlord.condition.SupervisorSearchCondition;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Map;
 
-
 @Path("/druid/indexer/v1/supervisor")
-public class SupervisorResource extends ForwardResource {
+public class SupervisorResource extends OverlordForwardResource {
 
     public SupervisorResource() throws IOException {
-        ip = configure.getProperty("druid.properties","overlord.ip");
         pathPre = "http://" + ip + "/druid/indexer/v1/supervisor";
     }
 

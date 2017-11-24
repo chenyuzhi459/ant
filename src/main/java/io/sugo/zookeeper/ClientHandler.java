@@ -2,7 +2,6 @@ package io.sugo.zookeeper;
 
 import io.sugo.zookeeper.client.CuratorZookeeperClient;
 import org.apache.log4j.Logger;
-
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientHandler {

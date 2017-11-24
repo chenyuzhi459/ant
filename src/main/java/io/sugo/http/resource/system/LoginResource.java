@@ -1,12 +1,9 @@
 package io.sugo.http.resource.system;
 
-
-import com.sun.org.apache.regexp.internal.RE;
 import io.sugo.http.model.UserBean;
 import io.sugo.http.resource.Resource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

@@ -2,11 +2,9 @@ package io.sugo.http.resource.zk;
 
 import com.google.common.collect.ImmutableMap;
 import io.sugo.http.resource.Resource;
-import io.sugo.zookeeper.ClientHandler;
 import io.sugo.zookeeper.client.CuratorZookeeperClient;
 import io.sugo.zookeeper.factory.ZkFactory;
 import org.apache.zookeeper.CreateMode;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

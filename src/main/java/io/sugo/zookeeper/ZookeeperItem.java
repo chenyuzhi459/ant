@@ -1,7 +1,6 @@
 package io.sugo.zookeeper;
 
 import com.google.common.collect.Lists;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;

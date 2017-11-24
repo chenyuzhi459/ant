@@ -3,14 +3,12 @@ package io.sugo.kafka;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 import io.sugo.http.Configure;
 import io.sugo.kafka.factory.KafkaFactory;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.log4j.Logger;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;

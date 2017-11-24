@@ -1,15 +1,11 @@
 package io.sugo.http;
 
 import org.apache.log4j.Logger;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * Created by fengxj on 3/29/17.
- */
 public class Configure {
   private static final Logger LOG = Logger.getLogger(Configure.class);
   public static final String CONFIG_PATH = "src/main/resources/config/";

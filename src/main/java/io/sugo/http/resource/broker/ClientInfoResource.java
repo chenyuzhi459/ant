@@ -1,8 +1,6 @@
 package io.sugo.http.resource.broker;
 
 import com.google.common.collect.Maps;
-
-import io.sugo.http.resource.ForwardResource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -11,11 +9,9 @@ import java.util.Map;
 
 
 @Path("/druid/v2/datasources")
-public class ClientInfoResource extends ForwardResource {
-
+public class ClientInfoResource extends BrokerForwardResource {
 
     public ClientInfoResource() throws IOException {
-        ip = configure.getProperty("druid.properties","broker.ip");
         pathPre = "http://" + ip + "/druid/v2/datasources";
     }
 

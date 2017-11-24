@@ -1,10 +1,7 @@
 package io.sugo.http.resource.coordinator;
 
 import com.google.common.collect.Maps;
-
 import io.sugo.http.audit.AuditManager;
-import io.sugo.http.resource.ForwardResource;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -13,13 +10,10 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Map;
 
-
 @Path("/druid/coordinator/v1/rules")
-public class RulesResource extends ForwardResource {
-
+public class RulesResource extends CoordinatorForwardResource {
 
     public RulesResource() throws IOException {
-        ip = configure.getProperty("druid.properties","coordinator.ip");
         pathPre = "http://" + ip + "/druid/coordinator/v1/rules";
     }
 

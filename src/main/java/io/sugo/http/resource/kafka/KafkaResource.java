@@ -2,7 +2,6 @@ package io.sugo.http.resource.kafka;
 
 import io.sugo.http.resource.Resource;
 import io.sugo.kafka.KafkaHandler;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

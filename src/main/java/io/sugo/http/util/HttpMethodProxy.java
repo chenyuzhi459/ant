@@ -1,14 +1,9 @@
 package io.sugo.http.util;
 
-
-import com.sun.org.apache.regexp.internal.RE;
 import org.apache.log4j.Logger;
-import org.glassfish.jersey.client.ClientResponse;
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.Map;
 
 public class HttpMethodProxy {

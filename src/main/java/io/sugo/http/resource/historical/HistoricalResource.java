@@ -1,16 +1,13 @@
 package io.sugo.http.resource.historical;
 
 import com.google.common.base.Strings;
-import io.sugo.http.resource.ForwardResource;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
-
 @Path("/druid/historical/v1")
-public class HistoricalResource extends ForwardResource {
+public class HistoricalResource extends HistoricalForwardResource {
 
     public HistoricalResource() throws IOException {
         pathPre =  "/druid/historical/v1";

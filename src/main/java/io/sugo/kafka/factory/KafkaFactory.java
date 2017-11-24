@@ -6,7 +6,6 @@ import io.sugo.kafka.ConsumerHandler;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.log4j.Logger;
-
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 

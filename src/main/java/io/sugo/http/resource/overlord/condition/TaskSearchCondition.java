@@ -1,13 +1,6 @@
 package io.sugo.http.resource.overlord.condition;
 
-
-
-import javafx.util.Pair;
-
-import javax.xml.bind.annotation.XmlRootElement;
-import java.text.MessageFormat;
 import java.util.Map;
-
 
 public class TaskSearchCondition {
 	private String taskId;

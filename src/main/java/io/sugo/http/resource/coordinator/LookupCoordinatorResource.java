@@ -2,10 +2,7 @@ package io.sugo.http.resource.coordinator;
 
 import com.fasterxml.jackson.jaxrs.smile.SmileMediaTypes;
 import com.google.common.collect.Maps;
-
 import io.sugo.http.audit.AuditManager;
-import io.sugo.http.resource.ForwardResource;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -16,11 +13,9 @@ import java.util.Map;
 
 
 @Path("/druid/coordinator/v1/lookups")
-public class LookupCoordinatorResource extends ForwardResource {
-
+public class LookupCoordinatorResource extends CoordinatorForwardResource {
 
     public LookupCoordinatorResource() throws IOException {
-        ip = configure.getProperty("druid.properties","coordinator.ip");
         pathPre = "http://" + ip + "/druid/coordinator/v1/lookups";
     }
 

@@ -1,21 +1,16 @@
 package io.sugo.http.resource.coordinator;
 
 import com.google.common.collect.Maps;
-import io.sugo.http.resource.ForwardResource;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Map;
 
-
 @Path("/druid/coordinator/v1/datasources")
-public class DataSourcesResource extends ForwardResource {
-
+public class DataSourcesResource extends CoordinatorForwardResource {
 
     public DataSourcesResource() throws IOException {
-        ip = configure.getProperty("druid.properties","coordinator.ip");
         pathPre = "http://" + ip + "/druid/coordinator/v1/datasources";
     }
 
