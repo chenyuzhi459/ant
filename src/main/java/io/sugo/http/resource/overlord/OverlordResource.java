@@ -34,7 +34,7 @@ public class OverlordResource extends OverlordForwardResource {
 
     @GET
     @Path("/leader")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response getLeader() {
         String url = String.format("%s/leader", pathPre);
         return httpMethod.get(url);

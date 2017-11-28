@@ -1,11 +1,13 @@
 package io.sugo.http.resource.log;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import io.sugo.http.resource.ForwardResource;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.*;
 import java.util.Map;
 
 @Path("/log")
@@ -17,6 +19,30 @@ public class LogResource extends ForwardResource {
         pathPre = "http://";
         agentPort = configure.getProperty("system.properties","log.agent.port");
     }
+
+    @GET
+    @Path("/logConfig")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response logConfig() {
+
+        String jsonDir = configure.getProperty("system.properties","json.dir");
+        StringBuilder sb = new StringBuilder();
+        try {
+            File json = new File(jsonDir);
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(json)));
+            String tempString;
+
+            while ((tempString = br.readLine()) != null) {
+                sb.append(tempString);
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return Response.ok().entity(sb.toString()).build();
+    }
+
 
     @GET
     @Path("/logList")

@@ -1,5 +1,8 @@
 package io.sugo.http;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.jersey.servlet.ServletContainer;
 import io.sugo.http.filter.CrossDomainSupportFilter;
 import org.apache.log4j.Logger;
@@ -14,6 +17,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
 import javax.servlet.DispatcherType;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -42,7 +46,6 @@ public class ResourcesManager {
             initialize(server);
             server.start();
             LOG.info("start...in " + port);
-            setSystemProperties();
             latch.await();
         } finally {
             if (server != null) {
@@ -52,11 +55,6 @@ public class ResourcesManager {
         }
 
     }
-
-    private static void setSystemProperties() {
-
-    }
-
 
     private static Server makeJettyServer() {
         final Server server = new Server();
