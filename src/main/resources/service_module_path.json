@@ -1,0 +1,172 @@
+{
+  "POSTGRES_SUGO": {
+    "Postgres": {
+      "dev220.sugo.net": {
+        "path": "/data1/postgres/log",
+        "file": ".*\\.log"
+      }
+    }
+  },
+  "DRUIDIO_SUGO": {
+    "Coordinator": {
+      "dev222.sugo.net": {
+        "path": "/data1/druidio/logs/jvm",
+        "file": "coordinator.*\\.log"
+      }
+    },
+    "Overlord": {
+      "dev220.sugo.net": {
+        "path": "/data1/druidio/logs/jvm",
+        "file": "overlord.*\\.log"
+      }
+    },
+    "Broker": {
+      "dev220.sugo.net": {
+        "path": "/data1/druidio/logs/jvm",
+        "file": "broker.*\\.log"
+      },
+      "localhost": {
+        "path": "/data1/druidio/logs/jvm",
+        "file": "broker.*\\.log"
+      }
+    },
+    "Historical": {
+      "dev222.sugo.net": {
+        "path": "/data1/druidio/logs/jvm",
+        "file": "historical.*\\.log"
+      },
+      "dev221.sugo.net": {
+        "path": "/data1/druidio/logs/jvm",
+        "file": "historical.*\\.log"
+      }
+    },
+    "MiddleManager": {
+      "dev222.sugo.net": {
+        "path": "/data1/druidio/logs/jvm",
+        "file": "middleManager.*\\.log"
+      },
+      "dev221.sugo.net": {
+        "path": "/data1/druidio/logs/jvm",
+        "file": "middleManager.*\\.log"
+      }
+    }
+  },
+  "ASTRO_SUGO": {
+    "ASTRO_UI": {
+      "dev222.sugo.net": {
+        "path": "/data1/astro/log",
+        "file": "analytics.*\\.log"
+      },
+      "dev220.sugo.net": {
+        "path": "/data1/astro/log",
+        "file": "analytics.*\\.log"
+      }
+    }
+  },
+  "MAPREDUCE_SUGO": {
+    "MapReduce": {
+      "dev220.sugo.net": {
+        "path": "/data1/hadoop-mapreduce/log*",
+        "file": ".*\\.log"
+      }
+    }
+  },
+  "KAFKA_SUGO": {
+    "Kafka Broker": {
+      "dev222.sugo.net": {
+        "path": "/opt/apps/kafka_sugo/logs",
+        "file": ".*"
+      },
+      "dev220.sugo.net": {
+        "path": "/opt/apps/kafka_sugo/logs",
+        "file": ".*"
+      },
+      "dev221.sugo.net": {
+        "path": "/opt/apps/kafka_sugo/logs",
+        "file": ".*"
+      }
+    }
+  },
+  "YARN_SUGO": {
+    "ProxyServer": {
+      "dev220.sugo.net": {
+        "path": "/data1/hadoop-yarn/log*",
+        "file": ".*proxyserver.*\\.log"
+      }
+    },
+    "NodeManager": {
+      "dev222.sugo.net": {
+        "path": "/data1/hadoop-yarn/log*",
+        "file": ".*nodemanager.*\\.log"
+      },
+      "dev220.sugo.net": {
+        "path": "/data1/hadoop-yarn/log*",
+        "file": ".*nodemanager.*\\.log"
+      }
+    },
+    "ResourceManager": {
+      "dev220.sugo.net": {
+        "path": "/data1/hadoop-yarn/log*",
+        "file": ".*resourcemanager.*\\.log"
+      },
+      "dev221.sugo.net": {
+        "path": "/data1/hadoop-yarn/log*",
+        "file": ".*resourcemanager.*\\.log"
+      }
+    }
+  },
+  "HDFS_SUGO": {
+    "JournalNode": {
+      "dev222.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-journalnode.*\\.log"
+      },
+      "dev220.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-journalnode.*\\.log"
+      },
+      "dev221.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-journalnode.*\\.log"
+      },
+      "localhost": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-journalnode.*\\.log"
+      }
+    },
+    "NameNode": {
+      "dev220.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-namenode.*\\.log"
+      },
+      "dev221.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-namenode.*\\.log"
+      }
+    },
+    "ZKFailoverController": {
+      "dev220.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-zkfc.*\\.log"
+      },
+      "dev221.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-zkfc.*\\.log"
+      }
+    },
+    "DataNode": {
+      "dev222.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-datanode.*\\.log"
+      },
+      "dev220.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-datanode.*\\.log"
+      },
+      "dev221.sugo.net": {
+        "path": "/data1/hadoop/log/*",
+        "file": "hadoop-hdfs-datanode.*\\.log"
+      }
+    }
+  }
+}

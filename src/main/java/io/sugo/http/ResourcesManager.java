@@ -42,6 +42,7 @@ public class ResourcesManager {
             initialize(server);
             server.start();
             LOG.info("start...in " + port);
+            setSystemProperties();
             latch.await();
         } finally {
             if (server != null) {
@@ -52,8 +53,12 @@ public class ResourcesManager {
 
     }
 
+    private static void setSystemProperties() {
 
-    static Server makeJettyServer() {
+    }
+
+
+    private static Server makeJettyServer() {
         final Server server = new Server();
 
         // Without this bean set, the default ScheduledExecutorScheduler runs as non-daemon, causing lifecycle hooks to fail
@@ -78,7 +83,7 @@ public class ResourcesManager {
         return server;
     }
 
-    static void initialize(Server server) {
+    private static void initialize(Server server) {
         final ServletContextHandler htmlHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         htmlHandler.setContextPath("/");
 

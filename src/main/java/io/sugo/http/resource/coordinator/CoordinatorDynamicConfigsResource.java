@@ -33,7 +33,7 @@ public class CoordinatorDynamicConfigsResource extends CoordinatorForwardResourc
                                       @Context HttpServletRequest req
     ) {
         String url = String.format("%s", pathPre);
-        return httpMethod.post(url);
+        return httpMethod.post(url,dynamicConfig);
     }
 
     @GET
