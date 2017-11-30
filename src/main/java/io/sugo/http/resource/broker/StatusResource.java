@@ -14,7 +14,6 @@ public class StatusResource extends BrokerForwardResource {
         pathPre = "http://" + ip + "/status";
     }
 
-
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response status() {

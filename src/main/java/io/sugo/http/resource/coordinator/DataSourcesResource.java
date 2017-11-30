@@ -1,6 +1,8 @@
 package io.sugo.http.resource.coordinator;
 
 import com.google.common.collect.Maps;
+import org.joda.time.Interval;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -104,6 +106,8 @@ public class DataSourcesResource extends CoordinatorForwardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSegmentDataSourceIntervals(
             @PathParam("dataSourceName") String dataSourceName,
+            @QueryParam("searchInterval") String searchInterval,
+            @QueryParam("isDescending") @DefaultValue("true")  boolean isDescending,
             @QueryParam("simple") String simple,
             @QueryParam("full") String full
     )
@@ -115,6 +119,10 @@ public class DataSourcesResource extends CoordinatorForwardResource {
         if(full != null){
             queryParams.put("full",full);
         }
+        if(searchInterval != null){
+            queryParams.put("searchInterval",searchInterval);
+        }
+        queryParams.put("isDescending",isDescending);
         String url = String.format("%s/%s/intervals", pathPre, dataSourceName);
         return httpMethod.get(url,queryParams);
     }
@@ -140,11 +148,36 @@ public class DataSourcesResource extends CoordinatorForwardResource {
         return httpMethod.get(url,queryParams);
     }
 
+    @POST
+    @Path("/{dataSourceName}/segments")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatabaseSegmentDataSourceSegments(
+            @PathParam("dataSourceName") String dataSourceName,
+            @QueryParam("searchSegment") String searchSegment,
+            @QueryParam("isDescending") @DefaultValue("false") boolean isDescending,
+            @QueryParam("full") String full,
+            final String intervals
+    )
+    {
+        Map<String,Object> queryParams = Maps.newHashMap();
+        if(searchSegment != null){
+            queryParams.put("searchSegment",searchSegment);
+        }
+        if(full != null){
+            queryParams.put("full",full);
+        }
+        queryParams.put("isDescending",isDescending);
+        String url = String.format("%s/%s/segments", pathPre, dataSourceName);
+        return httpMethod.post(url,intervals,queryParams);
+    }
+
     @GET
     @Path("/{dataSourceName}/segments")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSegmentDataSourceSegments(
             @PathParam("dataSourceName") String dataSourceName,
+            @QueryParam("searchSegment") String searchSegment,
+            @QueryParam("isDescending") @DefaultValue("false") boolean isDescending,
             @QueryParam("full") String full
     )
     {
@@ -152,6 +185,10 @@ public class DataSourcesResource extends CoordinatorForwardResource {
         if(full != null){
             queryParams.put("full",full);
         }
+        if(searchSegment != null){
+            queryParams.put("searchSegment",searchSegment);
+        }
+        queryParams.put("isDescending",isDescending);
         String url = String.format("%s/%s/segments", pathPre, dataSourceName);
         return httpMethod.get(url,queryParams);
     }
