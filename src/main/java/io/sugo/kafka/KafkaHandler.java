@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.sugo.http.Configure;
 import io.sugo.kafka.factory.KafkaFactory;
+import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
@@ -116,7 +117,7 @@ public class KafkaHandler implements Closeable {
 
   public Map getTopicPartitionOffset(String topic, List<Integer> partitionIds,String servers) {
     try {
-      if(servers == null){
+      if(StringUtils.isBlank(servers)){
         servers = configure.getProperty("kafka.properties","bootstrap.servers","192.168.0.223:9092,192.168.0.224:9092,192.168.0.225:9092");
       }
       String[] kafkaServers = servers.split(",");
