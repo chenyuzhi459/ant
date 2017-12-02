@@ -110,20 +110,31 @@ public class LogResource extends ForwardResource {
         return httpMethod.get(url,queryParams);
     }
 
+
+
     @GET
     @Path("/logPage")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response viewLogPage(
+    public Response getLogPageJson(
             @QueryParam("name") String name,
             @QueryParam("host") String host,
-            @QueryParam("index") String index
-    ){
+            @QueryParam("index") String index,
+            @QueryParam("keyword") String keyword,
+            @QueryParam("keywordIndex") String keywordIndex
+    )
+    {
         Map<String,Object> queryParams = Maps.newHashMap();
         if(name != null){
             queryParams.put("name",name);
         }
         if(index != null){
             queryParams.put("index",index);
+        }
+        if(keyword != null){
+            queryParams.put("keyword",keyword);
+        }
+        if(keywordIndex != null){
+            queryParams.put("keywordIndex",keywordIndex);
         }
 
         String url = String.format("%s%s:%s/logPage",  pathPre, host, agentPort);
