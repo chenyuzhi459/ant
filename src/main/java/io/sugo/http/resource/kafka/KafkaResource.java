@@ -24,9 +24,10 @@ public class KafkaResource extends Resource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getTopicOffsets(
 			@PathParam("topic") String topic,
+			@QueryParam("kafkaServers") String kafkaServers,
 			final List partitionIds
 	)
 	{
-		return Response.ok(kafkaHandler.getTopicPartitionOffset(topic,partitionIds)).build();
+		return Response.ok(kafkaHandler.getTopicPartitionOffset(topic,partitionIds,kafkaServers)).build();
 	}
 }
