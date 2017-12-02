@@ -31,17 +31,11 @@ public class KafkaHandler implements Closeable {
 
   public static KafkaHandler getKafkaHandler(Configure configure)  {
     kafkaHandler.configure = configure;
-    String[] bootstrapServers = configure.getProperty("kafka.properties","bootstrap.servers").split(",");
-    Arrays.sort(bootstrapServers);
-    kafkaHandler.consumerHandler = KafkaFactory.getFactory(configure).getConsumer(Arrays.toString(bootstrapServers));
     return kafkaHandler;
   }
 
   private KafkaHandler(Configure configure)  {
     this.configure = configure;
-    String[] bootstrapServers = configure.getProperty("kafka.properties","bootstrap.servers").split(",");
-    Arrays.sort(bootstrapServers);
-    consumerHandler = KafkaFactory.getFactory(configure).getConsumer(Arrays.toString(bootstrapServers));
   }
 
   public static void main(String[] args) throws ExecutionException {
@@ -120,12 +114,19 @@ public class KafkaHandler implements Closeable {
 
   }
 
-  public Map getTopicPartitionOffset(String topic, List<Integer> partitionIds) {
+  public Map getTopicPartitionOffset(String topic, List<Integer> partitionIds,String servers) {
     try {
+      if(servers == null){
+        servers = configure.getProperty("kafka.properties","bootstrap.servers","192.168.0.223:9092,192.168.0.224:9092,192.168.0.225:9092");
+      }
+      String[] kafkaServers = servers.split(",");
+      Arrays.sort(kafkaServers);
+      consumerHandler = KafkaFactory.getFactory(configure).getConsumer(Arrays.toString(kafkaServers));
       KafkaConsumer consumer = consumerHandler.getConsumer();
 
       List<PartitionInfo> partitions = consumer.partitionsFor(topic);
       List<Map<String,Object>> retPartitions = Lists.newArrayList();
+      consumerHandler.lock();
       for (PartitionInfo info : partitions) {
         if(!partitionIds.contains(info.partition())){
           continue;

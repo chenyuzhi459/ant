@@ -38,7 +38,7 @@ public class Cache {
 										@Override
 										public ConsumerHandler load(String s) throws Exception {
 											LOG.info("created ConsumerHandler with key:"+s);
-											return new ConsumerHandler(s,KafkaFactory.getFactory(configure).newConsumer());
+											return new ConsumerHandler(s,KafkaFactory.getFactory(configure).newConsumer(s));
 										}
 									}
 							);

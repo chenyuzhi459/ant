@@ -25,16 +25,14 @@ public class KafkaFactory {
 		return factory;
 	}
 
-	public  KafkaConsumer<byte[], byte[]> newConsumer() {
+	public  KafkaConsumer<byte[], byte[]> newConsumer(String consumerId) {
 
 		ClassLoader currCtxCl = Thread.currentThread().getContextClassLoader();
 		try {
 			Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
 
 			final Properties props = new Properties();
-			//            kafka.bootstrap.servers=192.168.0.220:9092,192.168.0.221:9092,192.168.0.222:9092
-			props.setProperty("bootstrap.servers", configure.getProperty("kafka.properties","bootstrap.servers","192.168.0.223:9092,192.168.0.224:9092,192.168.0.225:9092"));
-			//      props.setProperty("bootstrap.servers", "192.168.0.220:9092,192.168.0.221:9092,192.168.0.222:9092");
+			props.setProperty("bootstrap.servers", consumerId.replace("[","").replace("]",""));
 			props.setProperty("enable.auto.commit", configure.getProperty("kafka.properties","enable.auto.commit","false"));
 			props.setProperty("auto.offset.reset", configure.getProperty("kafka.properties","auto.offset.reset","none"));
 			props.setProperty("key.deserializer", configure.getProperty("kafka.properties","key.deserializer",ByteArrayDeserializer.class.getName()));

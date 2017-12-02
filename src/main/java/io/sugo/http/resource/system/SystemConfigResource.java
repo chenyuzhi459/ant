@@ -54,7 +54,7 @@ public class SystemConfigResource extends Resource {
         Arrays.sort(consumerIds);
         String consumerIdString = Arrays.toString(consumerIds);
         if(loadingCache.asMap().containsKey(consumerIdString)) {
-            loadingCache.put(consumerIds, new ConsumerHandler(consumerIdString, KafkaFactory.getFactory(newConfigure).newConsumer()));
+            loadingCache.put(consumerIds, new ConsumerHandler(consumerIdString, KafkaFactory.getFactory(newConfigure).newConsumer(consumerIdString)));
         }
     }
 
