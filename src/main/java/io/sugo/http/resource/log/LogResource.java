@@ -120,7 +120,8 @@ public class LogResource extends ForwardResource {
             @QueryParam("host") String host,
             @QueryParam("index") String index,
             @QueryParam("keyword") String keyword,
-            @QueryParam("keywordIndex") String keywordIndex
+            @QueryParam("keywordIndex") String keywordIndex,
+            @QueryParam("total") String total
     )
     {
         Map<String,Object> queryParams = Maps.newHashMap();
@@ -135,6 +136,9 @@ public class LogResource extends ForwardResource {
         }
         if(keywordIndex != null){
             queryParams.put("keywordIndex",keywordIndex);
+        }
+        if(total != null){
+            queryParams.put("total",total);
         }
 
         String url = String.format("%s%s:%s/logPage",  pathPre, host, agentPort);
