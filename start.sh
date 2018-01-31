@@ -1,9 +1,9 @@
-#!/bin/bash -eu
+    #!/bin/bash -eu
 
 ## Initializtion script for druid nodes
 ## Runs druid nodes as a daemon and pipes logs to log/ directory
 
-usage="Usage: run.sh (start|stop)"
+usage="Usage: start.sh (start|stop)"
 
 startStop=$1
 pid=robot.pid
@@ -46,6 +46,7 @@ case $startStop in
     echo $usage
     exit 1
     ;;
+
 esac
 
 

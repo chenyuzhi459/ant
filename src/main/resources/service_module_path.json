@@ -1,12 +1,4 @@
 {
-  "POSTGRES_SUGO": {
-    "Postgres": {
-      "dev220.sugo.net": {
-        "path": "/data1/postgres/log",
-        "file": ".*\\.log"
-      }
-    }
-  },
   "DRUIDIO_SUGO": {
     "Coordinator": {
       "dev222.sugo.net": {
@@ -51,6 +43,14 @@
         "path": "/data1/druidio/logs/jvm",
         "file": "middleManager.*\\.log",
         "port": 8091
+      }
+    }
+  },
+  "POSTGRES_SUGO": {
+    "Postgres": {
+      "dev220.sugo.net": {
+        "path": "/data1/postgres/log",
+        "file": ".*\\.log"
       }
     }
   },
