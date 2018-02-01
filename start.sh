@@ -21,7 +21,8 @@ case $startStop in
 
 
     nohup java -cp ./tindex-manager-1.0-SNAPSHOT.jar:lib/* io.sugo.http.ResourcesManager &
-    nodeType_PID=$!
+    sleep 2
+    nodeType_PID=`ps -ef | grep "tindex-manager" | grep -v "grep tindex"| awk '{print $2}'`
     echo $nodeType_PID > $pid
     echo "Started manager ($nodeType_PID)"
     ;;

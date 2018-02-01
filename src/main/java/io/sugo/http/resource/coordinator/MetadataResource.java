@@ -258,28 +258,30 @@ public class MetadataResource extends CoordinatorForwardResource {
         return httpMethod.get(url, queryParams);
     }
 
-    @POST
-    @Path("/datasources/{dataSourceName}/disableSegments")
+
+    @GET
+    @Path("/datasources/{dataSourceName}/disableSegments/{interval}/sortAndSearch")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDisableSegmentsByInterval(
             @PathParam("dataSourceName") String dataSourceName,
+            @PathParam("interval") String interval,
             @QueryParam("full") String full,
             @QueryParam("searchSegment") String searchSegment,
-            @QueryParam("isDescending") @DefaultValue("false") boolean isDescending,
-            final String intervals
+            @QueryParam("isDescending") @DefaultValue("false") boolean isDescending
     )
     {
         Map<String,Object> queryParams = Maps.newHashMap();
         if(full != null){
             queryParams.put("full",full);
         }
-        if(searchSegment != null){
+        if(searchSegment != null) {
             queryParams.put("searchSegment",searchSegment);
         }
         queryParams.put("isDescending",isDescending);
-        String url = String.format("%s/datasources/%s/disableSegments", pathPre, dataSourceName);
-        return httpMethod.post(url, intervals, queryParams);
+        String url = String.format("%s/datasources/%s/disableSegments/%s/sortAndSearch", pathPre, dataSourceName, interval);
+        return httpMethod.get(url, queryParams);
     }
+
 
     @DELETE
     @Path("/datasources/{dataSourceName}/disable")
