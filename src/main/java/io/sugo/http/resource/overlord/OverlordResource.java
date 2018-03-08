@@ -193,6 +193,16 @@ public class OverlordResource extends OverlordForwardResource {
     }
 
     @GET
+    @Path("/runningTasks/custom")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCustomRunningTasks(@Context final HttpServletRequest req)
+    {
+        String url = String.format("%s/runningTasks/custom", pathPre);
+        return httpMethod.get(url);
+    }
+
+
+    @GET
     @Path("/{supervisorId}/runningTasks")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSupervisorRunningTasks(
