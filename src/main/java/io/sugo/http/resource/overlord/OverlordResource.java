@@ -254,10 +254,6 @@ public class OverlordResource extends OverlordForwardResource {
             @Context final HttpServletRequest req,
             TaskSearchCondition taskSearchCondition
     ){
-        if(null == taskSearchCondition){
-            taskSearchCondition = new TaskSearchCondition();
-        }
-
         String url = String.format("%s/completeTasks/custom/count", pathPre);
         return httpMethod.postWithObjectParam(url,taskSearchCondition);
     }
