@@ -1,6 +1,5 @@
 package io.sugo.http.resource.log;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import io.sugo.http.resource.ForwardResource;
 
@@ -60,6 +59,39 @@ public class LogResource extends ForwardResource {
             queryParams.put("module",module);
         }
         String url = String.format("%s%s:%s/logList",  pathPre, hostname, agentPort);
+        return httpMethod.get(url,queryParams);
+    }
+
+    @GET
+    @Path("/download")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response logDownload(
+            @QueryParam("filepath") String filepath,
+            @QueryParam("hostname") String hostname
+    ) {
+        Map<String,Object> queryParams = Maps.newHashMap();
+        if(filepath != null){
+            queryParams.put("filepath",filepath);
+        }
+        String url = String.format("%s%s:%s/download",  pathPre, hostname, agentPort);
+        return httpMethod.get(url,queryParams);
+    }
+    @GET
+    @Path("/listFiles")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listFiles(
+            @QueryParam("service") String service,
+            @QueryParam("module") String module,
+            @QueryParam("hostname") String hostname
+    ) {
+        Map<String,Object> queryParams = Maps.newHashMap();
+        if(service != null){
+            queryParams.put("service",service);
+        }
+        if(module != null){
+            queryParams.put("module",module);
+        }
+        String url = String.format("%s%s:%s/listFiles",  pathPre, hostname, agentPort);
         return httpMethod.get(url,queryParams);
     }
 

@@ -20,7 +20,7 @@ case $startStop in
     fi
 
 
-    nohup java -cp ./tindex-manager-1.0-SNAPSHOT.jar:lib/* io.sugo.http.ResourcesManager &
+    nohup java -Djson.dir=/data1/logview/service_module_path.json -cp ./tindex-manager-1.0-SNAPSHOT.jar:lib/* io.sugo.http.ResourcesManager &
     sleep 2
     nodeType_PID=`ps -ef | grep "tindex-manager" | grep -v "grep tindex"| awk '{print $2}'`
     echo $nodeType_PID > $pid
