@@ -123,11 +123,11 @@ public class KafkaHandler implements Closeable {
       String[] kafkaServers = servers.split(",");
       Arrays.sort(kafkaServers);
       consumerHandler = KafkaFactory.getFactory(configure).getConsumer(Arrays.toString(kafkaServers));
+      consumerHandler.lock();
       KafkaConsumer consumer = consumerHandler.getConsumer();
-
       List<PartitionInfo> partitions = consumer.partitionsFor(topic);
       List<Map<String,Object>> retPartitions = Lists.newArrayList();
-      consumerHandler.lock();
+
       for (PartitionInfo info : partitions) {
         if(!partitionIds.contains(info.partition())){
           continue;
