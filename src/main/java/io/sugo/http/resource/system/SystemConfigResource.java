@@ -5,7 +5,6 @@ import com.google.common.cache.LoadingCache;
 import io.sugo.cache.Cache;
 import io.sugo.http.Configure;
 import io.sugo.http.resource.Resource;
-import io.sugo.kafka.ConsumerHandler;
 import io.sugo.kafka.factory.KafkaFactory;
 import org.apache.log4j.Logger;
 import javax.ws.rs.*;
@@ -49,12 +48,12 @@ public class SystemConfigResource extends Resource {
     }
 
     public void reloadActions(Configure newConfigure) {
-        LoadingCache loadingCache = Cache.getKafkaConsumerCache(newConfigure);
+        LoadingCache loadingCache = Cache.getKafkaConsumerCache();
         String[] consumerIds = newConfigure.getProperty("kafka.properties","bootstrap.servers").split(",");
         Arrays.sort(consumerIds);
         String consumerIdString = Arrays.toString(consumerIds);
         if(loadingCache.asMap().containsKey(consumerIdString)) {
-            loadingCache.put(consumerIds, new ConsumerHandler(consumerIdString, KafkaFactory.getFactory(newConfigure).newConsumer(consumerIdString)));
+            loadingCache.put(consumerIds, KafkaFactory.newConsumer(consumerIdString));
         }
     }
 

@@ -2,7 +2,6 @@ package io.sugo.kafka.factory;
 
 import io.sugo.cache.Cache;
 import io.sugo.http.Configure;
-import io.sugo.kafka.ConsumerHandler;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.log4j.Logger;
@@ -25,14 +24,17 @@ public class KafkaFactory {
 		return factory;
 	}
 
-	public  KafkaConsumer<byte[], byte[]> newConsumer(String consumerId) {
+	public  static KafkaConsumer<byte[], byte[]> newConsumer(String consumerId) {
 
 		ClassLoader currCtxCl = Thread.currentThread().getContextClassLoader();
 		try {
-			Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+			Thread.currentThread().setContextClassLoader(KafkaFactory.class.getClassLoader());
 
 			final Properties props = new Properties();
+			//获取最新配置
+			final Configure configure = Configure.getConfigure();
 			props.setProperty("bootstrap.servers", consumerId.replace("[","").replace("]",""));
+
 			props.setProperty("enable.auto.commit", configure.getProperty("kafka.properties","enable.auto.commit","false"));
 			props.setProperty("auto.offset.reset", configure.getProperty("kafka.properties","auto.offset.reset","none"));
 			props.setProperty("key.deserializer", configure.getProperty("kafka.properties","key.deserializer",ByteArrayDeserializer.class.getName()));
@@ -44,13 +46,14 @@ public class KafkaFactory {
 		}
 	}
 
-	public ConsumerHandler getConsumer() throws ExecutionException {
-		return Cache.getKafkaConsumerCache(configure).get("consumer");
+	public KafkaConsumer getConsumer() throws ExecutionException {
+		return Cache.getKafkaConsumerCache().get("consumer");
 	}
 
-	public ConsumerHandler getConsumer(String key)  {
+	public static KafkaConsumer getConsumer(String key)  {
 		try {
-			return Cache.getKafkaConsumerCache(configure).get(key);
+			LOG.info("conusmerId:"+key);
+			return Cache.getKafkaConsumerCache().get(key);
 		} catch (ExecutionException e) {
 			LOG.error(e.getMessage());
 		}

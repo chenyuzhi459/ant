@@ -19,13 +19,15 @@ import java.util.Map;
 
 import java.util.concurrent.ExecutionException;
 
-public class KafkaHandler implements Closeable {
+public class KafkaHandler  {
 
   private static final Logger LOG = Logger.getLogger(KafkaHandler.class);
 
   public static Configure configure;
 
-  private ConsumerHandler consumerHandler;
+
+
+  private KafkaConsumer kafkaConsumer;
 
 
   public static KafkaHandler kafkaHandler = new KafkaHandler(Configure.getConfigure());
@@ -51,8 +53,8 @@ public class KafkaHandler implements Closeable {
 
   public void printTopicPartition(String topic) {
     try{
-      KafkaConsumer consumer = consumerHandler.getConsumer();
-      consumerHandler.lock();
+      KafkaConsumer consumer = KafkaFactory.getConsumer("[192.168.0.220:9092, 192.168.0.221:9092, 192.168.0.222:9092]");
+
       List<PartitionInfo> partitions = consumer.partitionsFor(topic);
       for (PartitionInfo info : partitions) {
         TopicPartition tp = new TopicPartition(info.topic(), info.partition());
@@ -72,14 +74,14 @@ public class KafkaHandler implements Closeable {
         }
       }
     }finally {
-      consumerHandler.clear();
+
     }
 
   }
 
   public void printTopic() {
     try{
-      KafkaConsumer consumer = consumerHandler.getConsumer();
+      KafkaConsumer consumer = KafkaFactory.getConsumer("[192.168.0.220:9092, 192.168.0.221:9092, 192.168.0.222:9092]");
       System.out.println("-------------printTopic---------------");
       Map<String, List<PartitionInfo>> topicMap = consumer.listTopics();
       for (Map.Entry<String, List<PartitionInfo>> entry : topicMap.entrySet()) {
@@ -91,14 +93,14 @@ public class KafkaHandler implements Closeable {
         System.out.println();
       }
     }finally {
-      consumerHandler.clear();
+
     }
 
   }
 
   public void printTopicPartition() {
     try{
-      KafkaConsumer consumer = consumerHandler.getConsumer();
+      KafkaConsumer consumer = KafkaFactory.getConsumer("[192.168.0.220:9092, 192.168.0.221:9092, 192.168.0.222:9092]");
       System.out.println("-------------printTopicPartition---------------");
       Map<String, List<PartitionInfo>> topicMap = consumer.listTopics();
       for (String topic : topicMap.keySet()) {
@@ -110,7 +112,7 @@ public class KafkaHandler implements Closeable {
         }
       }
     }finally {
-      consumerHandler.clear();
+
     }
 
   }
@@ -122,46 +124,50 @@ public class KafkaHandler implements Closeable {
       }
       String[] kafkaServers = servers.split(",");
       Arrays.sort(kafkaServers);
-      consumerHandler = KafkaFactory.getFactory(configure).getConsumer(Arrays.toString(kafkaServers));
-      consumerHandler.lock();
-      KafkaConsumer consumer = consumerHandler.getConsumer();
-      List<PartitionInfo> partitions = consumer.partitionsFor(topic);
-      List<Map<String,Object>> retPartitions = Lists.newArrayList();
+//      kafkaConsumer = KafkaFactory.getFactory(configure).getConsumer(Arrays.toString(kafkaServers));
+//      consumerHandler = KafkaFactory.getFactory(configure).getConsumer(Arrays.toString(kafkaServers));
+//      consumerHandler.lock();
+      KafkaConsumer consumer = KafkaFactory.getConsumer(Arrays.toString(kafkaServers));
+      synchronized (consumer){
+        List<PartitionInfo> partitions = consumer.partitionsFor(topic);
+        List<Map<String,Object>> retPartitions = Lists.newArrayList();
 
-      for (PartitionInfo info : partitions) {
-        if(!partitionIds.contains(info.partition())){
-          continue;
-        }
-        TopicPartition tp = new TopicPartition(info.topic(), info.partition());
-        List<TopicPartition> topicPartitions = new ArrayList<>();
-        topicPartitions.add(tp);
-        consumer.assign(topicPartitions);
-        consumer.seekToBeginning(topicPartitions);
-        long startOffset = 0;
-        for (TopicPartition topicPartition : topicPartitions) {
-          startOffset = consumer.position(topicPartition);
-        }
-        consumer.seekToEnd(topicPartitions);
-        for (TopicPartition topicPartition : topicPartitions) {
-          long endOffset = consumer.position(topicPartition);
-          Map<String,Object> partitionMap = Maps.newLinkedHashMap();
-          partitionMap.put("partition",topicPartition.partition());
-          partitionMap.put("startOffset",startOffset);
-          partitionMap.put("endOffset",endOffset);
-          retPartitions.add(partitionMap);
-        }
+        for (PartitionInfo info : partitions) {
+          if(!partitionIds.contains(info.partition())){
+            continue;
+          }
+          TopicPartition tp = new TopicPartition(info.topic(), info.partition());
+          List<TopicPartition> topicPartitions = new ArrayList<>();
+          topicPartitions.add(tp);
+          consumer.assign(topicPartitions);
+          consumer.seekToBeginning(topicPartitions);
+          long startOffset = 0;
+          for (TopicPartition topicPartition : topicPartitions) {
+            startOffset = consumer.position(topicPartition);
+          }
+          consumer.seekToEnd(topicPartitions);
+          for (TopicPartition topicPartition : topicPartitions) {
+            long endOffset = consumer.position(topicPartition);
+            Map<String,Object> partitionMap = Maps.newLinkedHashMap();
+            partitionMap.put("partition",topicPartition.partition());
+            partitionMap.put("startOffset",startOffset);
+            partitionMap.put("endOffset",endOffset);
+            retPartitions.add(partitionMap);
+          }
 
+        }
+        return ImmutableMap.of("topic",topic,"partitions",retPartitions);
       }
-      return ImmutableMap.of("topic",topic,"partitions",retPartitions);
+
     } finally {
-      consumerHandler.clear();
+//      consumerHandler.clear();
     }
 
   }
 
   public void printTopicPartitionOffset() {
     try{
-      KafkaConsumer consumer = consumerHandler.getConsumer();
+      KafkaConsumer consumer = KafkaFactory.getConsumer("[192.168.0.220:9092, 192.168.0.221:9092, 192.168.0.222:9092]");
       Map<String, List<PartitionInfo>> topicMap = consumer.listTopics();
       for (Map.Entry<String, List<PartitionInfo>> entry : topicMap.entrySet()) {
         System.out.println(String.format("topic:%s, partitions:%d", entry.getKey(), entry.getValue().size()));
@@ -188,7 +194,7 @@ public class KafkaHandler implements Closeable {
       }
 
     }finally {
-      consumerHandler.clear();
+
     }
 
   }
@@ -280,8 +286,6 @@ public class KafkaHandler implements Closeable {
   //    }
   //  }
 
-  @Override public void close() throws IOException {
-    consumerHandler.close();
-  }
+
 
 }
