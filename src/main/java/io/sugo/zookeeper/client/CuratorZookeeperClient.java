@@ -3,6 +3,9 @@ package io.sugo.zookeeper.client;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.sugo.http.Configure;
 import org.apache.commons.lang.StringUtils;
@@ -36,6 +39,39 @@ public class CuratorZookeeperClient {
 
 	public static Map<String,Map<String,String>> getZkCacheMap() {
 		return zkCacheMap;
+	}
+
+	public static void main(String[] args) throws Exception {
+		ObjectMapper jsonMapper = new ObjectMapper();
+		CuratorZookeeperClient zkClient = new CuratorZookeeperClient(Configure.getConfigure());
+//		String parentPath = "/hmaster/servedSegments/dev223.sugo.net:8087";
+//		zkClient.readAll(parentPath);
+//		Map<String,String> childData = zkCacheMap.get(parentPath);
+//		for(Map.Entry<String,String> entry  : childData.entrySet()){
+//			if(Strings.isNullOrEmpty(entry.getValue())){
+//				LOG.info("value is empty:" + entry.getValue());
+//			}
+//
+//			LOG.info("path:" + entry.getKey() + "   data:" + entry.getValue());
+//
+//		}
+//		System.out.println(zkCacheMap.get(parentPath));
+
+		recreateNodeTest(zkClient,"/test1",CreateMode.EPHEMERAL,"test");
+	}
+
+	public static void  recreateNodeTest(CuratorZookeeperClient zkClient,
+										 String path, CreateMode mode, String content){
+		zkClient.create(path,mode,content);
+		LOG.info("createFirst");
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		zkClient.create(path,mode,content+"222");
+		LOG.info("createSecond");
+
 	}
 
 	private CuratorFramework newCurator(Configure configure) {
