@@ -5,7 +5,7 @@ import io.sugo.http.resource.ForwardResource;
 public class CoordinatorForwardResource extends ForwardResource{
 
     public CoordinatorForwardResource() {
-        ip = getIp("coordinator");
+        ip = getIp("druid.properties","coordinator");
     }
 
 }

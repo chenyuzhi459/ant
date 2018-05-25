@@ -5,6 +5,6 @@ import io.sugo.http.resource.ForwardResource;
 public class OverlordForwardResource extends ForwardResource {
 
     public OverlordForwardResource() {
-        ip = getIp("overlord");
+        ip = getIp("druid.properties","overlord");
     }
 }

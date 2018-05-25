@@ -60,11 +60,17 @@ public class SystemConfigResource extends Resource {
     public void updatePropertiesByPropertyName(String propertyName,Map<String, String> properties) throws IOException {
         String filePath = Configure.CONFIG_PATH + propertyName;
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath)));
-        Properties props = configure.getProperties(propertyName);
-        for(String key : properties.keySet()) {
-            props.setProperty(key.replaceAll("_","."), properties.get(key));
+        synchronized (configure){
+            Properties props = configure.getProperties(propertyName);
+            if(null == props) {
+                props = new Properties();
+            }
+            for(String key : properties.keySet()) {
+
+                props.setProperty(key.replaceAll("_","."), properties.get(key));
+            }
+            LOG.info("updateProperties new:" + props);
+            props.store(bw, "update properties");
         }
-        LOG.info("updateProperties new:" + props);
-        props.store(bw, "update properties");
     }
 }
