@@ -32,8 +32,6 @@ public class ForwardResource extends Resource{
         if(ips.length < 1) {
             LOG.error(nodeType + " ip is not exist!");
             return null;
-        } else if(ips.length == 1) {
-            return ips[0];
         } else {
             String leaderIp;
             for(String ip:ips){
