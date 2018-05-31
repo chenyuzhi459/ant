@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 @Path("uindex/druid/v2")
 public class UindexQueryResource extends ForwardResource{
 	public UindexQueryResource() {
-		ip = getIp("uindex.properties","broker");
+		ip = configure.getProperty("uindex.properties","broker.ip").split(",")[0];
 		pathPre = "http://" + ip + "/druid/v2";
 	}
 
