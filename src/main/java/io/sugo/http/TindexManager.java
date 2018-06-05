@@ -1,8 +1,5 @@
 package io.sugo.http;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.jersey.servlet.ServletContainer;
 import io.sugo.http.filter.CrossDomainSupportFilter;
 import org.apache.log4j.Logger;
@@ -17,16 +14,15 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
 import javax.servlet.DispatcherType;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ResourcesManager {
+public class TindexManager {
 
-    private static final Logger LOG = Logger.getLogger(ResourcesManager.class);
+    private static final Logger LOG = Logger.getLogger(TindexManager.class);
     public static int port;
     private static boolean developMode;
 
@@ -34,7 +30,7 @@ public class ResourcesManager {
     public static final CountDownLatch latch = new CountDownLatch(1);
 
     public static void main(String[] args) throws Exception {
-
+        Configure.initConfigPath(args.length > 0 ? args[0] : "src/main/resources/config/");
         Configure configure = Configure.getConfigure();
         port = configure.getInt("system.properties","http.port");
         developMode = configure.getBoolean("system.properties","develop.mode");
@@ -96,7 +92,7 @@ public class ResourcesManager {
         htmlHandler.setBaseResource(
                 new ResourceCollection(
                         new String[]{
-                                ResourcesManager.class.getClassLoader().getResource("dist").toExternalForm()
+                                TindexManager.class.getClassLoader().getResource("dist").toExternalForm()
                         }
                 )
         );

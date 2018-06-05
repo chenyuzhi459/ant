@@ -8,14 +8,21 @@ import java.util.*;
 
 public class Configure {
   private static final Logger LOG = Logger.getLogger(Configure.class);
-  public static final String CONFIG_PATH = "src/main/resources/config/";
+  public static  String CONFIG_PATH ;
 
   private Map<String, Properties> allProperties = new HashMap<>();
   private Map<String, Map<String, String>> allPropertiesMap = new HashMap<>();
 
-  private static Configure configure = new Configure();
+  private static Configure configure ;
 
   public static Configure getConfigure() {
+      if(configure == null){
+        synchronized (Configure.class){
+          if(configure == null){
+            configure = new Configure();
+          }
+        }
+      }
       return configure;
   }
 
@@ -24,7 +31,10 @@ public class Configure {
     return configure;
   }
 
-
+  public static void initConfigPath(String basePath){
+    LOG.info("config basePath:" + basePath);
+    CONFIG_PATH = basePath;
+  }
   private Configure() {
     loadConf(new File(CONFIG_PATH));
     getAllPropertiesToMap();

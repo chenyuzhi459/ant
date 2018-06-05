@@ -7,7 +7,7 @@ usage="Usage: start.sh (start|stop)"
 
 startStop=$1
 pid=robot.pid
-
+basepath=$(cd `dirname $0`; cd ..; pwd;)
 case $startStop in
 
   (start)
@@ -20,7 +20,7 @@ case $startStop in
     fi
 
 
-    nohup java -Djson.dir=/data1/logview/service_module_path.json -cp ./tindex-manager-1.0-SNAPSHOT.jar:lib/* io.sugo.http.ResourcesManager &
+    nohup java -Djson.dir=/data1/logview/service_module_path.json -cp tindex-manager-1.0-SNAPSHOT.jar:lib/* io.sugo.http.TindexManager conf &
     sleep 2
     nodeType_PID=`ps -ef | grep "tindex-manager" | grep -v "grep tindex"| awk '{print $2}'`
     echo $nodeType_PID > $pid
