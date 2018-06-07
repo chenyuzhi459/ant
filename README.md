@@ -23,7 +23,7 @@ tar -zxvf tindex-manager-1.0-SNAPSHOT-bin.tar.gz
 4. 进入解压目录并启动程序脚本
 ```
 cd tindex-manager-1.0-SNAPSHOT
-./start.sh start
+./cmd.sh start
 ```
 5. 在解压目录下查看日志输出确保程序正常启动
 ```
