@@ -1,8 +1,6 @@
 package io.sugo.http.resource.uindex;
 
 import com.google.common.collect.Maps;
-import io.sugo.http.resource.ForwardResource;
-import org.apache.log4j.Logger;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -17,7 +15,6 @@ import java.util.Map;
  */
 @Path("/druid/hmaster/v1")
 public class HMasterResource extends HMasterForwardResource{
-	private static final Logger LOG = Logger.getLogger(HMasterResource.class);
 	public HMasterResource() {
 		pathPre = "http://" + ip + "/druid/hmaster/v1";
 	}

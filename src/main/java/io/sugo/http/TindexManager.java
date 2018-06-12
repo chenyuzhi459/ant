@@ -1,8 +1,9 @@
 package io.sugo.http;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.servlet.ServletContainer;
 import io.sugo.http.filter.CrossDomainSupportFilter;
-import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -22,7 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TindexManager {
 
-    private static final Logger LOG = Logger.getLogger(TindexManager.class);
+
+    private static final Logger LOG = LogManager.getLogger(TindexManager.class);
     public static int port;
     private static boolean developMode;
 

@@ -1,9 +1,10 @@
 package io.sugo.http.resource;
 
 import io.sugo.http.jersey.JerseyClientFactory;
-import io.sugo.http.resource.uindex.HMasterResource;
 import io.sugo.http.util.HttpMethodProxy;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import javax.ws.rs.client.Client;
 import java.io.BufferedReader;
@@ -12,7 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class ForwardResource extends Resource{
-    private static final Logger LOG = Logger.getLogger(ForwardResource.class);
+    private static final Logger LOG = LogManager.getLogger(ForwardResource.class);
     protected  Client client;
     protected  HttpMethodProxy httpMethod;
     protected  String ip;

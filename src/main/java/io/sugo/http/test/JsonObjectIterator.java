@@ -5,8 +5,9 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class JsonObjectIterator implements Iterator, Closeable {
-    private static final Logger LOG = LoggerFactory.getLogger(JsonObjectIterator.class);
+    private static final Logger LOG = LogManager.getLogger(JsonObjectIterator.class);
     private static final TypeReference<HashMap> typeRef = new TypeReference<HashMap>() { };
 
     private final InputStream inputStream;

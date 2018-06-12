@@ -1,7 +1,7 @@
 package io.sugo.http.resource.coordinator;
 
 import com.google.common.collect.Maps;
-import org.apache.log4j.Logger;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -10,7 +10,6 @@ import java.util.Map;
 
 @Path("/druid/coordinator/v1/servers")
 public class ServersResource extends CoordinatorForwardResource {
-    protected static final Logger LOG = Logger.getLogger(ServersResource.class);
 
     public ServersResource() throws IOException {
         pathPre = "http://" + ip + "/druid/coordinator/v1/servers";

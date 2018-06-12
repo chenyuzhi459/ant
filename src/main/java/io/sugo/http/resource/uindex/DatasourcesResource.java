@@ -1,27 +1,18 @@
 package io.sugo.http.resource.uindex;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
 
 /**
  * Created by chenyuzhi on 18-5-23.
  */
 @Path("/druid/hmaster/v1/datasources")
 public class DatasourcesResource extends HMasterForwardResource {
-	private static final Logger LOG = Logger.getLogger(DatasourcesResource.class);
-
 	public DatasourcesResource() {
 		pathPre = "http://" + ip + "/druid/hmaster/v1/datasources";
 	}

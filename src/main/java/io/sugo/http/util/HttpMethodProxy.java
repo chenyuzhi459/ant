@@ -1,15 +1,16 @@
 package io.sugo.http.util;
 
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.util.Map;
 
 public class HttpMethodProxy {
-
+    private static final Logger LOG = LogManager.getLogger(HttpMethodProxy.class);
     private HttpMethod httpMethod;
-    protected static final Logger LOG = Logger.getLogger(HttpMethodProxy.class);
     private WebTarget target;
 
     public HttpMethodProxy(Client client) {

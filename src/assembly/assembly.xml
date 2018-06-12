@@ -40,10 +40,11 @@
         </fileSet>
         <fileSet>
             <directory>${project.basedir}/src/main/resources</directory>
-            <outputDirectory>/conf</outputDirectory>
+            <outputDirectory>conf</outputDirectory>
             <includes>
                 <include>config/*</include>
-                <include>service_module_path.json</include>
+                <!--<include>service_module_path.json</include>-->
+                <include>*</include>
             </includes>
         </fileSet>
     </fileSets>

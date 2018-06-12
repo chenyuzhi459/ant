@@ -9,9 +9,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.log4j.Logger;
-import java.io.Closeable;
-import java.io.IOException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 
 public class KafkaHandler  {
 
-  private static final Logger LOG = Logger.getLogger(KafkaHandler.class);
+  private static final Logger LOG = LogManager.getLogger(KafkaHandler.class);
 
   public static Configure configure;
 

@@ -4,7 +4,8 @@ import io.sugo.cache.Cache;
 import io.sugo.http.Configure;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -13,7 +14,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class KafkaFactory {
 
-	private static final Logger LOG = Logger.getLogger(KafkaFactory.class);
+	private static final Logger LOG = LogManager.getLogger(KafkaFactory.class);
 	private static  KafkaFactory factory = new KafkaFactory();
 	public static Configure configure;
 	private KafkaFactory(){

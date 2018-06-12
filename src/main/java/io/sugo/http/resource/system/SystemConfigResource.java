@@ -6,7 +6,9 @@ import io.sugo.cache.Cache;
 import io.sugo.http.Configure;
 import io.sugo.http.resource.Resource;
 import io.sugo.kafka.factory.KafkaFactory;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -18,8 +20,7 @@ import java.util.Properties;
 
 @Path("/druid/systemConfig")
 public class SystemConfigResource extends Resource {
-    private static final Logger LOG = Logger.getLogger(SystemConfigResource.class);
-
+    private static final Logger LOG = LogManager.getLogger(SystemConfigResource.class);
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getProperties() {

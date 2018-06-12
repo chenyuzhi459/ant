@@ -20,7 +20,7 @@ case $startStop in
     fi
 
 
-    nohup java -Djson.dir=/data1/logview/service_module_path.json -cp $basepath/tindex-manager-1.0-SNAPSHOT.jar:$basepath/lib/* $main_class $basepath/conf &
+    nohup java -Djson.dir=/data1/logview/service_module_path.json -Dlog.path=/data1/tindex-manager -cp $basepath/tindex-manager-1.0-SNAPSHOT.jar:$basepath/lib/* $main_class $basepath/conf/config &
 #    sleep 2
     nodeType_PID=`ps -ef | grep $main_class | grep -v "grep "| awk '{print $2}'`
 #    echo $nodeType_PID > $pid

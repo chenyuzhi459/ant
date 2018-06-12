@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.sugo.http.Configure;
 import org.apache.commons.lang.StringUtils;
@@ -15,7 +14,9 @@ import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher.Event;
@@ -25,7 +26,7 @@ import org.apache.zookeeper.data.Stat;
  * Created by chenyuzhi on 17-10-23.
  */
 public class CuratorZookeeperClient {
-	protected static final Logger LOG = Logger.getLogger(CuratorZookeeperClient.class);
+	private static final Logger LOG = LogManager.getLogger(CuratorZookeeperClient.class);
 
 	public static final String NONE_DATA = "None";
 	private CuratorFramework curator;

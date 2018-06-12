@@ -1,13 +1,14 @@
 package io.sugo.http;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
 public class Configure {
-  private static final Logger LOG = Logger.getLogger(Configure.class);
+  private static final Logger LOG = LogManager.getLogger(Configure.class);
   public static  String CONFIG_PATH ;
 
   private Map<String, Properties> allProperties = new HashMap<>();
@@ -33,6 +34,7 @@ public class Configure {
 
   public static void initConfigPath(String basePath){
     LOG.info("config basePath:" + basePath);
+    LOG.info("logPath=====" + System.getProperty("log.path"));
     CONFIG_PATH = basePath;
   }
   private Configure() {

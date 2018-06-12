@@ -3,14 +3,16 @@ package io.sugo.http.resource.system;
 import io.sugo.http.model.UserBean;
 import io.sugo.http.resource.Resource;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/login")
 public class LoginResource extends Resource {
-    private static final Logger LOG = Logger.getLogger(LoginResource.class);
+    private static final Logger LOG = LogManager.getLogger(LoginResource.class);
 
 
     @GET

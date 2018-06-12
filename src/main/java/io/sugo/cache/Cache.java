@@ -6,7 +6,8 @@ import io.sugo.kafka.factory.KafkaFactory;
 import io.sugo.zookeeper.ClientHandler;
 import io.sugo.zookeeper.factory.ZkFactory;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.TimeUnit;
 
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * Created by chenyuzhi on 17-10-23.
  */
 public class Cache {
-	private static final Logger LOG = Logger.getLogger(Cache.class);
+	private static final Logger LOG = LogManager.getLogger(Cache.class);
 	private static LoadingCache<String,KafkaConsumer> kafkaConsumerCache;
 	private static LoadingCache<String,ClientHandler> zkClientCache;
 	private static Object lock = new Object();
