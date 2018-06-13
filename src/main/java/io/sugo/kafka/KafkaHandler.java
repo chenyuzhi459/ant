@@ -22,30 +22,31 @@ public class KafkaHandler  {
 
   private static final Logger LOG = LogManager.getLogger(KafkaHandler.class);
 
-  public static Configure configure;
+//  public static Configure configure;
 
 
 
   private KafkaConsumer kafkaConsumer;
 
 
-  public static KafkaHandler kafkaHandler = new KafkaHandler(Configure.getConfigure());
+  public static KafkaHandler kafkaHandler = new KafkaHandler();
 
-  public static KafkaHandler getKafkaHandler(Configure configure)  {
-    kafkaHandler.configure = configure;
+  public static KafkaHandler getKafkaHandler()  {
+
     return kafkaHandler;
   }
 
-  private KafkaHandler(Configure configure)  {
-    this.configure = configure;
+  private KafkaHandler()  {
+
   }
 
   public static void main(String[] args) throws ExecutionException {
-    KafkaHandler api = new KafkaHandler(Configure.getConfigure());
+    Configure.initConfigPath(args.length > 0 ? args[0] : "src/main/resources/config/");
+    KafkaHandler api = new KafkaHandler();
 //    api.printTopic();
 //    api.printTopicPartition();
 
-    api.printTopicPartition("wuxianjiRT");
+    api.printTopicPartition("com_H1bIzqK2SZ_project_HyAKaKC5Z");
 //    api.printTopicPartitionOffset();
   }
 
@@ -119,7 +120,7 @@ public class KafkaHandler  {
   public Map getTopicPartitionOffset(String topic, List<Integer> partitionIds,String servers) {
     try {
       if(StringUtils.isBlank(servers)){
-        servers = configure.getProperty("kafka.properties","bootstrap.servers","192.168.0.223:9092,192.168.0.224:9092,192.168.0.225:9092");
+        servers = Configure.getConfigure().getProperty("kafka.properties","bootstrap.servers","192.168.0.223:9092,192.168.0.224:9092,192.168.0.225:9092");
       }
       String[] kafkaServers = servers.split(",");
       Arrays.sort(kafkaServers);
@@ -166,7 +167,7 @@ public class KafkaHandler  {
 
   public void printTopicPartitionOffset() {
     try{
-      KafkaConsumer consumer = KafkaFactory.getConsumer("[192.168.0.220:9092, 192.168.0.221:9092, 192.168.0.222:9092]");
+      KafkaConsumer consumer = KafkaFactory.getConsumer("[192.168.0.220:9092, 192.168.0.221:9092]");
       Map<String, List<PartitionInfo>> topicMap = consumer.listTopics();
       for (Map.Entry<String, List<PartitionInfo>> entry : topicMap.entrySet()) {
         System.out.println(String.format("topic:%s, partitions:%d", entry.getKey(), entry.getValue().size()));

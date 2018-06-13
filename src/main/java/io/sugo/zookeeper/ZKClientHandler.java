@@ -6,14 +6,14 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ClientHandler {
-//    private static final Logger LOG = Logger.getLogger(ClientHandler.class);
-    private static final Logger LOG = LogManager.getLogger(ClientHandler.class);
+public class ZKClientHandler {
+//    private static final Logger LOG = Logger.getLogger(ZKClientHandler.class);
+    private static final Logger LOG = LogManager.getLogger(ZKClientHandler.class);
     private final ReentrantLock lock = new ReentrantLock();
     private String clientId;
     private CuratorZookeeperClient client;
 
-    public ClientHandler(String clientId, CuratorZookeeperClient client) {
+    public ZKClientHandler(String clientId, CuratorZookeeperClient client) {
         this.clientId = clientId;
         this.client = client;
     }
@@ -21,7 +21,7 @@ public class ClientHandler {
     public CuratorZookeeperClient getClient() {
 //        lock.lock();
         LOG.info("clientId:"+clientId);
-        LOG.info("Hash:"+this);
+//        LOG.info("Hash:"+this);
         return client;
     }
 

@@ -44,7 +44,7 @@ public class CuratorZookeeperClient {
 
 	public static void main(String[] args) throws Exception {
 		ObjectMapper jsonMapper = new ObjectMapper();
-		CuratorZookeeperClient zkClient = new CuratorZookeeperClient(Configure.getConfigure());
+		CuratorZookeeperClient zkClient = new CuratorZookeeperClient(Configure.getConfigure().getProperty("zk.properties","zk.servers","192.168.0.225:2181,192.168.0.224:2181,192.168.0.223:2181"));
 //		String parentPath = "/hmaster/servedSegments/dev223.sugo.net:8087";
 //		zkClient.readAll(parentPath);
 //		Map<String,String> childData = zkCacheMap.get(parentPath);
@@ -75,21 +75,23 @@ public class CuratorZookeeperClient {
 
 	}
 
-	private CuratorFramework newCurator(Configure configure) {
+	private CuratorFramework newCurator(String servers) {
+		Configure configure = Configure.getConfigure();
 		int connectTimeout = configure.getInt("zk.properties","connect.timeout",15000);
 		int retryTime = configure.getInt("zk.properties","retry.time",Integer.MAX_VALUE);
 		int retryInterval = configure.getInt("zk.properties","retry.interval",1000);
 		String zkServers = configure.getProperty("zk.properties","zk.servers","192.168.0.225:2181,192.168.0.224:2181,192.168.0.223:2181");
-
+//		String zkServers = servers.replace("[","").replace("]","");
+		LOG.info("get new zkServers:"+zkServers);
 		return CuratorFrameworkFactory.builder().connectString(zkServers)
 				.retryPolicy(new RetryNTimes(retryTime, retryInterval))
 				.connectionTimeoutMs(connectTimeout).build();
 	}
 
-	public CuratorZookeeperClient(Configure configure) {
+	public CuratorZookeeperClient(String servers) {
 
 		if(curator == null) {
-			curator = newCurator(configure);
+			curator = newCurator(servers);
 			curator.getConnectionStateListenable().addListener(new ConnectionStateListener() {
 				public void stateChanged(CuratorFramework client, ConnectionState state) {
 					if (state == ConnectionState.LOST) {

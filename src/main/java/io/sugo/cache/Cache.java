@@ -3,7 +3,7 @@ package io.sugo.cache;
 import com.google.common.cache.*;
 import io.sugo.http.Configure;
 import io.sugo.kafka.factory.KafkaFactory;
-import io.sugo.zookeeper.ClientHandler;
+import io.sugo.zookeeper.ZKClientHandler;
 import io.sugo.zookeeper.factory.ZkFactory;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class Cache {
 	private static final Logger LOG = LogManager.getLogger(Cache.class);
 	private static LoadingCache<String,KafkaConsumer> kafkaConsumerCache;
-	private static LoadingCache<String,ClientHandler> zkClientCache;
+	private static LoadingCache<String,ZKClientHandler> zkClientCache;
 	private static Object lock = new Object();
 
 
@@ -37,9 +37,16 @@ public class Cache {
 							.build(
 									new CacheLoader<String, KafkaConsumer>() {
 										@Override
-										public KafkaConsumer load(String s) throws Exception {
-											LOG.info("created KafkaConsumer with key:"+s);
-											return KafkaFactory.newConsumer(s);
+										public KafkaConsumer load(String s)  {
+											KafkaConsumer kafkaConsumer = null;
+											try{
+												LOG.info("created KafkaConsumer with key:"+s);
+												kafkaConsumer = KafkaFactory.newConsumer(s);
+											}catch (Exception e){
+												LOG.error(e.getMessage(),e);
+											}
+
+											return kafkaConsumer;
 										}
 									}
 							);
@@ -50,7 +57,7 @@ public class Cache {
 		return kafkaConsumerCache;
 	}
 
-	public static LoadingCache<String,ClientHandler> getZkClientCache(final Configure configure) {
+	public static LoadingCache<String,ZKClientHandler> getZkClientCache() {
 		if(null == zkClientCache){        //lazy initialization
 			synchronized (lock){
 				if(null == zkClientCache){
@@ -58,21 +65,28 @@ public class Cache {
 					zkClientCache = CacheBuilder.newBuilder()
 							.maximumSize(100)
 							.expireAfterAccess(10, TimeUnit.MINUTES)
-							.removalListener(new RemovalListener<String, ClientHandler>() {
-								public void onRemoval(RemovalNotification<String, ClientHandler> removal){
+							.removalListener(new RemovalListener<String, ZKClientHandler>() {
+								public void onRemoval(RemovalNotification<String, ZKClientHandler> removal){
 									removal.getValue().close();
 								}
 							})
 							.build(
-									new CacheLoader<String, ClientHandler>() {
+									new CacheLoader<String, ZKClientHandler>() {
 										@Override
-										public ClientHandler load(String s) throws Exception {
-											LOG.info("created ConsumerHandler with key:"+s);
-											return new ClientHandler(s, ZkFactory.getFactory(configure).newClient());
+										public ZKClientHandler load(String s)   {
+											ZKClientHandler zkClientHandler = null;
+											try{
+												LOG.info("created zkClientHandler with key:"+s);
+												zkClientHandler = new ZKClientHandler(s, ZkFactory.getFactory().newClient(s));
+											}catch(Exception e){
+												LOG.error(e.getMessage(),e);
+											}
+
+											return zkClientHandler;
 										}
 									}
 							);
-					LOG.info("kafkaConsumerCache has created successfully...");
+					LOG.info("zkClientCache has created successfully...");
 				}
 			}
 		}

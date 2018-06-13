@@ -25,7 +25,7 @@ public class zkResource extends Resource {
 	private final CuratorZookeeperClient zkClient;
 
 	public zkResource() throws ExecutionException {
-		this.zkClient = ZkFactory.getFactory(configure).getClientHandler().getClient();
+		this.zkClient = ZkFactory.getFactory().getClientHandler().getClient();
 //				new CuratorZookeeperClient(configure);
 	}
 

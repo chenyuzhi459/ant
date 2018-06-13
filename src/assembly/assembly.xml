@@ -42,9 +42,9 @@
             <directory>${project.basedir}/src/main/resources</directory>
             <outputDirectory>conf</outputDirectory>
             <includes>
-                <include>config/*</include>
                 <!--<include>service_module_path.json</include>-->
-                <include>*</include>
+                <include>config/*</include>
+                <include>*.*</include>
             </includes>
         </fileSet>
     </fileSets>

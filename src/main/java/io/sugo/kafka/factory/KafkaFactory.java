@@ -15,15 +15,11 @@ import java.util.concurrent.ExecutionException;
 public class KafkaFactory {
 
 	private static final Logger LOG = LogManager.getLogger(KafkaFactory.class);
-	private static  KafkaFactory factory = new KafkaFactory();
-	public static Configure configure;
+
 	private KafkaFactory(){
 	}
 
-	public static KafkaFactory getFactory(Configure conf){
-		configure = conf;
-		return factory;
-	}
+
 
 	public  static KafkaConsumer<byte[], byte[]> newConsumer(String consumerId) {
 

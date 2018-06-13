@@ -59,7 +59,8 @@ public class SystemConfigResource extends Resource {
     }
 
     public void updatePropertiesByPropertyName(String propertyName,Map<String, String> properties) throws IOException {
-        String filePath = Configure.CONFIG_PATH + propertyName;
+        String filePath =  Configure.CONFIG_PATH + (Configure.CONFIG_PATH.endsWith("/") ?  "" : "/")+ propertyName;
+
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath)));
         synchronized (configure){
             Properties props = configure.getProperties(propertyName);

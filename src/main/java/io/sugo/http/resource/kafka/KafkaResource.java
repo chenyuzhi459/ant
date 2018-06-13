@@ -16,7 +16,7 @@ public class KafkaResource extends Resource {
 	private final KafkaHandler kafkaHandler;
 
 	public KafkaResource() throws ExecutionException {
-		this.kafkaHandler = KafkaHandler.getKafkaHandler(configure);
+		this.kafkaHandler = KafkaHandler.getKafkaHandler();
 	}
 
 	@POST

@@ -24,7 +24,6 @@ public class ChatHandlerResource extends ForwardResource {
             @QueryParam("location") String location
     ) {
         String url = MessageFormat.format("{0}/chat/{1}/summary", MessageFormat.format(pathPre, location), handlerId);
-        System.out.println("url:" + url);
 
         return httpMethod.get(url);
     }
