@@ -51,15 +51,20 @@ public class ForwardResource extends Resource{
 
 
     public String getLeaderIp(String ip, String nodeType) throws IOException {
+        String result = null;
         if(nodeType.equals("overlord")) {
             nodeType = "indexer";
         }
         String url = String.format("http://%s/druid/%s/v1/leader", ip, nodeType);
         Object entity = httpMethod.get(url).getEntity();
         if(entity instanceof InputStream){
-            return getStrFromInputSteam((InputStream)entity);
+            result= getStrFromInputSteam((InputStream)entity);
+        }else {
+            result = (String)httpMethod.get(url).getEntity();
         }
-        return (String)httpMethod.get(url).getEntity();
+
+        result = result.replace("http://" ,"");
+        return result;
     }
 
     private String getStrFromInputSteam(InputStream in) throws IOException {

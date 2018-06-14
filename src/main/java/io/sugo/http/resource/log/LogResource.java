@@ -2,6 +2,9 @@ package io.sugo.http.resource.log;
 
 import com.google.common.collect.Maps;
 import io.sugo.http.resource.ForwardResource;
+import io.sugo.http.resource.Resource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -11,7 +14,7 @@ import java.util.Map;
 
 @Path("/log")
 public class LogResource extends ForwardResource {
-
+    private static final Logger LOG = LogManager.getLogger(LogResource.class);
     String agentPort;
 
     public LogResource() {
@@ -25,6 +28,7 @@ public class LogResource extends ForwardResource {
     public Response logConfig() {
 
         String jsonDir = configure.getProperty("system.properties","json.dir");
+        LOG.info("jsonDir:"+jsonDir);
         StringBuilder sb = new StringBuilder();
         try {
             File json = new File(jsonDir);
