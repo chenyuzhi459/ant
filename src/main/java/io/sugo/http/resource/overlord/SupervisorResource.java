@@ -29,12 +29,16 @@ public class SupervisorResource extends OverlordForwardResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response specGetAll(
-            @QueryParam("full") String full
+            @QueryParam("full") String full,
+            @QueryParam("simple") String simple
     )
     {
         Map<String,Object> queryParams = Maps.newHashMap();
         if(null != full){
             queryParams.put("full",full);
+        }
+        if(null != simple){
+            queryParams.put("simple",simple);
         }
         String url = String.format("%s", pathPre);
         return httpMethod.get(url,queryParams);
