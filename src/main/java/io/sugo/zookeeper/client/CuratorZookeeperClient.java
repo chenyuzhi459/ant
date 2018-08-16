@@ -80,8 +80,8 @@ public class CuratorZookeeperClient {
 		int connectTimeout = configure.getInt("zk.properties","connect.timeout",15000);
 		int retryTime = configure.getInt("zk.properties","retry.time",Integer.MAX_VALUE);
 		int retryInterval = configure.getInt("zk.properties","retry.interval",1000);
-		String zkServers = configure.getProperty("zk.properties","zk.servers","192.168.0.225:2181,192.168.0.224:2181,192.168.0.223:2181");
-//		String zkServers = servers.replace("[","").replace("]","");
+//		String zkServers = configure.getProperty("zk.properties","zk.servers","192.168.0.225:2181,192.168.0.224:2181,192.168.0.223:2181");
+		String zkServers = servers.replace("[","").replace("]","").replace(" ", "");
 		LOG.info("get new zkServers:"+zkServers);
 		return CuratorFrameworkFactory.builder().connectString(zkServers)
 				.retryPolicy(new RetryNTimes(retryTime, retryInterval))
