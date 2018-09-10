@@ -103,6 +103,18 @@ public class RedisClientWrapper{
     }
   }
 
+  public Long del(String... listKey) {
+    if (clusterMode) {
+      return cluster.del(listKey);
+    } else if(sentinelMode){
+      try (Jedis resource = sentinelPool.getResource()) {
+        return resource.del(listKey);
+      }
+    } else {
+      return jedis.del(listKey);
+    }
+  }
+
   public boolean exists(String listKey){
     if (clusterMode) {
       return cluster.exists(SafeEncoder.encode(listKey));

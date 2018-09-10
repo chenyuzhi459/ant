@@ -294,60 +294,50 @@ public class UserGroupHelper {
 		UserGroupQuery finalUserGroupQuery = (UserGroupQuery)finalGroup.get("query");
 		DataRedisIOFactory finalUserGroupDataConfig = finalUserGroupQuery.getDataConfig();
 		String finalUserGroupKey = finalUserGroupDataConfig.getGroupId();
-		RedisClientWrapper finalUserGroupRedisClient = getRedisClient(finalUserGroupDataConfig.getRedisInfo());
 		String finalUserGroupBackupKey = generateRedisBackUpKey(finalUserGroupKey);
+		RedisClientWrapper finalUserGroupRedisClient = getRedisClient(finalUserGroupDataConfig.getRedisInfo());
+		Map<RedisInfo, Set<String>> tempUserGroupMap = new HashMap<>();
 		boolean backup = false;
 		try {
 			if(userGroupList.isEmpty()){
 				return Collections.singletonList(ImmutableMap.of("error", "userGroup array is empty"));
 			}
-			if(userGroupList.size() == 1){
-				Map<String, Object> userGroupMap = userGroupList.get(0);
-				String type = (String)userGroupMap.get("type");
-				if(type.equals("tindex")|| type.equals("uindex")){
-					String brokerUrl = (String) userGroupMap.get("brokerUrl");
-					UserGroupQuery query = (UserGroupQuery)userGroupMap.get("query");
-					result = getUserGroupQueryResult(query, brokerUrl);
-				}else {
-					result = Collections.singletonList(ImmutableMap.of("message", "the userGroup has in redis. "));
-				}
-				return result;
-			}
 
 			UserGroupSerDeserializer itemSerDeserializer;
+
 			for(int i = 0; i < userGroupList.size(); i++){
 				Map<String, Object> userGroupMap = userGroupList.get(i);
 				String type = (String)userGroupMap.get("type");
+				boolean isTempUserGroup = type.equals("tindex") || type.equals("uindex");
 				String op = (String)userGroupMap.getOrDefault("op","");
 				UserGroupQuery query = (UserGroupQuery)userGroupMap.get("query");
-				if(type.equals("tindex")|| type.equals("uindex")){
+				if(isTempUserGroup){
 					String brokerUrl = (String) userGroupMap.get("brokerUrl");
 					getUserGroupQueryResult(query, brokerUrl);
+					Set<String> userGroupKeys = tempUserGroupMap.computeIfAbsent(query.getDataConfig().getRedisInfo(), k -> new HashSet<>());
+					userGroupKeys.add(query.getDataConfig().getGroupId());
 				}
 
 				itemSerDeserializer = new UserGroupSerDeserializer(query.getDataConfig());
+				itemSerDeserializer.deserialize(i == 0 ? acculatedData :currentData);
 				if(i == 0){
-					itemSerDeserializer.deserialize(acculatedData);
 					continue;
 				}
-				itemSerDeserializer.deserialize(currentData);
 				if(!op.isEmpty()){
 					acculatedData = doDataOperation(op, acculatedData, currentData);
 				}
 				currentData.clear();
 			}
 
-
-			boolean isAppend = (Boolean) finalGroup.getOrDefault("append", false);
-
 			UserGroupSerDeserializer finalSerDeserializer = new UserGroupSerDeserializer(finalUserGroupDataConfig);
-
+			boolean isAppend = (Boolean) finalGroup.getOrDefault("append", false);
 			if(isAppend){
+				// do 'append operation'
 				finalSerDeserializer.deserialize(currentData);
 				acculatedData = doDataOperation(OR_OPERATION, acculatedData, currentData);
 				currentData.clear();
 			}
-			// do backup orperation
+			// do 'backup orperation'
 			backup = backupRedisData(finalUserGroupRedisClient, finalUserGroupKey, finalUserGroupBackupKey);
 			int finalLen = writeDataToRedis(finalSerDeserializer, acculatedData);
 			backup = false;
@@ -365,7 +355,9 @@ public class UserGroupHelper {
 			currentData.clear();
 			acculatedData = null;
 			currentData = null;
-
+			tempUserGroupMap.forEach((redisInfo, userGroupKey) ->{
+				deleteUserGroups(redisInfo, userGroupKey.toArray(new String[userGroupKey.size()]));
+			});
 			if(finalUserGroupRedisClient != null){
 				if(backup){
 					finalUserGroupRedisClient.rename(finalUserGroupBackupKey, finalUserGroupKey);
@@ -416,6 +408,13 @@ public class UserGroupHelper {
 	private Set<String> DataDifference(Set<String> data1, Set<String> data2){
 		data1.removeAll(data2);
 		return data1;
+	}
+
+	private Long deleteUserGroups(RedisInfo redisInfo, String... userGroupKeys){
+		RedisClientWrapper redisClient = getRedisClient(redisInfo);
+		Long result = redisClient.del(userGroupKeys);
+		redisClient.close();
+		return result;
 	}
 
 	private boolean backupRedisData(RedisClientWrapper redisClient, String redisKey, String backupKey){
