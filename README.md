@@ -31,7 +31,7 @@ tail -200f nohup.out
 ```
 输入以上命令后,若日志最后一行输出以下信息说明程序正常启动
 ``` 
-INFO [io.sugo.http.TindexManager]: start...in 6660
+INFO [io.sugo.server.http.AntServer]: start...in 6660
 ```
 6. 开始使用系统   
 在浏览器中输入以下url进行访问,并输入账号和密码(目前账号密码均为:`admin`)
@@ -77,7 +77,7 @@ git clone git@github.com:Datafruit/tindex-manager.git
 
 3. 从`src/main/java/io/sugo/http/ResourcesManager.java`源文件中的`main`方法启动后台程序,若控制台最后一行输出以下信息说明程序正常启动
 ``` 
-INFO [io.sugo.http.TindexManager]: start...in 6660
+INFO [io.sugo.server.http.AntServer]: start...in 6660
 ```
 >后端工程注意事项:    
 1. 在第三步启动前要确保`tindex-manager/src/main/resources/config/system.properties`配置文件中的`develop.mode`属性设置为`true`   
