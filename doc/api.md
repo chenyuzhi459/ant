@@ -11,7 +11,7 @@ body参数:
 
     参数名 | 是否必须 | 类型 | 描述  | 默认值
     ---- | ----- | --- | --- | ----    
-    brokerUrl | 是 | string | 表示"tindex|uindex"引擎的broker地址 |
+    brokerUrl | 是 | string | 表示`tindex|uindex`引擎的broker地址 |
     query| 是 | obeject | `UserGroupQuery`的json对象,具体配置请参考[Sugo-UserGroupQuery查询接口](http://docs.sugo.io/developer/query/query.html#UserGroup) |
     append | 是 | boolean | 表示对用户分群的操作,false表示进行覆盖操作, true表示进行累加操作 |
  
