@@ -17,18 +17,20 @@
 * under the License.
 */
 
-package io.sugo.server.guice;
+package io.sugo.common.guice.annotations;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
+import com.google.inject.ScopeAnnotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  */
-public class PioGuiceExtensions implements Module
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+@ScopeAnnotation
+public @interface LazySingleton
 {
-  @Override
-  public void configure(Binder binder)
-  {
-    binder.bindScope(LazySingleton.class, PioScopes.SINGLETON);
-  }
 }

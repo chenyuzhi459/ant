@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
  * Mail: janpychou@qq.com
  */
 public class RedisClientWrapper{
-//  private final static Logger log = new Logger(RedisClientWrapper.class);
   private static final Logger log = LogManager.getLogger(RedisClientWrapper.class);
   private Jedis jedis;
   private JedisCluster cluster;

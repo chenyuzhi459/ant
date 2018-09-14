@@ -1,4 +1,4 @@
-package io.sugo.server.http.dto;
+package io.sugo.server.pathanalysis.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -45,6 +45,9 @@ public class PathAnalysisDto {
      */
     @JsonProperty
     private String endDate;
+
+    @JsonProperty
+    private String brokerUrl;
 
     public static class ColumnName {
         @JsonProperty
@@ -151,6 +154,15 @@ public class PathAnalysisDto {
 
     public void setFilters(Object filters) {
         this.filters = filters;
+    }
+
+    public String getBrokerUrl() {
+        return brokerUrl;
+    }
+
+    public PathAnalysisDto setBrokerUrl(String brokerUrl) {
+        this.brokerUrl = brokerUrl;
+        return this;
     }
 
     public String buildScanQuery() throws Exception {
@@ -687,21 +699,6 @@ public class PathAnalysisDto {
             e.printStackTrace();
         }
 
-        /*long before = System.currentTimeMillis();
-        String path = "蠢蠢欲动,激情无限,欲罢不能,爷不行了|";
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < 1000000; i++) {
-            sb.append(path);
-        }
-        byte[] bytes = sb.toString().getBytes();
-        long after = System.currentTimeMillis();
-        System.out.println("生成路径耗时：" + (after - before) + "ms");
-
-        String paths = new String(bytes);
-        String[] pathList = paths.split("\\|");
-        System.out.println("路径个数：" + pathList.length);
-        long now = System.currentTimeMillis();
-        System.out.println("反序列化路径耗时：" + (now - after) + "ms");*/
     }
 
 }

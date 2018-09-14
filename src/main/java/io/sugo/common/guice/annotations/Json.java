@@ -17,7 +17,7 @@
 * under the License.
 */
 
-package io.sugo.server.guice.annotations;
+package io.sugo.common.guice.annotations;
 
 import com.google.inject.BindingAnnotation;
 

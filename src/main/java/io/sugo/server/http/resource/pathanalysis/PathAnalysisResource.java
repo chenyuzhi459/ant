@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
-import io.sugo.server.guice.annotations.Json;
-import io.sugo.server.http.dto.PathAnalysisDto;
+import io.sugo.common.guice.annotations.Json;
+import io.sugo.server.pathanalysis.dto.PathAnalysisDto;
 import io.sugo.server.pathanalysis.PathAnalyzer;
 import io.sugo.server.pathanalysis.model.AccessTree;
 import org.apache.logging.log4j.LogManager;
@@ -43,8 +43,7 @@ public class PathAnalysisResource {
         try {
             String queryStr = pathAnalysisDto.buildScanQuery();
             AccessTree tree = pathAnalyzer.getAccessTree(queryStr,
-                    pathAnalysisDto.getHomePage(), false);
-
+                    pathAnalysisDto.getHomePage(), false, pathAnalysisDto.getBrokerUrl());
             return Response.ok(tree == null ? Collections.EMPTY_LIST : tree).build();
         } catch (Throwable e) {
             return Response.serverError().entity(e.getMessage()).build();
@@ -60,7 +59,7 @@ public class PathAnalysisResource {
         try {
             String queryStr = pathAnalysisDto.buildScanQuery();
             AccessTree tree = pathAnalyzer.getAccessTree(queryStr,
-                    pathAnalysisDto.getHomePage(), true);
+                    pathAnalysisDto.getHomePage(), true, pathAnalysisDto.getBrokerUrl());
 
             return Response.ok(tree == null ? Collections.EMPTY_LIST : tree).build();
         } catch (Throwable e) {
@@ -76,6 +75,7 @@ public class PathAnalysisResource {
 
         Preconditions.checkNotNull(pathAnalysisDto.getDataSource(), "Data source can not be null.");
         Preconditions.checkNotNull(pathAnalysisDto.getHomePage(), "Home page can not be null.");
+        Preconditions.checkNotNull(pathAnalysisDto.getBrokerUrl(), "BrokerUrl can not be null.");
         Preconditions.checkNotNull(pathAnalysisDto.getDimension().getSessionId(), "SessionId can not be null.");
         Preconditions.checkNotNull(pathAnalysisDto.getDimension().getUserId(), "UserId can not be null.");
         Preconditions.checkNotNull(pathAnalysisDto.getDimension().getPageName(), "PageName can not be null.");

@@ -3,12 +3,12 @@ package io.sugo.server.redis;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = DataRedisIOFactory.class)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = RedisDataIOFetcher.class)
 @JsonSubTypes(value = {
-		@JsonSubTypes.Type(name = DataIOFactory.REDIS, value = DataRedisIOFactory.class)
+		@JsonSubTypes.Type(name = DataIOFetcher.REDIS, value = RedisDataIOFetcher.class)
 
 })
-public interface DataIOFactory
+public interface DataIOFetcher
 {
 	String REDIS = "redis";
 

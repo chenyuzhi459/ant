@@ -6,7 +6,6 @@ import io.sugo.server.http.jetty.listener.GuiceServletListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.servlet.ServletContainer;
-import io.sugo.server.http.filter.CrossDomainSupportFilter;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -89,9 +88,7 @@ public class AntServer {
 
         ServletHolder servletHolder = new ServletHolder(ServletContainer.class);
         apiHandler.addServlet(servletHolder, "/*");
-//        if(developMode){
-//            apiHandler.addFilter(CrossDomainSupportFilter.class,"/*", EnumSet.of(DispatcherType.REQUEST));
-//        }
+
         // add GuiceFilter to support GuiceServletListener
         apiHandler.addFilter(GuiceFilter.class,"/*", EnumSet.of(DispatcherType.REQUEST));
         apiHandler.addEventListener(new GuiceServletListener());

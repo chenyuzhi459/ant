@@ -75,7 +75,7 @@ public class RedisInfo {
 
   @Override
   public String toString() {
-    return "DataRedisIOFactory{" +
+    return "RedisDataIOFetcher{" +
         "nodes='" + hostAndPorts + '\'' +
         ", clusterMode='" + clusterMode + '\'' +
         ", sentinelMode='" + sentinelMode + '\'' +

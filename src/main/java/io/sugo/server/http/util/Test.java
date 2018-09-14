@@ -33,10 +33,7 @@ public class Test {
 
 		HttpMethodProxy httpMethodProxy = new HttpMethodProxy(JerseyClientFactory.create());
 		String url = "http://192.168.0.225:8090/druid/indexer/v1/testBean";
-//		TaskSearchCondition searchCondition = new TaskSearchCondition("a","b","SUCCESS");
-//		searchCondition.setTaskPageItem(ImmutableMap.of("size",10,"offset",1));
-//		Response response = httpMethodProxy.postWithObjectParam(url,searchCondition);
-//		System.out.println(response.getEntity());
+
 	}
 
 }

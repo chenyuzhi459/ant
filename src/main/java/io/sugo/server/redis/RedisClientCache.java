@@ -36,7 +36,7 @@ public class RedisClientCache {
               String key = notification.getKey();
               BlockingQueue<RedisClientWrapper> oldVal = notification.getValue();
               RemovalCause cause = notification.getCause();
-              logger.info(String.format("redis[%s] connections[%d], evicted[%s], cause:[%s]",
+              logger.info(String.format("redis[%s] connections[%d], removed[%s], cause:[%s]",
                   key, oldVal.size(), notification.wasEvicted(), cause));
 
               if (oldVal.size() > 0) {
@@ -63,7 +63,7 @@ public class RedisClientCache {
     }, 60, 60, TimeUnit.SECONDS);
   }
 
-  public void releaseRedisClientWrapper(RedisInfo redisInfo, RedisClientWrapper wrapper) {
+  public void releaseRedisClient(RedisInfo redisInfo, RedisClientWrapper wrapper) {
     try {
       keys.add(redisInfo.getClientStr());
       BlockingQueue<RedisClientWrapper> queue = cache.get(redisInfo.getClientStr(), () -> new LinkedBlockingQueue<>());
@@ -73,7 +73,7 @@ public class RedisClientCache {
     }
   }
 
-  public RedisClientWrapper getRedisClientWrapper(RedisInfo redisInfo) {
+  public RedisClientWrapper getRedisClient(RedisInfo redisInfo) {
     RedisClientWrapper wrapper;
     BlockingQueue<RedisClientWrapper> queue;
     try {

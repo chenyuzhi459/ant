@@ -17,20 +17,28 @@
 * under the License.
 */
 
-package io.sugo.server.guice.annotations;
+package io.sugo.common.guice;
 
-import com.google.inject.BindingAnnotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.google.inject.Key;
+import com.google.inject.Provider;
+import com.google.inject.Scope;
 
 /**
  */
-@BindingAnnotation
-@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface JSR311Resource
+public class AntScopes
 {
+  public static final Scope SINGLETON = new Scope()
+  {
+    @Override
+    public <T> Provider<T> scope(Key<T> key, Provider<T> unscoped)
+    {
+      return com.google.inject.Scopes.SINGLETON.scope(key, unscoped);
+    }
+
+    @Override
+    public String toString()
+    {
+      return "DruidScopes.SINGLETON";
+    }
+  };
 }

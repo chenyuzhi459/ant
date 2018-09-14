@@ -1,13 +1,9 @@
 package io.sugo.server.pathanalysis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-
 import io.sugo.common.utils.JsonObjectIterator;
 import io.sugo.server.http.AntServer;
-import io.sugo.server.pathanalysis.fetcher.DataFetcherConfig;
 import io.sugo.server.pathanalysis.model.AccessPath;
 import io.sugo.server.pathanalysis.model.AccessTree;
 import io.sugo.server.pathanalysis.model.PathNode;
@@ -16,7 +12,6 @@ import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
-
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,22 +21,16 @@ import java.util.List;
  */
 public class PathAnalyzer {
 
-//    private static final Logger log = new Logger(PathAnalyzer.class);
     private static final Logger log = LogManager.getLogger(AntServer.class);
-    private static final ObjectMapper jsonMapper = new ObjectMapper();
-
-    private final String queryUrl;
 
     private final TreePlanter planter;
 
     @Inject
-    public PathAnalyzer(DataFetcherConfig config, TreePlanter planter) {
-        Preconditions.checkNotNull(config.getUrl(), "must specify parameter: pio.broker.data.fetcher.url");
-        this.queryUrl = config.getUrl();
+    public PathAnalyzer(TreePlanter planter) {
         this.planter = planter;
     }
 
-    public AccessTree getAccessTree(String queryStr, String homePage, boolean reversed) {
+    public AccessTree getAccessTree(String queryStr, String homePage, boolean reversed, String queryUrl) {
         long before = System.currentTimeMillis();
         log.info("Begin to path analysis...");
         log.info(String.format("Scan query url: %s . Param: %s", queryUrl, queryStr));

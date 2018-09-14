@@ -1,9 +1,13 @@
 package io.sugo.common.module;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-import io.sugo.server.usergroup.UserGroupHelper;
+import io.sugo.common.guice.annotations.Json;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,5 +32,13 @@ public class JettyServerModule extends JerseyServletModule {
 
 	}
 
+	@Provides
+	@Singleton
+	public JacksonJsonProvider getJacksonJsonProvider(@Json ObjectMapper objectMapper)
+	{
+		final JacksonJsonProvider provider = new JacksonJsonProvider();
+		provider.setMapper(objectMapper);
+		return provider;
+	}
 
 }

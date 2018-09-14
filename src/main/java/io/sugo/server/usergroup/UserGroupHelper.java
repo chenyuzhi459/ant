@@ -6,13 +6,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.common.utils.JsonObjectIterator;
 import io.sugo.server.http.resource.usergroup.UserGroupResource;
-import io.sugo.server.redis.DataRedisIOFactory;
+import io.sugo.server.redis.RedisClientCache;
+import io.sugo.server.redis.RedisDataIOFetcher;
 import io.sugo.server.redis.RedisClientWrapper;
 import io.sugo.server.redis.RedisInfo;
 import io.sugo.server.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.server.usergroup.exception.UserGroupException;
 import io.sugo.server.usergroup.model.UserGroupQuery;
-import io.sugo.server.guice.annotations.Json;
+import io.sugo.common.guice.annotations.Json;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,17 +23,17 @@ import java.io.InputStream;
 import java.util.*;
 
 public class UserGroupHelper {
-//	private static final Logger log = new Logger(UserGroupHelper.class);
 	private static final Logger log = LogManager.getLogger(UserGroupHelper.class);
 	private final ObjectMapper jsonMapper;
+	private final RedisClientCache redisClientCache;
 	private static final String AND_OPERATION = "and";
 	private static final String OR_OPERATION = "or";
 	private static final String EXCLUDE_OPERATION = "exclude";
 
 	@Inject
-	public UserGroupHelper(@Json ObjectMapper jsonMapper) {
+	public UserGroupHelper(@Json ObjectMapper jsonMapper, RedisClientCache redisClientCache) {
 		this.jsonMapper = jsonMapper;
-//		this.jsonMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		this.redisClientCache = redisClientCache;
 	}
 
 	public enum GroupOperation {
@@ -134,7 +135,7 @@ public class UserGroupHelper {
 				"  }\n" +
 				"]";
 		ObjectMapper objectMapper = new ObjectMapper();
-		UserGroupHelper helper = new UserGroupHelper(objectMapper);
+		UserGroupHelper helper = new UserGroupHelper(objectMapper, RedisClientCache.getInstance());
 		UserGroupResource resource = new UserGroupResource(objectMapper, helper);
 		List<Map<String, Object>> params = (List<Map<String, Object>> )objectMapper.readValue(paramStr, List.class);
 		Map<String, Object> paramsMap = resource.parseMultiUserGroupParam(params);
@@ -176,12 +177,12 @@ public class UserGroupHelper {
 				"}";
 		ObjectMapper objectMapper = new ObjectMapper();
 		UserGroupQuery userGroupQuery = objectMapper.readValue(queryStr, UserGroupQuery.class);
-		UserGroupHelper helper = new UserGroupHelper(objectMapper);
+		UserGroupHelper helper = new UserGroupHelper(objectMapper, RedisClientCache.getInstance());
 		List<Map> result = helper.doUserGroupQueryIncremental(userGroupQuery, "http://192.168.0.212:8082/druid/v2?pretty");
 		log.info(testReadDataFromRedis(userGroupQuery.getDataConfig()).toString());
 	}
 
-	public static Set<String> testReadDataFromRedis(DataRedisIOFactory redisIOFactory ){
+	public static Set<String> testReadDataFromRedis(RedisDataIOFetcher redisIOFactory ){
 		UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(redisIOFactory);
 		Set<String> data = new HashSet<>();
 		serDeserializer.deserialize(data);
@@ -193,8 +194,8 @@ public class UserGroupHelper {
 
 		try {
 			String queryStr = jsonMapper.writeValueAsString(query);
-			log.info("Begin to UserGroup...");
-			log.info(String.format("Broker url: %s . Param: %s", brokerUrl, queryStr));
+			log.info("Begin to request getUserGroupQueryResult...");
+			log.info(String.format("RequestMetada = Broker url: %s . Param: %s", brokerUrl, queryStr));
 			long before = System.currentTimeMillis();
 			OkHttpClient client = new OkHttpClient();
 			RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
@@ -218,7 +219,7 @@ public class UserGroupHelper {
 				}
 
 				long after = System.currentTimeMillis();
-				log.info(String.format("getUserGroupQueryResult total cost %d million seconds.", after - before));
+				log.info(String.format("GetUserGroupQueryResult total cost %d million seconds.", after - before));
 			}finally {
 				if(response != null){
 					//close response to avoid memery leak
@@ -227,7 +228,7 @@ public class UserGroupHelper {
 			}
 
 		} catch (Throwable t) {
-			log.error("getUserGroupQueryResult error.", t);
+			log.error("Get userGroupQueryResult error.", t);
 			Throwables.propagate(t);
 		}
 
@@ -236,7 +237,7 @@ public class UserGroupHelper {
 
 	public List<Map> doUserGroupQueryIncremental(UserGroupQuery query, String brokerUrl){
 		List<Map> result = new ArrayList<>();
-		DataRedisIOFactory redisIOFactory = query.getDataConfig();
+		RedisDataIOFetcher redisIOFactory = query.getDataConfig();
 		RedisClientWrapper redisClient = getRedisClient(redisIOFactory.getRedisInfo());
 		String redisKey = redisIOFactory.getGroupId();
 		Set<String> currentData = new HashSet<>();
@@ -266,7 +267,7 @@ public class UserGroupHelper {
 			}
 		}catch (Throwable t){
 
-			log.error( "doUserGroupQueryIncremental occurs error!",t);
+			log.error( "Do userGroupQueryIncremental occurs error!",t);
 			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));
 		}finally {
 			currentData.clear();
@@ -292,10 +293,10 @@ public class UserGroupHelper {
 		Set<String> currentData = new HashSet<>();
 
 		UserGroupQuery finalUserGroupQuery = (UserGroupQuery)finalGroup.get("query");
-		DataRedisIOFactory finalUserGroupDataConfig = finalUserGroupQuery.getDataConfig();
+		RedisDataIOFetcher finalUserGroupDataConfig = finalUserGroupQuery.getDataConfig();
 		String finalUserGroupKey = finalUserGroupDataConfig.getGroupId();
 		String finalUserGroupBackupKey = generateRedisBackUpKey(finalUserGroupKey);
-		RedisClientWrapper finalUserGroupRedisClient = getRedisClient(finalUserGroupDataConfig.getRedisInfo());
+		RedisClientWrapper finalUserGroupRedisClient = redisClientCache.getRedisClient(finalUserGroupDataConfig.getRedisInfo());
 		Map<RedisInfo, Set<String>> tempUserGroupMap = new HashMap<>();
 		boolean backup = false;
 		try {
@@ -348,7 +349,7 @@ public class UserGroupHelper {
 			resultMap.put("event", ImmutableMap.of("RowCount", finalLen));
 			result.add(resultMap);
 		}catch (Throwable t){
-			log.error("doMultiUserGroupOperation occurs error!",t);
+			log.error("Do multiUserGroupOperation occurs error!",t);
 			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));
 		}finally {
 			acculatedData.clear();
@@ -362,7 +363,7 @@ public class UserGroupHelper {
 				if(backup){
 					finalUserGroupRedisClient.rename(finalUserGroupBackupKey, finalUserGroupKey);
 				}
-				finalUserGroupRedisClient.close();
+				redisClientCache.releaseRedisClient(finalUserGroupDataConfig.getRedisInfo(), finalUserGroupRedisClient);
 			}
 		}
 		return result;
@@ -389,7 +390,7 @@ public class UserGroupHelper {
 			default :
 				break;
 		}
-		throw new UnsupportedOperationException(String.format("can not do operation[%s] for user group data", operation));
+		throw new UnsupportedOperationException(String.format("Can not do operation[%s] for user group data", operation));
 	}
 
 	//并集
@@ -411,9 +412,14 @@ public class UserGroupHelper {
 	}
 
 	private Long deleteUserGroups(RedisInfo redisInfo, String... userGroupKeys){
-		RedisClientWrapper redisClient = getRedisClient(redisInfo);
+		if(userGroupKeys == null || userGroupKeys.length == 0){
+			log.warn(String.format("The userGroupKeys to delete is empty with %s", redisInfo));
+			return 0L;
+		}
+		RedisClientWrapper redisClient = redisClientCache.getRedisClient(redisInfo);
 		Long result = redisClient.del(userGroupKeys);
-		redisClient.close();
+		log.info(String.format("Delete userGroups %s with config: %s", Arrays.toString(userGroupKeys), redisInfo));
+		redisClientCache.releaseRedisClient(redisInfo, redisClient);
 		return result;
 	}
 

@@ -1,6 +1,6 @@
 package io.sugo.server.redis.serderializer;
 
-import io.sugo.server.redis.DataIOFactory;
+import io.sugo.server.redis.DataIOFetcher;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -11,12 +11,12 @@ import java.util.Set;
  * Mail: janpychou@qq.com
  */
 public class UserGroupSerDeserializer {
-	private final DataIOFactory dataIOFactory;
+	private final DataIOFetcher dataIOFetcher;
 	private final StringBuilder stringBuilder;
 	private int rowCount;
 
-	public UserGroupSerDeserializer(DataIOFactory dataIOFactory) {
-		this.dataIOFactory = dataIOFactory;
+	public UserGroupSerDeserializer(DataIOFetcher dataIOFetcher) {
+		this.dataIOFetcher = dataIOFetcher;
 		stringBuilder = new StringBuilder();
 	}
 
@@ -34,12 +34,12 @@ public class UserGroupSerDeserializer {
 	 */
 	public void serialize() {
 		byte[] bytes = stringBuilder.insert(0, rowCount + "\t").toString().getBytes();
-		dataIOFactory.writeBytes(bytes);
-		dataIOFactory.close();
+		dataIOFetcher.writeBytes(bytes);
+		dataIOFetcher.close();
 	}
 
 	public void deserialize(Map<byte[], Boolean> cache) {
-		byte[] bytes = dataIOFactory.readBytes();
+		byte[] bytes = dataIOFetcher.readBytes();
 		deserialize(cache, bytes);
 	}
 
@@ -92,7 +92,7 @@ public class UserGroupSerDeserializer {
 	}
 
 	public void deserialize(Set<String> cache) {
-		byte[] bytes = dataIOFactory.readBytes();
+		byte[] bytes = dataIOFetcher.readBytes();
 		deserialize(cache, bytes);
 	}
 

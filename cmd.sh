@@ -20,6 +20,7 @@ case $startStop in
     fi
 
     nohup java -Djson.dir=/data1/logview/service_module_path.json -Dlog.path=/data1/ant -cp $basepath/sugo-ant-1.0-SNAPSHOT.jar:$basepath/lib/* $main_class $basepath/conf/config &
+    chod 666 /data1/ant/ant.log
 #    sleep 2
     nodeType_PID=`ps -ef | grep $main_class | grep -v "grep "| awk '{print $2}'`
 #    echo $nodeType_PID > $pid

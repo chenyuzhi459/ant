@@ -2,11 +2,12 @@ package io.sugo.server.http.resource.usergroup;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.server.usergroup.UserGroupHelper;
 import io.sugo.server.usergroup.model.UserGroupQuery;
-import io.sugo.server.guice.annotations.Json;
+import io.sugo.common.guice.annotations.Json;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,6 +53,7 @@ public class UserGroupResource {
 			}
 			return Response.ok(result == null ? Collections.emptyList(): result).build();
 		} catch (Throwable e) {
+			log.error("Do singleUserGroup error!",e);
 			return Response.serverError().entity(Collections.
 					singletonList(ImmutableMap.of("error", e.getMessage())))
 					.build();
@@ -69,6 +71,7 @@ public class UserGroupResource {
 			List<Map> result =  userGroupHelper.doMultiUserGroupOperation(paramMap);
 			return Response.ok(result == null ? Collections.emptyList(): result).build();
 		} catch (Throwable e) {
+			log.error("Do multiUserGroup error!",e);
 			return Response.serverError().entity(Collections.
 					singletonList(ImmutableMap.of("error", e.getMessage())))
 					.build();
@@ -90,9 +93,16 @@ public class UserGroupResource {
 
 			Map queryMap = (Map) map.get("query");
 			Preconditions.checkNotNull(queryMap, "query field can not be null.");
-			UserGroupQuery query = jsonMapper.readValue(jsonMapper.writeValueAsString(queryMap), UserGroupQuery.class);
+			UserGroupQuery query = null;
+			try {
+				query = jsonMapper.readValue(jsonMapper.writeValueAsString(queryMap), UserGroupQuery.class);
+			}catch (Exception e){
+				log.error("MultiUserGroup param can not  deserialize instance of UserGroupQuery", e);
+				Throwables.propagate(e);
+			}
 			checkQuery(query);
 			map.put("query", query);
+
 			if (type.equals("finalGroup")){
 				paramMap.put("finalGroup", map);
 			}else {

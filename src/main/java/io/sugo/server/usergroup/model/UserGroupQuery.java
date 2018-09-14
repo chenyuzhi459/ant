@@ -1,7 +1,7 @@
 package io.sugo.server.usergroup.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.sugo.server.redis.DataRedisIOFactory;
+import io.sugo.server.redis.RedisDataIOFetcher;
 
 import java.util.List;
 import java.util.Map;
@@ -9,11 +9,11 @@ import java.util.Map;
 public class UserGroupQuery {
 	String queryType = "user_group";
 	String dataSource;
-	String intervals;
+	Object intervals;
 	Map filter;
 	String granularity;
 	String dimension;
-	DataRedisIOFactory dataConfig;
+	RedisDataIOFetcher dataConfig;
 	List aggregations;
 	List postAggregations;
 	Map having;
@@ -24,11 +24,11 @@ public class UserGroupQuery {
 
 	public UserGroupQuery(
 			@JsonProperty("dataSource") String dataSource,
-			@JsonProperty("intervals") String intervals,
+			@JsonProperty("intervals") Object intervals,
 			@JsonProperty("filter") Map filter,
 			@JsonProperty("granularity") String granularity,
 			@JsonProperty("dimension") String dimension,
-			@JsonProperty("dataConfig") DataRedisIOFactory dataConfig,
+			@JsonProperty("dataConfig") RedisDataIOFetcher dataConfig,
 			@JsonProperty("aggregations") List aggregations,
 			@JsonProperty("postAggregations") List postAggregations,
 			@JsonProperty("having") Map having,
@@ -67,11 +67,11 @@ public class UserGroupQuery {
 	}
 
 	@JsonProperty("intervals")
-	public String getIntervals() {
+	public Object getIntervals() {
 		return intervals;
 	}
 
-	public UserGroupQuery setIntervals(String intervals) {
+	public UserGroupQuery setIntervals(Object intervals) {
 		this.intervals = intervals;
 		return this;
 	}
@@ -142,11 +142,11 @@ public class UserGroupQuery {
 	}
 
 	@JsonProperty("dataConfig")
-	public DataRedisIOFactory getDataConfig() {
+	public RedisDataIOFetcher getDataConfig() {
 		return dataConfig;
 	}
 
-	public UserGroupQuery setDataConfig(DataRedisIOFactory dataConfig) {
+	public UserGroupQuery setDataConfig(RedisDataIOFetcher dataConfig) {
 		this.dataConfig = dataConfig;
 		return this;
 	}

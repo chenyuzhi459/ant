@@ -1,5 +1,6 @@
 package io.sugo.server.redis;
 
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.logging.log4j.LogManager;
@@ -11,28 +12,28 @@ import java.nio.ByteBuffer;
  * Created by janpychou on 上午11:01.
  * Mail: janpychou@qq.com
  */
-public class DataRedisIOFactory implements DataIOFactory{
-//  private final static Logger log = new Logger(DataRedisIOFactory.class);
-  private static final Logger log = LogManager.getLogger(DataRedisIOFactory.class);
+public class RedisDataIOFetcher implements DataIOFetcher {
+  private static final Logger log = LogManager.getLogger(RedisDataIOFetcher.class);
   private final static int BATCH_SIZE = 1 * 1024 * 1024;
   private final static int DIRECT_BUFFER_SIZE = 100 * 1024 * 1024;
-  private final RedisClientCache cache;
+  private RedisClientCache cache;
 
   private String groupId;
   private final RedisInfo redisInfo;
 
   @JsonCreator
-  public DataRedisIOFactory(
+  public RedisDataIOFetcher(
       @JsonProperty("hostAndPorts") String hostAndPorts,
       @JsonProperty("clusterMode") boolean clusterMode,
       @JsonProperty("sentinelMode") boolean sentinelMode,
       @JsonProperty("masterName") String masterName,
       @JsonProperty("password") String password,
-      @JsonProperty("groupId") String groupId
+      @JsonProperty("groupId") String groupId,
+      @JacksonInject RedisClientCache redisClientCache
   ) {
     this.groupId = groupId;
     redisInfo = new RedisInfo(hostAndPorts, clusterMode, sentinelMode, masterName, password);
-    cache = RedisClientCache.getInstance();
+    cache = redisClientCache;
   }
 
   @JsonProperty("groupId")
@@ -67,7 +68,7 @@ public class DataRedisIOFactory implements DataIOFactory{
 
   @Override
   public String toString() {
-    return "DataRedisIOFactory{" +
+    return "RedisDataIOFetcher{" +
         ", groupId='" + groupId + '\'' +
         "redisInfo='" + redisInfo + '\'' +
         '}';
@@ -89,7 +90,7 @@ public class DataRedisIOFactory implements DataIOFactory{
       return false;
     }
 
-    DataRedisIOFactory that = (DataRedisIOFactory) o;
+    RedisDataIOFetcher that = (RedisDataIOFetcher) o;
     if (groupId != null ? !groupId.equals(that.groupId) : that.groupId != null) {
       return false;
     }
@@ -102,10 +103,10 @@ public class DataRedisIOFactory implements DataIOFactory{
   @Override
   public byte[] readBytes() {
     long start = System.currentTimeMillis();
-    RedisClientWrapper wrapper = cache.getRedisClientWrapper(redisInfo);
+    RedisClientWrapper wrapper = cache.getRedisClient(redisInfo);
     Long listSize = wrapper.llen(groupId);
     if (listSize == 0) {
-      cache.releaseRedisClientWrapper(redisInfo, wrapper);
+      cache.releaseRedisClient(redisInfo, wrapper);
       return new byte[0];
     }
 
@@ -121,7 +122,7 @@ public class DataRedisIOFactory implements DataIOFactory{
     buf.flip();
     bytes = new byte[buf.limit()];
     buf.get(bytes);
-    cache.releaseRedisClientWrapper(redisInfo, wrapper);
+    cache.releaseRedisClient(redisInfo, wrapper);
     long end = System.currentTimeMillis();
     log.info(String.format("[%s] read redis spendTime:%d data bytes:%d", groupId, end - start, bytes.length));
     return bytes;
@@ -129,7 +130,7 @@ public class DataRedisIOFactory implements DataIOFactory{
 
   @Override
   public void writeBytes(byte[] buf) {
-    RedisClientWrapper wrapper = cache.getRedisClientWrapper(redisInfo);
+    RedisClientWrapper wrapper = cache.getRedisClient(redisInfo);
     byte[] dest = new byte[BATCH_SIZE];
     int srcPos = 0;
     int length = BATCH_SIZE;
@@ -144,7 +145,7 @@ public class DataRedisIOFactory implements DataIOFactory{
       srcPos += length;
       wrapper.rpush(groupId, dest);
     }
-    cache.releaseRedisClientWrapper(redisInfo, wrapper);
+    cache.releaseRedisClient(redisInfo, wrapper);
   }
 
   @Override
@@ -152,15 +153,16 @@ public class DataRedisIOFactory implements DataIOFactory{
   }
 
 
-  public DataRedisIOFactory clone(String newGroupId) {
+  public RedisDataIOFetcher clone(String newGroupId) {
 
-    DataRedisIOFactory redisIOFactory = new DataRedisIOFactory(
+    RedisDataIOFetcher redisIOFactory = new RedisDataIOFetcher(
             redisInfo.getHostAndPorts(),
             redisInfo.isClusterMode(),
             redisInfo.isSentinelMode(),
             redisInfo.getMasterName(),
             redisInfo.getPassword(),
-            newGroupId
+            newGroupId,
+            cache
     );
     return redisIOFactory;
   }
