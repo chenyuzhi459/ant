@@ -75,9 +75,9 @@ body参数:  body参数为一个对象数组, 每个对象描述了一个用户�
 
     参数名 | 是否必须 | 类型 | 描述  | 默认值
     ---- | ----- | --- | --- | ----    
-    type | 是 | string | 表示用户分群的类型,有四个可选值`tindex,uindex,usergroup,finalGroup`, 其中前两种类型表示从`tindex,uindex`引擎生成临时用户分群,在操作完成后会被删除,usergroup表示是redis中的用户分群,不会被删除, finalGroup表示是最终要生成的用户分群|
+    type | 是 | string | 表示用户分群的类型,有四个可选值`tindex/uindex/usergroup/finalGroup`, 其中前两种类型表示从`tindex,uindex`引擎生成临时用户分群,在操作完成后会被删除,usergroup表示是redis中的用户分群,不会被删除, finalGroup表示是最终要生成的用户分群|
     query| 是 | obeject | `UserGroupQuery`的json对象,具体配置请参考[Sugo-UserGroupQuery查询接口](http://docs.sugo.io/developer/query/query.html#UserGroup) |
-    brokerUrl | 否 | string | 表示`tindex|uindex`引擎的broker地址, 在type=`tindex|uindex`时需要配置 |
+    brokerUrl | 否 | string | 表示`tindex/uindex`引擎的broker地址, 在type=`tindex|uindex`时需要配置 |
     op | 否 | string | 表示对用户分群的操作, 可选值为`or|and|exclude`; 在type = `finalGroup`时不需要设置, 数组中的第一个用户分群也不用设置 |
     append | 否 | boolean | 表示对最终用户分群的操作,false表示进行覆盖操作, true表示进行累加操作 |
  
@@ -194,15 +194,15 @@ body参数:
     参数名 | 是否必须 | 类型 | 描述  | 默认值
     ---- | ----- | --- | --- | ----    
     dataSource | 是 | string | 表示进行路径分析的数据源 |
-    dimension | 是 | obeject | 表示路径分析需要查询的维度,需要设置`sessionId|pageName|userId|date`四个字段 |
+    dimension | 是 | obeject | 表示路径分析需要查询的维度,需要设置`sessionId/pageName/userId/date`四个字段 |
     homePage | 是 | string | 表示开始分析的路径(页面)名称 |
     startDate | 是 | date-string | 路径分析的开始时间,格式为`yyyy-MM-dd'T'HH:mm:ss.SSS` |
     endDate | 是 | date-string | 路径分析的结束时间,格式为`yyyy-MM-dd'T'HH:mm:ss.SSS` |
-    brokerUrl | 是 | string | 表示`tindex|uindex`引擎的broker地址 |
-    direction | 否 | string | 表示路径分析的方向是升序还是降序(dimension.date),可选值为`normal|reverse` |normal 
+    brokerUrl | 是 | string | 表示`tindex/uindex`引擎的broker地址 |
+    direction | 否 | string | 表示路径分析的方向是升序还是降序(dimension.date),可选值为`normal/reverse` |normal 
     filters| 否 | array<object> | `fiter`的json对象数组,具体配置请参考后面的`filter配置` |
     pages | 否 | array<string> | 表示只对页面名称(dimension.pageName)在该范围内的页面进行路径分析 |
-    limit | 否 | int | 表示路径分析向`tindex|uindex`查询的总记录数 |2000000
+    limit | 否 | int | 表示路径分析向`tindex/uindex`查询的总记录数 |2000000
     
  
     
@@ -258,6 +258,6 @@ Body数据:
 ---- | ----- | --- | --- | ----    
 dimension | 是 | string | 表示过滤的维度 |
 action| 是 | string | 过滤的表达式, 可选值有`"=","!=",">","<",">=","<=","between","in","not in","lookup"` |  
-value | 是 | `string|array` | 表示维度的过滤值, 根据action决定类型是`string|array` |
+value | 是 | `string/array` | 表示维度的过滤值, 根据action决定类型是`string|array` |
 actionType | 否 | string | 保留字段,暂时不用设置 |
  
