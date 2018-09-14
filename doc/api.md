@@ -258,6 +258,6 @@ Body数据:
 ---- | ----- | --- | --- | ----    
 dimension | 是 | string | 表示过滤的维度 |
 action| 是 | string | 过滤的表达式, 可选值有`"=","!=",">","<",">=","<=","between","in","not in","lookup"` |  
-value | 是 | `string/array` | 表示维度的过滤值, 根据action决定类型是`string|array` |
+value | 是 | `string/array` | 表示维度的过滤值, 根据action决定类型是`string/array` |
 actionType | 否 | string | 保留字段,暂时不用设置 |
  
