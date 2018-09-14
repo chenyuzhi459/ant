@@ -33,9 +33,10 @@ public class UserGroupResource {
 	}
 
 	@POST
+	@Path("/single")
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response doUserGroup(
+	public Response handleSingleUserGroup(
 			Map<String, Object> singleUserGroupParam) {
 		try {
 			String brokerUrl = (String) singleUserGroupParam.get("brokerUrl");
@@ -45,7 +46,7 @@ public class UserGroupResource {
 					jsonMapper.writeValueAsString(userGroupQueryMap), UserGroupQuery.class);
 			checkUrl(brokerUrl);
 			checkQuery(userGroupQuery);
-			List<Map> result = null;
+			List<Map> result;
 			if(append){
 				result = userGroupHelper.doUserGroupQueryIncremental(userGroupQuery, brokerUrl);
 			}else {
@@ -53,7 +54,7 @@ public class UserGroupResource {
 			}
 			return Response.ok(result == null ? Collections.emptyList(): result).build();
 		} catch (Throwable e) {
-			log.error("Do singleUserGroup error!",e);
+			log.error("Handle singleUserGroup error!",e);
 			return Response.serverError().entity(Collections.
 					singletonList(ImmutableMap.of("error", e.getMessage())))
 					.build();
@@ -64,14 +65,14 @@ public class UserGroupResource {
 	@Path("/multi")
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response doMultiUserGroup(
+	public Response handleMultiUserGroup(
 			List<Map<String, Object>> userGroupList) {
 		try {
 			Map<String, Object> paramMap = parseMultiUserGroupParam(userGroupList);
 			List<Map> result =  userGroupHelper.doMultiUserGroupOperation(paramMap);
 			return Response.ok(result == null ? Collections.emptyList(): result).build();
 		} catch (Throwable e) {
-			log.error("Do multiUserGroup error!",e);
+			log.error("Handle multiUserGroup error!",e);
 			return Response.serverError().entity(Collections.
 					singletonList(ImmutableMap.of("error", e.getMessage())))
 					.build();
@@ -115,7 +116,6 @@ public class UserGroupResource {
 
  	private void checkUrl(String url){
 		Preconditions.checkNotNull(url, "url can not be null.");
-		Preconditions.checkNotNull(url, "invalid url.");
 	}
 
 	private void checkQuery(UserGroupQuery userGroupQuery) {

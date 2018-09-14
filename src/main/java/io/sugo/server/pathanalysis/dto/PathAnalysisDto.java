@@ -18,8 +18,10 @@ import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PathAnalysisDto {
-    private static final Logger logger = LogManager.getLogger(PathAnalysisDto.class);
+    private static final Logger log = LogManager.getLogger(PathAnalysisDto.class);
     private static final ObjectMapper jsonMapper = new ObjectMapper();
+    public static final String NORMAL_DIRECTION = "normal";
+    public static final String REVERSE_DIRECTION = "reverse";
 
     @JsonProperty
     private String dataSource;
@@ -48,6 +50,9 @@ public class PathAnalysisDto {
 
     @JsonProperty
     private String brokerUrl;
+
+    @JsonProperty(defaultValue = NORMAL_DIRECTION)
+    private String direction;
 
     public static class ColumnName {
         @JsonProperty
@@ -160,6 +165,15 @@ public class PathAnalysisDto {
         return brokerUrl;
     }
 
+    public String getDirection() {
+        return direction;
+    }
+
+    public PathAnalysisDto setDirection(String direction) {
+        this.direction = direction;
+        return this;
+    }
+
     public PathAnalysisDto setBrokerUrl(String brokerUrl) {
         this.brokerUrl = brokerUrl;
         return this;
@@ -203,7 +217,7 @@ public class PathAnalysisDto {
                         filter.getFields().addAll(buildFilterFields(dimFilters));
                     }
                 } catch (Exception e) {
-                    logger.error(String.format("Deserialize path analysis filters %s failed: %s", filters.toString(), e.getMessage()));
+                    log.error(String.format("Deserialize path analysis filters %s failed: %s", filters.toString(), e.getMessage()));
                 }
             } else { // New version
                 query.setFilter(filters);
@@ -223,7 +237,7 @@ public class PathAnalysisDto {
         try {
             queryStr = jsonMapper.writeValueAsString(query);
         } catch (JsonProcessingException e) {
-            logger.error("Serialize path analysis query object failed.", e);
+            log.error("Serialize path analysis query object failed.", e);
             throw new Exception("Parse query json failed.");
         }
 

@@ -19,7 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
 
-@Path("/pio/process/pa/")
+@Path("/ant/process/pa/")
 public class PathAnalysisResource {
 
     private static final Logger log = LogManager.getLogger(PathAnalysisResource.class);
@@ -35,37 +35,38 @@ public class PathAnalysisResource {
     }
 
     @POST
-    @Path("/normal")
+//    @Path("/normal")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
     public Response normalPath(PathAnalysisDto pathAnalysisDto) {
         check(pathAnalysisDto);
         try {
             String queryStr = pathAnalysisDto.buildScanQuery();
+            boolean isReverseDirection = PathAnalysisDto.REVERSE_DIRECTION.equals(pathAnalysisDto.getDirection());
             AccessTree tree = pathAnalyzer.getAccessTree(queryStr,
-                    pathAnalysisDto.getHomePage(), false, pathAnalysisDto.getBrokerUrl());
+                    pathAnalysisDto.getHomePage(), isReverseDirection, pathAnalysisDto.getBrokerUrl());
             return Response.ok(tree == null ? Collections.EMPTY_LIST : tree).build();
         } catch (Throwable e) {
             return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
-    @POST
-    @Path("/reverse")
-    @Produces({MediaType.APPLICATION_JSON})
-    @Consumes({MediaType.APPLICATION_JSON})
-    public Response reversePath(PathAnalysisDto pathAnalysisDto) {
-        check(pathAnalysisDto);
-        try {
-            String queryStr = pathAnalysisDto.buildScanQuery();
-            AccessTree tree = pathAnalyzer.getAccessTree(queryStr,
-                    pathAnalysisDto.getHomePage(), true, pathAnalysisDto.getBrokerUrl());
-
-            return Response.ok(tree == null ? Collections.EMPTY_LIST : tree).build();
-        } catch (Throwable e) {
-            return Response.serverError().entity(e.getMessage()).build();
-        }
-    }
+//    @POST
+//    @Path("/reverse")
+//    @Produces({MediaType.APPLICATION_JSON})
+//    @Consumes({MediaType.APPLICATION_JSON})
+//    public Response reversePath(PathAnalysisDto pathAnalysisDto) {
+//        check(pathAnalysisDto);
+//        try {
+//            String queryStr = pathAnalysisDto.buildScanQuery();
+//            AccessTree tree = pathAnalyzer.getAccessTree(queryStr,
+//                    pathAnalysisDto.getHomePage(), true, pathAnalysisDto.getBrokerUrl());
+//
+//            return Response.ok(tree == null ? Collections.EMPTY_LIST : tree).build();
+//        } catch (Throwable e) {
+//            return Response.serverError().entity(e.getMessage()).build();
+//        }
+//    }
 
     private void check(PathAnalysisDto pathAnalysisDto) {
         try {

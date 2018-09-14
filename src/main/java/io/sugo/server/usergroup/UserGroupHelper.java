@@ -213,7 +213,6 @@ public class UserGroupHelper {
 							result.add(resultValue);
 						}
 					}
-					response.close();
 				}else {
 					throw new UserGroupException(response.body().string());
 				}
@@ -238,7 +237,7 @@ public class UserGroupHelper {
 	public List<Map> doUserGroupQueryIncremental(UserGroupQuery query, String brokerUrl){
 		List<Map> result = new ArrayList<>();
 		RedisDataIOFetcher redisIOFactory = query.getDataConfig();
-		RedisClientWrapper redisClient = getRedisClient(redisIOFactory.getRedisInfo());
+		RedisClientWrapper redisClient = redisClientCache.getRedisClient(redisIOFactory.getRedisInfo());
 		String redisKey = redisIOFactory.getGroupId();
 		Set<String> currentData = new HashSet<>();
 		Set<String> backupData = new HashSet<>();
@@ -252,7 +251,7 @@ public class UserGroupHelper {
 
 				serDeserializer.deserialize(currentData);
 				backupSerDeserializer.deserialize(backupData);
-				doDataOperation(AND_OPERATION, currentData, backupData);
+				doDataOperation(OR_OPERATION, currentData, backupData);
 				int finalLen = writeDataToRedis(serDeserializer, currentData);
 				// 成功更新后, 立刻设backup = false, 避免出现异常后被backupData覆盖.
 				backup = false;
@@ -279,7 +278,7 @@ public class UserGroupHelper {
 				if(backup){
 					redisClient.rename(backupKey, redisKey);
 				}
-				redisClient.close();
+				redisClientCache.releaseRedisClient(redisIOFactory.getRedisInfo(), redisClient);
 			}
 		}
 		return result;
