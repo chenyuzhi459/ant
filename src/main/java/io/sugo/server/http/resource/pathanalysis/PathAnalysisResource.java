@@ -47,6 +47,7 @@ public class PathAnalysisResource {
                     pathAnalysisDto.getHomePage(), isReverseDirection, pathAnalysisDto.getBrokerUrl());
             return Response.ok(tree == null ? Collections.EMPTY_LIST : tree).build();
         } catch (Throwable e) {
+            log.error("Handle pathAnalysis error!",e);
             return Response.serverError().entity(e.getMessage()).build();
         }
     }

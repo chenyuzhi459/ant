@@ -27,7 +27,7 @@ public class JettyServerModule extends JerseyServletModule {
 	{
 		Map<String, String> params = new HashMap<>();
 		params.put(PROPERTY_PACKAGES, "io.sugo.server.http.resource");
-		//这里控制jersey注解path的过滤，和指定jersey api所在的包（可以在web.xml中配置）
+		//这里控制jersey注解path的过滤，和指定jersey api所在的包
 		serve("/*").with(GuiceContainer.class, params);
 
 	}

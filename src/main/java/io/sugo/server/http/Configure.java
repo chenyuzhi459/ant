@@ -2,6 +2,8 @@ package io.sugo.server.http;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.inject.Named;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.util.*;
 
 public class Configure {
   private static final Logger LOG = LogManager.getLogger(Configure.class);
+  @Named("configPath")
   public static  String CONFIG_PATH ;
 
   private Map<String, Properties> allProperties = new HashMap<>();
@@ -42,19 +45,13 @@ public class Configure {
     getAllPropertiesToMap();
   }
 
-
-//  public Configure() {
-//    loadConf(new File(CONFIG_PATH));
-//    getAllPropertiesToMap();
-//  }
-
   private void loadConf(File file) {
     if (!file.exists()) {
       LOG.error(CONFIG_PATH + " not exists");
       return;
     }
     if (file.isDirectory()) {
-      File files[] = file.listFiles();
+      File files[] = file.listFiles((dir, name) ->{return name.endsWith(".properties");});
       LOG.info(  "reading config info");
       for (File sonFile : files) {
         if (sonFile.isFile()) {
@@ -107,7 +104,7 @@ public class Configure {
     try {
       return Integer.parseInt(value);
     } catch (Exception e) {
-      LOG.error(e, e);
+      LOG.error("Configure getInt error!", e);
     }
     return 0;
   }
@@ -118,7 +115,7 @@ public class Configure {
     try {
       return Integer.parseInt(value);
     } catch (Exception e) {
-      LOG.error("", e);
+      LOG.error("Configure getInt error!", e);
     }
     return 0;
   }
@@ -128,7 +125,7 @@ public class Configure {
     try {
       return Boolean.parseBoolean(value);
     } catch (Exception e) {
-      LOG.error("", e);
+      LOG.error("Configure getBoolean error!", e);
     }
     return false;
   }
@@ -139,7 +136,7 @@ public class Configure {
     try {
       return Boolean.parseBoolean(value);
     } catch (Exception e) {
-      LOG.error("", e);
+      LOG.error("Configure getBoolean error!", e);
     }
     return false;
   }

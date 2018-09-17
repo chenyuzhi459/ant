@@ -1,10 +1,15 @@
 package io.sugo.server.http;
 
 import com.google.inject.servlet.GuiceFilter;
+import io.sugo.common.guice.GuiceManager;
+import io.sugo.common.module.CommonModule;
+import io.sugo.common.module.JacksonModule;
+import io.sugo.common.module.JettyServerModule;
 import io.sugo.server.http.jetty.JettyMonitoringConnectionFactory;
 import io.sugo.server.http.jetty.listener.GuiceServletListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
@@ -23,25 +28,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AntServer {
 
-
     private static final Logger LOG = LogManager.getLogger(AntServer.class);
     public static int port;
-    private static boolean developMode;
 
     private static final AtomicInteger activeConnections = new AtomicInteger();
     public static final CountDownLatch latch = new CountDownLatch(1);
 
     public static void main(String[] args) throws Exception {
-        Configure.initConfigPath(args.length > 0 ? args[0] : "src/main/resources/config/");
-        Configure configure = Configure.getConfigure();
+        GuiceManager guiceManager = new GuiceManager.Builder()
+                .addModule(new CommonModule(args.length > 0 ? args[0] : "src/main/resources/config/"))
+                .addModule(new JettyServerModule())
+                .addModule(new JacksonModule())
+                .build();
+        Configure configure = guiceManager.getInstance(Configure.class);
         port = configure.getInt("system.properties","http.port");
-        developMode = configure.getBoolean("system.properties","develop.mode");
 
         LOG.info("initializing server");
         Server server = null;
         try {
-            server = makeJettyServer();
-            initialize(server);
+            server = makeJettyServer(configure);
+            initialize(server, guiceManager);
             server.start();
             LOG.info("start...in " + port);
             latch.await();
@@ -56,13 +62,13 @@ public class AntServer {
 
     }
 
-    private static Server makeJettyServer() {
-        final Server server = new Server();
+    private static Server makeJettyServer(Configure configure ) {
+        int maxConn = configure.getInt("system.properties","server.max.conn", 200);
+        final Server server = new Server(new QueuedThreadPool(maxConn));
 
         // Without this bean set, the default ScheduledExecutorScheduler runs as non-daemon, causing lifecycle hooks to fail
         // to fire on main exit. Related bug: https://github.com/druid-io/druid/pull/1627
         server.addBean(new ScheduledExecutorScheduler("JettyScheduler", true), true);
-
         ServerConnector connector = new ServerConnector(server);
         connector.setPort(port);
         connector.setIdleTimeout(600000);
@@ -81,7 +87,7 @@ public class AntServer {
         return server;
     }
 
-    private static void initialize(Server server) {
+    private static void initialize(Server server, GuiceManager guiceManager) {
 
         final ServletContextHandler apiHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         apiHandler.setContextPath("/");
@@ -91,7 +97,7 @@ public class AntServer {
 
         // add GuiceFilter to support GuiceServletListener
         apiHandler.addFilter(GuiceFilter.class,"/*", EnumSet.of(DispatcherType.REQUEST));
-        apiHandler.addEventListener(new GuiceServletListener());
+        apiHandler.addEventListener(new GuiceServletListener(guiceManager.getInjector()));
         HandlerList handlerList = new HandlerList();
         handlerList.addHandler(apiHandler);
 

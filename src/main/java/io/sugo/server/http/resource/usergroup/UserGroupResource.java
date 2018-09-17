@@ -119,12 +119,6 @@ public class UserGroupResource {
 	}
 
 	private void checkQuery(UserGroupQuery userGroupQuery) {
-
-//		try {
-//			log.info(String.format("UserGroup param: %s", jsonMapper.writeValueAsString(userGroupQuery)));
-//		} catch (JsonProcessingException ignore) {
-//			throw new RuntimeException("UserGroupQuery param can not tranform to json", ignore);
-//		}
 		Preconditions.checkNotNull(userGroupQuery.getDataConfig(), "Data config can not be null.");
 	}
 

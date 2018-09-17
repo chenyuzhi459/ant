@@ -5,6 +5,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.common.utils.JsonObjectIterator;
+import io.sugo.server.http.Configure;
 import io.sugo.server.http.resource.usergroup.UserGroupResource;
 import io.sugo.server.redis.RedisClientCache;
 import io.sugo.server.redis.RedisDataIOFetcher;
@@ -34,159 +35,6 @@ public class UserGroupHelper {
 	public UserGroupHelper(@Json ObjectMapper jsonMapper, RedisClientCache redisClientCache) {
 		this.jsonMapper = jsonMapper;
 		this.redisClientCache = redisClientCache;
-	}
-
-	public enum GroupOperation {
-		AND("and"),
-		OR("or"),
-		EXECLUDE("exclude");
-		private final String value;
-		GroupOperation(String value){
-			this.value = value;
-		}
-		public String getValue(){
-			return this.value;
-		}
-	}
-
-	public static void main(String[] args) throws IOException {
-//		testDoUserGroupQueryIncremental();
-//		testMultiUserGroupOperation();
-		log.error( "test",new Throwable("ssss"));
-	}
-
-	public static void testMultiUserGroupOperation() throws IOException {
-		String paramStr = "[\n" +
-				"  {\n" +
-				"      \"type\": \"tindex\",\n" +
-				"      \"brokerUrl\": \"http://192.168.0.225:8082/druid/v2?pretty\",\n" +
-				"      \"query\": {\n" +
-				"            \"queryType\":\"user_group\",\n" +
-				"            \"dataSource\":\"schedule_desc\",\n" +
-				"            \"granularity\":\"all\",\n" +
-				"            \"intervals\": \"1000/3000\",\n" +
-				"            \"filter\": {\n" +
-				"                \"type\": \"selector\",\n" +
-				"                \"dimension\": \"sugo_province\",\n" +
-				"                \"value\": \"广东省\"\n" +
-				"            },\n" +
-				"            \"dimension\":\"distinct_id\",\n" +
-				"            \"dataConfig\": {\n" +
-				"                \"hostAndPorts\":\"192.168.0.223:6379\",  \n" +
-				"                \"clusterMode\":false,  \n" +
-				"                \"groupId\":\"schedule_desc_sugo_province\"  \n" +
-				"            },\n" +
-				"            \"context\":{\n" +
-				"                \"timeout\": 180000,\n" +
-				"                \"useOffheap\": true,\n" +
-				"                \"groupByStrategy\": \"v2\"\n" +
-				"            }\n" +
-				"      }\n" +
-				"  },\n" +
-				"\n" +
-				"  {\n" +
-				"    \"type\": \"usergroup\",\n" +
-				"    \"query\": {\n" +
-				"      \"dataConfig\": { \n" +
-				"            \"hostAndPorts\": \"192.168.0.220:6379\",\n" +
-				"            \"clusterMode\": false,\n" +
-				"            \"sentinelMode\": false,\n" +
-				"            \"groupId\": \"usergroup_HJMqcLLtG\"\n" +
-				"      }\n" +
-				"    },\n" +
-				"    \"op\": \"or\"\n" +
-				"  },\n" +
-				"  {\n" +
-				"      \"type\": \"uindex\",\n" +
-				"      \"brokerUrl\": \"http://192.168.0.223:8082/druid/v2?pretty\",\n" +
-				"      \"query\": {\n" +
-				"                \"queryType\":\"user_group\",\n" +
-				"                \"dataSource\":\"tag_bank\",\n" +
-				"                \"granularity\":\"all\",\n" +
-				"                \"intervals\": \"1000/3000\",\n" +
-				"                \"filter\": {\n" +
-				"                    \"type\": \"selector\",\n" +
-				"                    \"dimension\": \"ub_risk\",\n" +
-				"                    \"value\": \"R4\"\n" +
-				"                },\n" +
-				"                \"dimension\":\"distinct_id\",\n" +
-				"                \"dataConfig\": {\n" +
-				"                    \"hostAndPorts\":\"192.168.0.223:6379\",  \n" +
-				"                    \"clusterMode\":false,  \n" +
-				"                    \"groupId\":\"tag_bank_ub_risk\"  \n" +
-				"                },\n" +
-				"                \"context\":{\n" +
-				"                    \"timeout\": 180000,\n" +
-				"                    \"useOffheap\": true,\n" +
-				"                    \"groupByStrategy\": \"v2\"\n" +
-				"                }\n" +
-				"      },\n" +
-				"      \"op\": \"exclude\"\n" +
-				"  },\n" +
-				"  {\n" +
-				"    \"type\": \"finalGroup\",\n" +
-				"    \"query\": {\n" +
-				"      \"dataConfig\": { \n" +
-				"            \"hostAndPorts\":\"192.168.0.223:6379\",  \n" +
-				"            \"clusterMode\":false,  \n" +
-				"            \"groupId\":\"test_usergroup_multi\"  \n" +
-				"      }\n" +
-				"    }\n" +
-				"  }\n" +
-				"]";
-		ObjectMapper objectMapper = new ObjectMapper();
-		UserGroupHelper helper = new UserGroupHelper(objectMapper, RedisClientCache.getInstance());
-		UserGroupResource resource = new UserGroupResource(objectMapper, helper);
-		List<Map<String, Object>> params = (List<Map<String, Object>> )objectMapper.readValue(paramStr, List.class);
-		Map<String, Object> paramsMap = resource.parseMultiUserGroupParam(params);
-		helper.doMultiUserGroupOperation(paramsMap);
-		Map<String, Object> finalGroup = (Map<String, Object> )paramsMap.get("finalGroup");
-		UserGroupQuery finalQuery = (UserGroupQuery) finalGroup.get("query");
-		log.info(testReadDataFromRedis(finalQuery.getDataConfig()).toString());
-	}
-
-	public static void testDoUserGroupQueryIncremental() throws IOException {
-		String queryStr = "{\n" +
-				"    \"queryType\":\"user_group\",\n" +
-				"    \"dataSource\":\"userinfo\",\n" +
-				"    \"granularity\":\"all\",\n" +
-				"    \"intervals\": \"1000/3000\",\n" +
-				"    \"filter\": {\n" +
-				"        \"type\": \"selector\",\n" +
-				"        \"dimension\": \"province\",\n" +
-				"        \"value\": \"广东省\"\n" +
-				"    },\n" +
-				"    \"dimension\":\"province\",\n" +
-				"    \"dataConfig\": {\n" +
-				"        \"hostAndPorts\":\"192.168.0.223:6379\",  \n" +
-				"        \"clusterMode\":false,  \n" +
-				"        \"groupId\":\"usergrpu_1\"  \n" +
-				"    },\n" +
-				"    \"aggregations\":[\n" +
-				"        {\n" +
-				"            \"name\": \"sum(age)\",\n" +
-				"            \"type\": \"lucene_doubleSum\",\n" +
-				"            \"fieldName\": \"age\"\n" +
-				"        }\n" +
-				"    ],\n" +
-				"    \"context\":{\n" +
-				"        \"timeout\": 180000,\n" +
-				"        \"useOffheap\": true,\n" +
-				"        \"groupByStrategy\": \"v2\"\n" +
-				"    }\n" +
-				"}";
-		ObjectMapper objectMapper = new ObjectMapper();
-		UserGroupQuery userGroupQuery = objectMapper.readValue(queryStr, UserGroupQuery.class);
-		UserGroupHelper helper = new UserGroupHelper(objectMapper, RedisClientCache.getInstance());
-		List<Map> result = helper.doUserGroupQueryIncremental(userGroupQuery, "http://192.168.0.212:8082/druid/v2?pretty");
-		log.info(testReadDataFromRedis(userGroupQuery.getDataConfig()).toString());
-	}
-
-	public static Set<String> testReadDataFromRedis(RedisDataIOFetcher redisIOFactory ){
-		UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(redisIOFactory);
-		Set<String> data = new HashSet<>();
-		serDeserializer.deserialize(data);
-		return data;
 	}
 
 	public List<Map> getUserGroupQueryResult(UserGroupQuery query, String brokerUrl){
@@ -319,11 +167,13 @@ public class UserGroupHelper {
 				}
 
 				itemSerDeserializer = new UserGroupSerDeserializer(query.getDataConfig());
-				itemSerDeserializer.deserialize(i == 0 ? acculatedData :currentData);
 				if(i == 0){
+					itemSerDeserializer.deserialize(acculatedData);
 					continue;
 				}
+
 				if(!op.isEmpty()){
+					itemSerDeserializer.deserialize(currentData);
 					acculatedData = doDataOperation(op, acculatedData, currentData);
 				}
 				currentData.clear();
@@ -353,10 +203,8 @@ public class UserGroupHelper {
 		}finally {
 			acculatedData.clear();
 			currentData.clear();
-			acculatedData = null;
-			currentData = null;
-			tempUserGroupMap.forEach((redisInfo, userGroupKey) ->{
-				deleteUserGroups(redisInfo, userGroupKey.toArray(new String[userGroupKey.size()]));
+			tempUserGroupMap.forEach((redisInfo, userGroupKeys) ->{
+				deleteUserGroups(redisInfo, userGroupKeys.toArray(new String[userGroupKeys.size()]));
 			});
 			if(finalUserGroupRedisClient != null){
 				if(backup){
@@ -437,7 +285,144 @@ public class UserGroupHelper {
 		return new StringBuffer(originalKey).append("backup").toString();
 	}
 
-	private RedisClientWrapper getRedisClient(RedisInfo redisInfo){
-		return new RedisClientWrapper(redisInfo);
+	public static void main(String[] args) throws IOException {
+//		Configure.initConfigPath(args.length > 0 ? args[0] : "src/main/resources/config/");
+//		testDoUserGroupQueryIncremental();
+//		testMultiUserGroupOperation();
+		log.error( "test",new Throwable("ssss"));
+	}
+
+	public static Set<String> testReadDataFromRedis(RedisDataIOFetcher redisIOFactory ){
+		UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(redisIOFactory);
+		Set<String> data = new HashSet<>();
+		serDeserializer.deserialize(data);
+		return data;
+	}
+
+	public static void testMultiUserGroupOperation() throws IOException {
+		String paramStr = "[\n" +
+				"  {\n" +
+				"      \"type\": \"tindex\",\n" +
+				"      \"brokerUrl\": \"http://192.168.0.225:8082/druid/v2?pretty\",\n" +
+				"      \"query\": {\n" +
+				"            \"queryType\":\"user_group\",\n" +
+				"            \"dataSource\":\"schedule_desc\",\n" +
+				"            \"granularity\":\"all\",\n" +
+				"            \"intervals\": \"1000/3000\",\n" +
+				"            \"filter\": {\n" +
+				"                \"type\": \"selector\",\n" +
+				"                \"dimension\": \"sugo_province\",\n" +
+				"                \"value\": \"广东省\"\n" +
+				"            },\n" +
+				"            \"dimension\":\"distinct_id\",\n" +
+				"            \"dataConfig\": {\n" +
+				"                \"hostAndPorts\":\"192.168.0.223:6379\",  \n" +
+				"                \"clusterMode\":false,  \n" +
+				"                \"groupId\":\"schedule_desc_sugo_province\"  \n" +
+				"            },\n" +
+				"            \"context\":{\n" +
+				"                \"timeout\": 180000,\n" +
+				"                \"useOffheap\": true,\n" +
+				"                \"groupByStrategy\": \"v2\"\n" +
+				"            }\n" +
+				"      }\n" +
+				"  },\n" +
+				"\n" +
+				"  {\n" +
+				"    \"type\": \"usergroup\",\n" +
+				"    \"query\": {\n" +
+				"      \"dataConfig\": { \n" +
+				"            \"hostAndPorts\": \"192.168.0.220:6379\",\n" +
+				"            \"clusterMode\": false,\n" +
+				"            \"sentinelMode\": false,\n" +
+				"            \"groupId\": \"usergroup_HJMqcLLtG\"\n" +
+				"      }\n" +
+				"    },\n" +
+				"    \"op\": \"or\"\n" +
+				"  },\n" +
+				"  {\n" +
+				"      \"type\": \"uindex\",\n" +
+				"      \"brokerUrl\": \"http://192.168.0.223:8082/druid/v2?pretty\",\n" +
+				"      \"query\": {\n" +
+				"                \"queryType\":\"user_group\",\n" +
+				"                \"dataSource\":\"tag_bank\",\n" +
+				"                \"granularity\":\"all\",\n" +
+				"                \"intervals\": \"1000/3000\",\n" +
+				"                \"filter\": {\n" +
+				"                    \"type\": \"selector\",\n" +
+				"                    \"dimension\": \"ub_risk\",\n" +
+				"                    \"value\": \"R4\"\n" +
+				"                },\n" +
+				"                \"dimension\":\"distinct_id\",\n" +
+				"                \"dataConfig\": {\n" +
+				"                    \"hostAndPorts\":\"192.168.0.223:6379\",  \n" +
+				"                    \"clusterMode\":false,  \n" +
+				"                    \"groupId\":\"tag_bank_ub_risk\"  \n" +
+				"                },\n" +
+				"                \"context\":{\n" +
+				"                    \"timeout\": 180000,\n" +
+				"                    \"useOffheap\": true,\n" +
+				"                    \"groupByStrategy\": \"v2\"\n" +
+				"                }\n" +
+				"      },\n" +
+				"      \"op\": \"exclude\"\n" +
+				"  },\n" +
+				"  {\n" +
+				"    \"type\": \"finalGroup\",\n" +
+				"    \"query\": {\n" +
+				"      \"dataConfig\": { \n" +
+				"            \"hostAndPorts\":\"192.168.0.223:6379\",  \n" +
+				"            \"clusterMode\":false,  \n" +
+				"            \"groupId\":\"test_usergroup_multi\"  \n" +
+				"      }\n" +
+				"    }\n" +
+				"  }\n" +
+				"]";
+		ObjectMapper objectMapper = new ObjectMapper();
+		UserGroupHelper helper = new UserGroupHelper(objectMapper, RedisClientCache.getInstance(Configure.getConfigure()));
+		UserGroupResource resource = new UserGroupResource(objectMapper, helper);
+		List<Map<String, Object>> params = (List<Map<String, Object>> )objectMapper.readValue(paramStr, List.class);
+		Map<String, Object> paramsMap = resource.parseMultiUserGroupParam(params);
+		helper.doMultiUserGroupOperation(paramsMap);
+		Map<String, Object> finalGroup = (Map<String, Object> )paramsMap.get("finalGroup");
+		UserGroupQuery finalQuery = (UserGroupQuery) finalGroup.get("query");
+		log.info(testReadDataFromRedis(finalQuery.getDataConfig()).toString());
+	}
+
+	public static void testDoUserGroupQueryIncremental() throws IOException {
+		String queryStr = "{\n" +
+				"    \"queryType\":\"user_group\",\n" +
+				"    \"dataSource\":\"userinfo\",\n" +
+				"    \"granularity\":\"all\",\n" +
+				"    \"intervals\": \"1000/3000\",\n" +
+				"    \"filter\": {\n" +
+				"        \"type\": \"selector\",\n" +
+				"        \"dimension\": \"province\",\n" +
+				"        \"value\": \"广东省\"\n" +
+				"    },\n" +
+				"    \"dimension\":\"province\",\n" +
+				"    \"dataConfig\": {\n" +
+				"        \"hostAndPorts\":\"192.168.0.223:6379\",  \n" +
+				"        \"clusterMode\":false,  \n" +
+				"        \"groupId\":\"usergrpu_1\"  \n" +
+				"    },\n" +
+				"    \"aggregations\":[\n" +
+				"        {\n" +
+				"            \"name\": \"sum(age)\",\n" +
+				"            \"type\": \"lucene_doubleSum\",\n" +
+				"            \"fieldName\": \"age\"\n" +
+				"        }\n" +
+				"    ],\n" +
+				"    \"context\":{\n" +
+				"        \"timeout\": 180000,\n" +
+				"        \"useOffheap\": true,\n" +
+				"        \"groupByStrategy\": \"v2\"\n" +
+				"    }\n" +
+				"}";
+		ObjectMapper objectMapper = new ObjectMapper();
+		UserGroupQuery userGroupQuery = objectMapper.readValue(queryStr, UserGroupQuery.class);
+		UserGroupHelper helper = new UserGroupHelper(objectMapper, RedisClientCache.getInstance(Configure.getConfigure()));
+		List<Map> result = helper.doUserGroupQueryIncremental(userGroupQuery, "http://192.168.0.212:8082/druid/v2?pretty");
+		log.info(testReadDataFromRedis(userGroupQuery.getDataConfig()).toString());
 	}
 }
