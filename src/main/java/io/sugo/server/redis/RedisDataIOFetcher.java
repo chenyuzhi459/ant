@@ -124,7 +124,7 @@ public class RedisDataIOFetcher implements DataIOFetcher {
     buf.get(bytes);
     cache.releaseRedisClient(redisInfo, wrapper);
     long end = System.currentTimeMillis();
-    log.info(String.format("Read redis[%s] spendTime:%d data bytes:%d", groupId, end - start, bytes.length));
+    log.info(String.format("Read redis[%s] spendTime:%d ms, data bytes:%d", groupId, end - start, bytes.length));
     return bytes;
   }
 

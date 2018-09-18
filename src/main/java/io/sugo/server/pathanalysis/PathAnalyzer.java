@@ -74,7 +74,7 @@ public class PathAnalyzer {
             }
 
             long after = System.currentTimeMillis();
-            log.info(String.format("Path analysis total cost %d million seconds.", after - before));
+            log.info(String.format("Path analysis total cost %d ms.", after - before));
         } catch (Throwable t) {
             log.error("Path analysis error.", t);
         }

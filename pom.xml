@@ -21,9 +21,11 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.1.0</version>
                 <configuration>
-                    <descriptor>src/assembly/assembly.xml</descriptor>
+                    <descriptors>
+                        <descriptor>src/assembly/assembly.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <executions>
                     <execution>
@@ -35,6 +37,45 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-shade-plugin</artifactId>-->
+                <!--<version>3.1.0</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>shade</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<minimizeJar>true</minimizeJar>-->
+                            <!--&lt;!&ndash;<filters>&ndash;&gt;-->
+                                <!--&lt;!&ndash;<filter>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<artifact>com.sun.jersey.contribs:jersey-guice</artifact>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<includes>&ndash;&gt;-->
+                                        <!--&lt;!&ndash;<include>**</include>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;</includes>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<excludes>&ndash;&gt;-->
+                                        <!--&lt;!&ndash;<exclude>com/sun/jersey/core/spi/factory/AbstractRuntimeDelegate*</exclude>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;</excludes>&ndash;&gt;-->
+                                <!--&lt;!&ndash;</filter>&ndash;&gt;-->
+                            <!--&lt;!&ndash;</filters>&ndash;&gt;-->
+                            <!--<relocation>-->
+                                <!--<pattern>com.sun.jersey</pattern>-->
+                                <!--<shadedPattern>com.shaded.jersey</shadedPattern>-->
+                                <!--<includes>-->
+                                    <!--<include>com.sun.jersey.core.spi.factory.AbstractRuntimeDelegate</include>-->
+                                <!--</includes>-->
+                            <!--</relocation>-->
+                            <!--<transformers>-->
+                                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
+                                    <!--<mainClass>io.sugo.server.http.AntServer</mainClass>-->
+                                <!--</transformer>-->
+                            <!--</transformers>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 
@@ -102,23 +143,8 @@
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-grizzly2-http</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet-core</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
             <version>${jersey.version}</version>
         </dependency>
 
@@ -314,13 +340,33 @@
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-guice</artifactId>
             <version>1.19</version>
+            <type>jar</type>
             <exclusions>
                 <exclusion>
                     <groupId>javax.ws.rs</groupId>
                     <artifactId>jsr311-api</artifactId>
                 </exclusion>
+                <!--<exclusion>-->
+                    <!--<groupId>com.sun.jersey</groupId>-->
+                    <!--<artifactId>jersey-core</artifactId>-->
+                <!--</exclusion>-->
             </exclusions>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.sun.jersey</groupId>-->
+            <!--<artifactId>jersey-core</artifactId>-->
+            <!--<version>${jersey.version}</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>com.sun.jersey</groupId>-->
+            <!--<artifactId>jersey-server</artifactId>-->
+            <!--<version>${jersey.version}</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>com.sun.jersey</groupId>-->
+            <!--<artifactId>jersey-json</artifactId>-->
+            <!--<version>${jersey.version}</version>-->
+        <!--</dependency>-->
     </dependencies>
 
 

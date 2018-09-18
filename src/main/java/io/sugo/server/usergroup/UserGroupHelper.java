@@ -42,8 +42,7 @@ public class UserGroupHelper {
 
 		try {
 			String queryStr = jsonMapper.writeValueAsString(query);
-			log.info("Begin to request getUserGroupQueryResult...");
-			log.info(String.format("RequestMetada = Broker url: %s . Param: %s", brokerUrl, queryStr));
+			log.info(String.format("Begin to request getUserGroupQueryResult, requestMetada : \n Broker url= %s . Param= %s", brokerUrl, queryStr));
 			long before = System.currentTimeMillis();
 			OkHttpClient client = new OkHttpClient();
 			RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
@@ -66,7 +65,7 @@ public class UserGroupHelper {
 				}
 
 				long after = System.currentTimeMillis();
-				log.info(String.format("GetUserGroupQueryResult total cost %d million seconds.", after - before));
+				log.info(String.format("GetUserGroupQueryResult total cost %d ms.", after - before));
 			}finally {
 				if(response != null){
 					//close response to avoid memery leak
@@ -84,6 +83,8 @@ public class UserGroupHelper {
 
 	public List<Map> doUserGroupQueryIncremental(UserGroupQuery query, String brokerUrl){
 		List<Map> result = new ArrayList<>();
+		log.info("Begin to doUserGroupQueryIncremental...");
+		long startMillis = System.currentTimeMillis();
 		RedisDataIOFetcher redisIOFactory = query.getDataConfig();
 		RedisClientWrapper redisClient = redisClientCache.getRedisClient(redisIOFactory.getRedisInfo());
 		String redisKey = redisIOFactory.getGroupId();
@@ -111,6 +112,8 @@ public class UserGroupHelper {
 				resultMap.put("event", ImmutableMap.of("RowCount", finalLen));
 				result.clear();
 				result.add(resultMap);
+				long endMillis = System.currentTimeMillis();
+				log.info(String.format("UserGroupQueryIncremental total cost %d ms.", endMillis - startMillis));
 			}
 		}catch (Throwable t){
 
@@ -134,6 +137,8 @@ public class UserGroupHelper {
 
 	public List<Map> doMultiUserGroupOperation(Map<String, Object> userGroupParams){
 		List<Map> result = new ArrayList<>();
+		log.info("Begin to doMultiUserGroupOperation...");
+		long startMillis = System.currentTimeMillis();
 		Map<String, Object> finalGroup = (Map<String, Object> )userGroupParams.get("finalGroup");
 		List<Map<String, Object>> userGroupList = (List<Map<String, Object>>)userGroupParams.get("userGroupList");
 		Set<String> acculatedData = new HashSet<>();
@@ -197,6 +202,8 @@ public class UserGroupHelper {
 			Map<String, Object> resultMap = new HashMap<>();
 			resultMap.put("event", ImmutableMap.of("RowCount", finalLen));
 			result.add(resultMap);
+			long endMillis = System.currentTimeMillis();
+			log.info(String.format("MultiUserGroupOperation total cost %d ms.", endMillis - startMillis));
 		}catch (Throwable t){
 			log.error("Do multiUserGroupOperation occurs error!",t);
 			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));

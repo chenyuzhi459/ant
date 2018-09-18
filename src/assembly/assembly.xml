@@ -7,6 +7,7 @@
         <!--<format>tar.bz2</format>-->
         <!--<format>zip</format>-->
     </formats>
+
     <fileSets>
         <fileSet>
             <directory>${project.basedir}</directory>
@@ -53,6 +54,10 @@
             <useProjectArtifact>false</useProjectArtifact>
             <useTransitiveDependencies>true</useTransitiveDependencies>
             <outputDirectory>lib</outputDirectory>
+            <excludes>
+                <exclude>com.sun.jersey.contribs:jersey-guice:jar:com.sun.jersey.api.uri.UriBuilderImpl:*</exclude>
+                <exclude>com.sun.jersey.contribs:jersey-guice:jar:com.sun.jersey.core.spi.factory.AbstractRuntimeDelegate:*</exclude>
+            </excludes>
         </dependencySet>
     </dependencySets>
 </assembly>

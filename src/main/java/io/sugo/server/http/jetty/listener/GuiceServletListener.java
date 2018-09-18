@@ -19,6 +19,7 @@ import java.util.List;
  */
 public class GuiceServletListener extends GuiceServletContextListener {
 	private static final Logger LOG = LogManager.getLogger(GuiceServletListener.class);
+	private List<Module> otherModules = new ArrayList<>();
 	private Injector injector;
 
 	public GuiceServletListener(Injector injector) {

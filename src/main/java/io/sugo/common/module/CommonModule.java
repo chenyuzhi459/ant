@@ -1,10 +1,7 @@
 package io.sugo.common.module;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Names;
+import com.google.inject.*;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import io.sugo.common.guice.annotations.LazySingleton;
 import io.sugo.common.guice.AntScopes;
 import io.sugo.server.http.Configure;
@@ -23,6 +20,8 @@ public class CommonModule implements Module {
 	@Override
 	public void configure(Binder binder) {
 		binder.bindScope(LazySingleton.class, AntScopes.SINGLETON);
+		binder.bind(GuiceContainer.class).to(JettyServerModule.PioGuiceContainer.class);
+		binder.bind(JettyServerModule.PioGuiceContainer.class).in(Scopes.SINGLETON);
 	}
 
 	@Provides

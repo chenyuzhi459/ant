@@ -54,7 +54,7 @@ public class UserGroupResource {
 			}
 			return Response.ok(result == null ? Collections.emptyList(): result).build();
 		} catch (Throwable e) {
-			log.error("Handle singleUserGroup error!",e);
+			log.error("Resource handle singleUserGroup error!",e);
 			return Response.serverError().entity(Collections.
 					singletonList(ImmutableMap.of("error", e.getMessage())))
 					.build();
@@ -72,7 +72,7 @@ public class UserGroupResource {
 			List<Map> result =  userGroupHelper.doMultiUserGroupOperation(paramMap);
 			return Response.ok(result == null ? Collections.emptyList(): result).build();
 		} catch (Throwable e) {
-			log.error("Handle multiUserGroup error!",e);
+			log.error("Resource handle multiUserGroup error!",e);
 			return Response.serverError().entity(Collections.
 					singletonList(ImmutableMap.of("error", e.getMessage())))
 					.build();

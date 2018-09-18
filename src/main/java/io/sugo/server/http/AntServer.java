@@ -1,6 +1,7 @@
 package io.sugo.server.http;
 
 import com.google.inject.servlet.GuiceFilter;
+//import com.sun.jersey.spi.container.servlet.ServletContainer;
 import io.sugo.common.guice.GuiceManager;
 import io.sugo.common.module.CommonModule;
 import io.sugo.common.module.JacksonModule;
@@ -10,7 +11,7 @@ import io.sugo.server.http.jetty.listener.GuiceServletListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.glassfish.jersey.servlet.ServletContainer;
+
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -19,6 +20,8 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
+import org.glassfish.jersey.servlet.ServletContainer;
+
 import javax.servlet.DispatcherType;
 import java.util.ArrayList;
 import java.util.EnumSet;

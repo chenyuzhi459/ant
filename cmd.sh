@@ -19,8 +19,9 @@ case $startStop in
         exit 0
     fi
 
-    nohup java -Djson.dir=/data1/logview/service_module_path.json -Dlog.path=/data1/ant -cp $basepath/sugo-ant-1.0-SNAPSHOT.jar:$basepath/lib/* $main_class $basepath/conf/config &
-    chod 666 /data1/ant/ant.log
+    cd $basepath
+    nohup java `cat $basepath/conf/config/jvm.config | xargs` -Dlog.path=/data1/ant -cp $basepath/sugo-ant-1.0-SNAPSHOT.jar:$basepath/lib/* $main_class $basepath/conf/config &
+    chmod 666 /data1/ant/ant.log
 #    sleep 2
     nodeType_PID=`ps -ef | grep $main_class | grep -v "grep "| awk '{print $2}'`
 #    echo $nodeType_PID > $pid
