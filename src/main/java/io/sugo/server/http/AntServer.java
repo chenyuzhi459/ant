@@ -1,6 +1,8 @@
 package io.sugo.server.http;
 
 import com.google.inject.servlet.GuiceFilter;
+import com.sun.jersey.spi.container.servlet.ServletContainer;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 //import com.sun.jersey.spi.container.servlet.ServletContainer;
 import io.sugo.common.guice.GuiceManager;
 import io.sugo.common.module.CommonModule;
@@ -20,7 +22,7 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
-import org.glassfish.jersey.servlet.ServletContainer;
+//import org.glassfish.jersey.servlet.ServletContainer;
 
 import javax.servlet.DispatcherType;
 import java.util.ArrayList;
@@ -38,30 +40,32 @@ public class AntServer {
     public static final CountDownLatch latch = new CountDownLatch(1);
 
     public static void main(String[] args) throws Exception {
-        GuiceManager guiceManager = new GuiceManager.Builder()
-                .addModule(new CommonModule(args.length > 0 ? args[0] : "src/main/resources/config/"))
-                .addModule(new JettyServerModule())
-                .addModule(new JacksonModule())
-                .build();
-        Configure configure = guiceManager.getInstance(Configure.class);
-        port = configure.getInt("system.properties","http.port");
-
-        LOG.info("initializing server");
-        Server server = null;
-        try {
-            server = makeJettyServer(configure);
-            initialize(server, guiceManager);
-            server.start();
-            LOG.info("start...in " + port);
-            latch.await();
-        }catch (Exception e){
-            LOG.error(e);
-        }finally {
-            if (server != null) {
-                server.stop();
-            }
-            LOG.info("server stopped!");
-        }
+        ServerRunnable serverRunnable = new ServerRunnable(args.length > 0 ? args[0] : "src/main/resources/config/");
+        serverRunnable.run();
+//        GuiceManager guiceManager = new GuiceManager.Builder()
+//                .addModule(new CommonModule(args.length > 0 ? args[0] : "src/main/resources/config/"))
+//                .addModule(new JettyServerModule())
+//                .addModule(new JacksonModule())
+//                .build();
+//        Configure configure = guiceManager.getInstance(Configure.class);
+//        port = configure.getInt("system.properties","http.port");
+//
+//        LOG.info("initializing server");
+//        Server server = null;
+//        try {
+//            server = makeJettyServer(configure);
+//            initialize(server, guiceManager);
+//            server.start();
+//            LOG.info("start...in " + port);
+//            latch.await();
+//        }catch (Exception e){
+//            LOG.error(e);
+//        }finally {
+//            if (server != null) {
+//                server.stop();
+//            }
+//            LOG.info("server stopped!");
+//        }
 
     }
 
@@ -93,7 +97,7 @@ public class AntServer {
     private static void initialize(Server server, GuiceManager guiceManager) {
 
         final ServletContextHandler apiHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        apiHandler.setContextPath("/");
+//        apiHandler.setContextPath("/");
 
         ServletHolder servletHolder = new ServletHolder(ServletContainer.class);
         apiHandler.addServlet(servletHolder, "/*");

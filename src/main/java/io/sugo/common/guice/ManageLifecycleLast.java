@@ -1,7 +1,22 @@
 package io.sugo.common.guice;
 
+import com.google.inject.ScopeAnnotation;
+import io.sugo.common.module.LifecycleModule;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
- * Created by chenyuzhi on 18-9-18.
+ * Marks the object to be managed by {@link com.metamx.common.lifecycle.Lifecycle} and set to be on Stage.LAST
+ *
+ * This Scope gets defined by {@link LifecycleModule}
  */
-public class ManageLifecycleLast {
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Retention(RUNTIME)
+@ScopeAnnotation
+public @interface ManageLifecycleLast
+{
 }

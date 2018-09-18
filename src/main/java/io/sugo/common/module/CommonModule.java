@@ -20,8 +20,6 @@ public class CommonModule implements Module {
 	@Override
 	public void configure(Binder binder) {
 		binder.bindScope(LazySingleton.class, AntScopes.SINGLETON);
-		binder.bind(GuiceContainer.class).to(JettyServerModule.PioGuiceContainer.class);
-		binder.bind(JettyServerModule.PioGuiceContainer.class).in(Scopes.SINGLETON);
 	}
 
 	@Provides

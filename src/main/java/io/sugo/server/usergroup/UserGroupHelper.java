@@ -387,13 +387,13 @@ public class UserGroupHelper {
 				"]";
 		ObjectMapper objectMapper = new ObjectMapper();
 		UserGroupHelper helper = new UserGroupHelper(objectMapper, RedisClientCache.getInstance(Configure.getConfigure()));
-		UserGroupResource resource = new UserGroupResource(objectMapper, helper);
-		List<Map<String, Object>> params = (List<Map<String, Object>> )objectMapper.readValue(paramStr, List.class);
-		Map<String, Object> paramsMap = resource.parseMultiUserGroupParam(params);
-		helper.doMultiUserGroupOperation(paramsMap);
-		Map<String, Object> finalGroup = (Map<String, Object> )paramsMap.get("finalGroup");
-		UserGroupQuery finalQuery = (UserGroupQuery) finalGroup.get("query");
-		log.info(testReadDataFromRedis(finalQuery.getDataConfig()).toString());
+//		UserGroupResource resource = new UserGroupResource(objectMapper, helper);
+//		List<Map<String, Object>> params = (List<Map<String, Object>> )objectMapper.readValue(paramStr, List.class);
+//		Map<String, Object> paramsMap = resource.parseMultiUserGroupParam(params);
+//		helper.doMultiUserGroupOperation(paramsMap);
+//		Map<String, Object> finalGroup = (Map<String, Object> )paramsMap.get("finalGroup");
+//		UserGroupQuery finalQuery = (UserGroupQuery) finalGroup.get("query");
+//		log.info(testReadDataFromRedis(finalQuery.getDataConfig()).toString());
 	}
 
 	public static void testDoUserGroupQueryIncremental() throws IOException {

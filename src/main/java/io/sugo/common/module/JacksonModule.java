@@ -2,6 +2,7 @@ package io.sugo.common.module;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.inject.*;
 import io.sugo.common.guice.GuiceAnnotationIntrospector;
 import io.sugo.common.guice.GuiceInjectableValues;
@@ -30,6 +31,7 @@ public class JacksonModule implements Module {
     {
         ObjectMapper objectMapper = new DefaultObjectMapper();
         setupJackson(injector, objectMapper);
+        objectMapper.registerModule(new SimpleModule());
         return objectMapper;
     }
 

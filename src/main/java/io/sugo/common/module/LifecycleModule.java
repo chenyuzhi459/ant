@@ -1,9 +1,13 @@
-package io.sugo.common.guice;
+package io.sugo.common.module;
 
 import com.google.inject.*;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 import com.metamx.common.lifecycle.Lifecycle;
+import io.sugo.common.guice.KeyHolder;
+import io.sugo.common.guice.LifecycleScope;
+import io.sugo.common.guice.ManageLifecycle;
+import io.sugo.common.guice.ManageLifecycleLast;
 import io.sugo.common.guice.annotations.LazySingleton;
 
 import java.lang.annotation.Annotation;
@@ -135,7 +139,6 @@ public class LifecycleModule implements Module
 		};
 		scope.setLifecycle(lifecycle);
 		lastScope.setLifecycle(lifecycle);
-
 		return lifecycle;
 	}
 }
