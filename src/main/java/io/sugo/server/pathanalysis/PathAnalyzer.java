@@ -139,7 +139,6 @@ public class PathAnalyzer {
         }
     }
 
-
     private boolean sameSession(PageAccessRecordVo preRecord, PageAccessRecordVo currentRecord, String firstPage) {
         // First page
         if (preRecord == null && currentRecord.getPageName().equals(firstPage)) {

@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.sugo.server.http.Configure;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +53,11 @@ public class RedisClientCache {
 
     cache = builder.build();
 
-    Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+
+    Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder().setDaemon(true)
+                    .setNameFormat("redis-client-cache-%s").build()
+    ).scheduleAtFixedRate(() -> {
       Iterator<String> iter = keys.iterator();
       String key;
       while (iter.hasNext()) {

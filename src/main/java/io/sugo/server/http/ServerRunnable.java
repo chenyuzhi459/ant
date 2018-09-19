@@ -1,31 +1,27 @@
 package io.sugo.server.http;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.inject.Binder;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.metamx.common.lifecycle.Lifecycle;
-import io.sugo.common.module.CommonModule;
-import io.sugo.common.module.JacksonModule;
-import io.sugo.common.module.LifecycleModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
-
-import java.util.List;
 
 /**
  * Created by chenyuzhi on 18-9-18.
  */
-public class ServerRunnable extends GuiceRunnable {
+public class ServerRunnable implements Runnable {
 	private static final Logger log = LogManager.getLogger(ServerRunnable.class);
-	private String configPath;
+	private Injector injector;
+
+	public ServerRunnable(Injector injector)
+	{
+		this.injector = injector;
+	}
+
 	@Override
 	public void run()
 	{
-		final Injector injector = makeInjector();
-		final Lifecycle lifecycle = initLifecycle(injector);
+		final Lifecycle lifecycle = initLifecycle(this.injector);
 
 		try {
 			lifecycle.join();
@@ -34,24 +30,33 @@ public class ServerRunnable extends GuiceRunnable {
 			throw Throwables.propagate(e);
 		}
 	}
-	public ServerRunnable(String configPath)
+
+	public Lifecycle initLifecycle(Injector injector)
 	{
-		super(log);
-		this.configPath = configPath;
+		try {
+			final Lifecycle lifecycle = injector.getInstance(Lifecycle.class);
+			int httpPort = injector.getInstance(Configure.class).getInt("system.properties","http.port");
+
+			log.info(
+					String.format("Starting up with processors[%,d], memory[%,d].",
+							Runtime.getRuntime().availableProcessors(),
+							Runtime.getRuntime().totalMemory())
+			);
+
+			try {
+				lifecycle.start();
+				log.info("Start...in " + httpPort);
+			} catch (Throwable t) {
+				log.error("Error when starting up.  Failing.",t);
+				log.error(String.format("Lifecycle:[%s] start error", lifecycle.getClass().getName()));
+				System.exit(1);
+			}
+
+			return lifecycle;
+		}
+		catch (Exception e) {
+			throw Throwables.propagate(e);
+		}
 	}
 
-
-	@Override
-	protected List<? extends Module> getModules() {
-		return ImmutableList.<Module>of(
-				new Module() {
-					@Override
-					public void configure(Binder binder) {
-						LifecycleModule.register(binder, Server.class);
-					}
-				},
-				new CommonModule(configPath),
-				new JacksonModule()
-		);
-	}
 }

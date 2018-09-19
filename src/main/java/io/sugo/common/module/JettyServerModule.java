@@ -5,23 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.Iterables;
 import com.google.inject.*;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.GuiceFilter;
 import com.metamx.common.lifecycle.Lifecycle;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
-//import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-import com.sun.jersey.spi.container.servlet.ServletContainer;
 import com.sun.jersey.spi.container.servlet.WebConfig;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.guice.annotations.LazySingleton;
 import io.sugo.server.http.Configure;
 import io.sugo.server.http.jetty.JettyMonitoringConnectionFactory;
-import io.sugo.server.http.jetty.ServletFilterHolder;
-import io.sugo.server.http.jetty.listener.GuiceServletListener;
 import io.sugo.server.http.resource.pathanalysis.PathAnalysisResource;
 import io.sugo.server.http.resource.usergroup.UserGroupResource;
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +26,7 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -41,13 +37,8 @@ import javax.servlet.ServletException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-//import static com.sun.jersey.api.core.PackagesResourceConfig.PROPERTY_PACKAGES;
-
-/**
- * Created by chenyuzhi on 18-9-6.
- */
 public class JettyServerModule extends JerseyServletModule {
-	private static final Logger LOG = LogManager.getLogger(JettyServerModule.class);
+	private static final Logger log = LogManager.getLogger(JettyServerModule.class);
 	private static final AtomicInteger activeConnections = new AtomicInteger();
 
 	@Override
@@ -55,30 +46,21 @@ public class JettyServerModule extends JerseyServletModule {
 	{
 
 		Binder binder = binder();
+		//register server
 		LifecycleModule.register(binder, Server.class);
-		binder.bind(UserGroupResource.class);
-//		JsonConfigProvider.bind(binder, "pio.server.http", ServerConfig.class);
 
 		binder.bind(GuiceContainer.class).to(PioGuiceContainer.class);
 		binder.bind(PioGuiceContainer.class).in(Scopes.SINGLETON);
-		binder.bind(GuiceServletListener.class);
-
 		serve("/*").with(PioGuiceContainer.class);
 
-		//Adding empty binding for ServletFilterHolders so that injector returns
-		//an empty set when no external modules provide ServletFilterHolder impls
-		Multibinder.newSetBinder(binder, ServletFilterHolder.class);
 	}
 
 	public static class PioGuiceContainer extends GuiceContainer
 	{
-//		private final Set<Class<?>> resources;
-
 		@Inject
 		public PioGuiceContainer(Injector injector) {
 			super(injector);
 		}
-
 
 		@Override
 		protected ResourceConfig getDefaultResourceConfig(
@@ -93,6 +75,7 @@ public class JettyServerModule extends JerseyServletModule {
 			return resourceConfig;
 		}
 	}
+
 	@Provides
 	@LazySingleton
 	public Server getServer(
@@ -132,21 +115,16 @@ public class JettyServerModule extends JerseyServletModule {
 	{
 		try {
 			final ServletContextHandler apiHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
-//        apiHandler.setContextPath("/");
 
-			ServletHolder servletHolder = new ServletHolder(ServletContainer.class);
-//        servletHolder.setInitParameter("com.sun.jersey.config.property.packages", "io.sugo.server.http.resource");
-			servletHolder.setInitParameter("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
-			servletHolder.setInitParameter("com.sun.jersey.config.property.packages", "io.sugo.server.http.resource");
-			apiHandler.addServlet(servletHolder, "/*");
+			apiHandler.addServlet(new ServletHolder(new DefaultServlet()),"/*");
 
-			// add GuiceFilter to support GuiceServletListener
+			// add GuiceFilter to support Guice Inject
 			apiHandler.addFilter(GuiceFilter.class,"/*", EnumSet.of(DispatcherType.REQUEST));
-			apiHandler.addEventListener(injector.getInstance(GuiceServletListener.class));
 			HandlerList handlerList = new HandlerList();
 			handlerList.addHandler(apiHandler);
 
 			server.setHandler(handlerList);
+
 		}
 		catch (ConfigurationException e) {
 			throw new ProvisionException(Iterables.getFirst(e.getErrorMessages(), null).getMessage());
@@ -168,7 +146,7 @@ public class JettyServerModule extends JerseyServletModule {
 							server.stop();
 						}
 						catch (Exception e) {
-							LOG.warn("Unable to stop Jetty server.",e);
+							log.warn("Unable to stop Jetty server.",e);
 						}
 					}
 				}

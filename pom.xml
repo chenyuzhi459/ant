@@ -37,45 +37,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-shade-plugin</artifactId>-->
-                <!--<version>3.1.0</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<phase>package</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>shade</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<minimizeJar>true</minimizeJar>-->
-                            <!--&lt;!&ndash;<filters>&ndash;&gt;-->
-                                <!--&lt;!&ndash;<filter>&ndash;&gt;-->
-                                    <!--&lt;!&ndash;<artifact>com.sun.jersey.contribs:jersey-guice</artifact>&ndash;&gt;-->
-                                    <!--&lt;!&ndash;<includes>&ndash;&gt;-->
-                                        <!--&lt;!&ndash;<include>**</include>&ndash;&gt;-->
-                                    <!--&lt;!&ndash;</includes>&ndash;&gt;-->
-                                    <!--&lt;!&ndash;<excludes>&ndash;&gt;-->
-                                        <!--&lt;!&ndash;<exclude>com/sun/jersey/core/spi/factory/AbstractRuntimeDelegate*</exclude>&ndash;&gt;-->
-                                    <!--&lt;!&ndash;</excludes>&ndash;&gt;-->
-                                <!--&lt;!&ndash;</filter>&ndash;&gt;-->
-                            <!--&lt;!&ndash;</filters>&ndash;&gt;-->
-                            <!--<relocation>-->
-                                <!--<pattern>com.sun.jersey</pattern>-->
-                                <!--<shadedPattern>com.shaded.jersey</shadedPattern>-->
-                                <!--<includes>-->
-                                    <!--<include>com.sun.jersey.core.spi.factory.AbstractRuntimeDelegate</include>-->
-                                <!--</includes>-->
-                            <!--</relocation>-->
-                            <!--<transformers>-->
-                                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
-                                    <!--<mainClass>io.sugo.server.http.AntServer</mainClass>-->
-                                <!--</transformer>-->
-                            <!--</transformers>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
         </plugins>
     </build>
 
@@ -91,11 +52,6 @@
     </properties>
 
     <dependencies>
-        <!--<dependency>-->
-            <!--<groupId>org.codehaus.jackson</groupId>-->
-            <!--<artifactId>jackson-core-asl</artifactId>-->
-            <!--<version>1.9.2</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
@@ -137,23 +93,6 @@
             <version>${jackson.version}</version>
         </dependency>
 
-
-        <!--<dependency>-->
-            <!--<groupId>org.glassfish.jersey.core</groupId>-->
-            <!--<artifactId>jersey-server</artifactId>-->
-            <!--<version>${jersey.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.glassfish.jersey.containers</groupId>-->
-            <!--<artifactId>jersey-container-servlet-core</artifactId>-->
-            <!--<version>${jersey.version}</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-            <!--<groupId>org.glassfish.jersey.connectors</groupId>-->
-            <!--<artifactId>jersey-apache-connector</artifactId>-->
-            <!--<version>${jersey.version}</version>-->
-        <!--</dependency>-->
 
 
         <dependency>
@@ -299,6 +238,11 @@
             <version>${log4j.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-web</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <!--<version>4.0-beta</version>-->
@@ -341,10 +285,10 @@
             <version>1.19</version>
             <type>jar</type>
             <exclusions>
-                <exclusion>
-                    <groupId>javax.ws.rs</groupId>
-                    <artifactId>jsr311-api</artifactId>
-                </exclusion>
+                <!--<exclusion>-->
+                    <!--<groupId>javax.ws.rs</groupId>-->
+                    <!--<artifactId>jsr311-api</artifactId>-->
+                <!--</exclusion>-->
                 <exclusion>
                     <groupId>com.google.inject</groupId>
                     <artifactId>guice</artifactId>

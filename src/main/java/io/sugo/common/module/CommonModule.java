@@ -1,7 +1,6 @@
 package io.sugo.common.module;
 
 import com.google.inject.*;
-import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import io.sugo.common.guice.annotations.LazySingleton;
 import io.sugo.common.guice.AntScopes;
 import io.sugo.server.http.Configure;

@@ -23,19 +23,6 @@ public class TreePlanter {
         if (path == null) {
             return;
         }
-        /*for (AccessPath path : accessPaths) {
-            if (path.equals(newPath)) {
-                path.increaseFrequency();
-
-                int nodeSize = path.length();
-                List<PathNode> nodeList = path.getNodeList();
-                List<PathNode> newNodeList = newPath.getNodeList();
-                for (int i = 0; i < nodeSize; i++) {
-                    nodeList.get(i).accumulateStayTime(newNodeList.get(i).getStayTime());
-                }
-                return;
-            }
-        }*/
 
         accessPaths.add(path);
         growTree(path);

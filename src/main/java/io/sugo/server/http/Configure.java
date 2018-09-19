@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class Configure {
-  private static final Logger LOG = LogManager.getLogger(Configure.class);
+  private static final Logger log = LogManager.getLogger(Configure.class);
   @Named("configPath")
   public static  String CONFIG_PATH ;
 
@@ -36,8 +36,8 @@ public class Configure {
   }
 
   public static void initConfigPath(String basePath){
-    LOG.info("config basePath:" + basePath);
-    LOG.info("logPath=====" + System.getProperty("log.path"));
+    log.info("config basePath:" + basePath);
+    log.info("logPath=====" + System.getProperty("log.path"));
     CONFIG_PATH = basePath;
   }
   private Configure() {
@@ -47,12 +47,12 @@ public class Configure {
 
   private void loadConf(File file) {
     if (!file.exists()) {
-      LOG.error(CONFIG_PATH + " not exists");
+      log.error(CONFIG_PATH + " not exists");
       return;
     }
     if (file.isDirectory()) {
       File files[] = file.listFiles((dir, name) ->{return name.endsWith(".properties");});
-      LOG.info(  "reading config info");
+      log.info(  "reading config info");
       for (File sonFile : files) {
         if (sonFile.isFile()) {
           allProperties.put(sonFile.getName(),loadConfFromFile(sonFile));
@@ -66,11 +66,11 @@ public class Configure {
   private Properties loadConfFromFile(File file) {
     Properties properties = new Properties();
     try {
-      LOG.info("---------------------------------------");
+      log.info("---------------------------------------");
       properties.load(new FileInputStream(file));
-      LOG.info("confName: " + file.getName());
+      log.info("confName: " + file.getName());
       for (Object key : properties.keySet()) {
-        LOG.info(key + " : " + properties.getProperty(key.toString()));
+        log.info(key + " : " + properties.getProperty(key.toString()));
       }
     } catch (IOException ix) {
       ix.printStackTrace();
@@ -104,7 +104,7 @@ public class Configure {
     try {
       return Integer.parseInt(value);
     } catch (Exception e) {
-      LOG.error("Configure getInt error!", e);
+      log.error("Configure getInt error!", e);
     }
     return 0;
   }
@@ -115,7 +115,7 @@ public class Configure {
     try {
       return Integer.parseInt(value);
     } catch (Exception e) {
-      LOG.error("Configure getInt error!", e);
+      log.error("Configure getInt error!", e);
     }
     return 0;
   }
@@ -125,7 +125,7 @@ public class Configure {
     try {
       return Boolean.parseBoolean(value);
     } catch (Exception e) {
-      LOG.error("Configure getBoolean error!", e);
+      log.error("Configure getBoolean error!", e);
     }
     return false;
   }
@@ -136,7 +136,7 @@ public class Configure {
     try {
       return Boolean.parseBoolean(value);
     } catch (Exception e) {
-      LOG.error("Configure getBoolean error!", e);
+      log.error("Configure getBoolean error!", e);
     }
     return false;
   }

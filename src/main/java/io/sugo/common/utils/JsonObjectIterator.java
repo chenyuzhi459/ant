@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class JsonObjectIterator implements Iterator, Closeable {
-    private static final Logger LOG = LogManager.getLogger(JsonObjectIterator.class);
+    private static final Logger log = LogManager.getLogger(JsonObjectIterator.class);
     private static final TypeReference<HashMap> typeRef = new TypeReference<HashMap>() { };
 
     private final InputStream inputStream;
@@ -42,7 +42,7 @@ public class JsonObjectIterator implements Iterator, Closeable {
         try {
             this.jsonParser = jsonFactory.createParser(inputStream);
         } catch (final IOException e) {
-            LOG.error("There was a problem setting up the JsonParser: " + e.getMessage(), e);
+            log.error("There was a problem setting up the JsonParser: " + e.getMessage(), e);
             throw new RuntimeException("There was a problem setting up the JsonParser: " + e.getMessage(), e);
         }
     }
@@ -58,7 +58,7 @@ public class JsonObjectIterator implements Iterator, Closeable {
             // Initialize the first object
             this.initNextObject();
         } catch (final Exception e) {
-            LOG.error("There was a problem initializing the first element of the Json Structure: " + e.getMessage(), e);
+            log.error("There was a problem initializing the first element of the Json Structure: " + e.getMessage(), e);
             throw new RuntimeException("There was a problem initializing the first element of the Json Structure: " + e.getMessage(), e);
         }
     }
@@ -84,7 +84,7 @@ public class JsonObjectIterator implements Iterator, Closeable {
                 throw new IllegalStateException("The next parsed object of the Json structure was null");
             }
         } catch (final Exception e) {
-            LOG.error("There was a problem initializing the next Object: " + e.getMessage(), e);
+            log.error("There was a problem initializing the next Object: " + e.getMessage(), e);
             throw new RuntimeException("There was a problem initializing the next Object: " + e.getMessage(), e);
         }
     }
