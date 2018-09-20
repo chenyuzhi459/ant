@@ -32,8 +32,12 @@ public class PathAnalyzer {
 
     public AccessTree getAccessTree(String queryStr, String homePage, boolean reversed, String queryUrl) {
         long before = System.currentTimeMillis();
-        log.info("Begin to path analysis...");
-        log.info(String.format("Scan query url: %s . Param: %s", queryUrl, queryStr));
+//        log.info("Begin to path analysis...");
+        log.info(String.format(
+                "Begin to path analysis...\n" +
+                ">>>>>>>>>>>>>>>>\n " +
+                "Scan query url= %s . Param= %s\n" +
+                "<<<<<<<<<<<<<<<<", queryUrl, queryStr));
 
         int depth = reversed ? PathAnalysisConstant.TREE_DEPTH_REVERSE : PathAnalysisConstant.TREE_DEPTH_NORMAL;
 

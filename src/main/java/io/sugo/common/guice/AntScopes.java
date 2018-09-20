@@ -38,7 +38,7 @@ public class AntScopes
     @Override
     public String toString()
     {
-      return "DruidScopes.SINGLETON";
+      return "AntScopes.SINGLETON";
     }
   };
 }

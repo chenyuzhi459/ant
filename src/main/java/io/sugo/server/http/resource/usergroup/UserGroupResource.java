@@ -22,7 +22,7 @@ import java.util.*;
 
 @Path("/ant/usergroup/")
 public class UserGroupResource {
-	private static final Logger log = LogManager.getLogger(UserGroupHelper.class);
+	private static final Logger log = LogManager.getLogger(UserGroupResource.class);
 	private UserGroupHelper userGroupHelper;
 	private final ObjectMapper jsonMapper;
 
@@ -39,6 +39,7 @@ public class UserGroupResource {
 	public Response handleSingleUserGroup(
 			Map<String, Object> singleUserGroupParam) {
 		try {
+			checkParam(singleUserGroupParam);
 			String brokerUrl = (String) singleUserGroupParam.get("brokerUrl");
 			Boolean append = (Boolean) singleUserGroupParam.get("append");
 			Map userGroupQueryMap = (Map)singleUserGroupParam.get("query");
@@ -68,6 +69,7 @@ public class UserGroupResource {
 	public Response handleMultiUserGroup(
 			List<Map<String, Object>> userGroupList) {
 		try {
+			checkParam(userGroupList);
 			Map<String, Object> paramMap = parseMultiUserGroupParam(userGroupList);
 			List<Map> result =  userGroupHelper.doMultiUserGroupOperation(paramMap);
 			return Response.ok(result == null ? Collections.emptyList(): result).build();
@@ -114,8 +116,15 @@ public class UserGroupResource {
 		return paramMap;
 	}
 
+	private void checkParam(Object param){
+		try {
+			log.info(String.format("UserGroupResource original param: %s", jsonMapper.writeValueAsString(param)));
+		}catch (Exception e){
+		}
+	}
+
  	private void checkUrl(String url){
-		Preconditions.checkNotNull(url, "url can not be null.");
+		Preconditions.checkNotNull(url, "Url can not be null.");
 	}
 
 	private void checkQuery(UserGroupQuery userGroupQuery) {

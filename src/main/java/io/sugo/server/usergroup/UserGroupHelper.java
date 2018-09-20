@@ -3,6 +3,7 @@ package io.sugo.server.usergroup;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.sugo.common.utils.JsonObjectIterator;
 import io.sugo.server.redis.RedisClientCache;
@@ -38,7 +39,11 @@ public class UserGroupHelper {
 
 		try {
 			String queryStr = jsonMapper.writeValueAsString(query);
-			log.info(String.format("Begin to request getUserGroupQueryResult, requestMetada : \n Broker url= %s . Param= %s", brokerUrl, queryStr));
+			log.info(String.format("Begin to request getUserGroupQueryResult, requestMetada:\n" +
+					">>>>>>>>>>>>>>>>\n " +
+					"UserGroup query url= %s . Param= %s\n" +
+					"<<<<<<<<<<<<<<<<", brokerUrl, queryStr));
+
 			long before = System.currentTimeMillis();
 			OkHttpClient client = new OkHttpClient();
 			RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
@@ -57,7 +62,13 @@ public class UserGroupHelper {
 						}
 					}
 				}else {
-					throw new UserGroupException(response.body().string());
+					String errStr = response.body().string();
+					Object originalMessage = null;
+					try {
+						originalMessage = jsonMapper.readValue(errStr, Object.class);
+					}catch (Exception e){
+					}
+					throw new UserGroupException(originalMessage, errStr);
 				}
 
 				long after = System.currentTimeMillis();
@@ -90,6 +101,13 @@ public class UserGroupHelper {
 		boolean backup = backupRedisData(redisClient, redisKey, backupKey);
 		try {
 			result = getUserGroupQueryResult(query, brokerUrl);
+			Map queryMap = result.get(0);
+			//prune queryMap
+			queryMap.remove("v");
+			queryMap.computeIfPresent("event", (key, value)->{
+				Map<String, Object> eventMap = (Map)value;
+				return Maps.filterKeys(eventMap, (key2)->{return key2.equals("RowCount");});
+			});
 			if(backup){
 				UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(redisIOFactory);
 				UserGroupSerDeserializer backupSerDeserializer = new UserGroupSerDeserializer(redisIOFactory.clone(backupKey));
@@ -111,15 +129,16 @@ public class UserGroupHelper {
 				long endMillis = System.currentTimeMillis();
 				log.info(String.format("UserGroupQueryIncremental total cost %d ms.", endMillis - startMillis));
 			}
+		} catch (UserGroupException ugException) {
+			log.error( "Do userGroupQueryIncremental occurs remote exception!", ugException);
+			result = Collections.singletonList(ImmutableMap.of("error",
+					ugException.getOriginalMessage() != null ? ugException.getOriginalMessage() : ugException.getMessage()));
 		}catch (Throwable t){
-
 			log.error( "Do userGroupQueryIncremental occurs error!",t);
 			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));
 		}finally {
 			currentData.clear();
 			backupData.clear();
-			currentData = null;
-			backupData = null;
 
 			if(redisClient != null){
 				if(backup){
@@ -200,6 +219,10 @@ public class UserGroupHelper {
 			result.add(resultMap);
 			long endMillis = System.currentTimeMillis();
 			log.info(String.format("MultiUserGroupOperation total cost %d ms.", endMillis - startMillis));
+		}catch (UserGroupException ugException) {
+			log.error( "Do multiUserGroupOperation occurs remote exception!", ugException);
+			result = Collections.singletonList(ImmutableMap.of("error",
+					ugException.getOriginalMessage() != null ? ugException.getOriginalMessage() : ugException.getMessage()));
 		}catch (Throwable t){
 			log.error("Do multiUserGroupOperation occurs error!",t);
 			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));
@@ -275,7 +298,7 @@ public class UserGroupHelper {
 
 	private boolean backupRedisData(RedisClientWrapper redisClient, String redisKey, String backupKey){
 		if(!redisClient.exists(redisKey)){
-			log.warn(String.format("Can not backup usergroup data on redis with key [%s], beacuse it doesn't exists.",redisKey));
+			log.info(String.format("Can not backup usergroup data on redis with key [%s], beacuse it doesn't exists.",redisKey));
 			// no need to backup
 			return false;
 		}

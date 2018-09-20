@@ -71,7 +71,7 @@ public class PathAnalysisResource {
 
     private void check(PathAnalysisDto pathAnalysisDto) {
         try {
-            log.info(String.format("Path analysis param: %s", jsonMapper.writeValueAsString(pathAnalysisDto)));
+            log.info(String.format("PathAnalysisResource original param: %s", jsonMapper.writeValueAsString(pathAnalysisDto)));
         } catch (JsonProcessingException ignore) {
         }
 
