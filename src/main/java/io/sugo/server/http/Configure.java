@@ -1,5 +1,6 @@
 package io.sugo.server.http;
 
+import io.sugo.common.utils.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,7 +12,7 @@ import java.util.*;
 
 public class Configure {
   private static final Logger log = LogManager.getLogger(Configure.class);
-  @Named("configPath")
+//  @Named("configPath")
   public static  String CONFIG_PATH ;
 
   private Map<String, Properties> allProperties = new HashMap<>();
@@ -116,6 +117,28 @@ public class Configure {
       return Integer.parseInt(value);
     } catch (Exception e) {
       log.error("Configure getInt error!", e);
+    }
+    return 0;
+  }
+
+  public long getLong(String propName,String key) {
+
+    String value = getProperty(propName,key);
+    try {
+      return Long.parseLong(value);
+    } catch (Exception e) {
+      log.error("Configure getLong error!", e);
+    }
+    return 0;
+  }
+
+  public long getLong(String propName,String key,long defaultValue) {
+
+    String value = getProperty(propName,key,defaultValue+"");
+    try {
+      return Long.parseLong(value);
+    } catch (Exception e) {
+      log.error("Configure getLong error!", e);
     }
     return 0;
   }

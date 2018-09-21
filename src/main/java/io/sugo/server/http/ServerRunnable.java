@@ -3,6 +3,7 @@ package io.sugo.server.http;
 import com.google.common.base.Throwables;
 import com.google.inject.Injector;
 import com.metamx.common.lifecycle.Lifecycle;
+import io.sugo.server.hive.SQLManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,7 +46,7 @@ public class ServerRunnable implements Runnable {
 
 			try {
 				lifecycle.start();
-				log.info("Start...in " + httpPort);
+				log.info("Started server... in " + httpPort);
 			} catch (Throwable t) {
 				log.error("Error when starting up.  Failing.",t);
 				log.error(String.format("Lifecycle:[%s] start error", lifecycle.getClass().getName()));

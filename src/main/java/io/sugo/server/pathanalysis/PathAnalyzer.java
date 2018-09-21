@@ -41,13 +41,14 @@ public class PathAnalyzer {
 
         int depth = reversed ? PathAnalysisConstant.TREE_DEPTH_REVERSE : PathAnalysisConstant.TREE_DEPTH_NORMAL;
 
+        Response queryResponse = null;
         try {
             OkHttpClient client = new OkHttpClient();
             RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
             Request request = new Request.Builder().url(queryUrl).post(body).build();
 
-            Response response = client.newCall(request).execute();
-            InputStream stream = response.body().byteStream();
+            queryResponse = client.newCall(request).execute();
+            InputStream stream = queryResponse.body().byteStream();
 
             JsonObjectIterator iterator = new JsonObjectIterator(stream);
 
@@ -81,9 +82,13 @@ public class PathAnalyzer {
             log.info(String.format("Path analysis total cost %d ms.", after - before));
         } catch (Throwable t) {
             log.error("Path analysis error.", t);
+        }finally {
+            if(queryResponse != null){
+                //close response to avoid memery leak
+                queryResponse.close();
+            }
         }
 
-//        log.info(String.format("Total path: %d", planter.accessPaths.size()));
         return planter.getRoot();
     }
 

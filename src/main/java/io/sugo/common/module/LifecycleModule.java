@@ -5,6 +5,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 import com.metamx.common.lifecycle.Lifecycle;
 import io.sugo.common.guice.KeyHolder;
+import io.sugo.common.guice.LifecycleScope;
 import io.sugo.common.guice.annotations.LazySingleton;
 
 import java.lang.annotation.Annotation;
@@ -15,6 +16,8 @@ import java.util.Set;
  */
 public class LifecycleModule implements Module
 {
+	private final LifecycleScope scope = new LifecycleScope(Lifecycle.Stage.NORMAL);
+	private final LifecycleScope lastScope = new LifecycleScope(Lifecycle.Stage.LAST);
 	/**
 	 * Registers a class to instantiate eagerly.  Classes mentioned here will be pulled out of
 	 * the injector with an injector.getInstance() call when the lifecycle is created.
@@ -128,6 +131,9 @@ public class LifecycleModule implements Module
 				super.start();
 			}
 		};
+		scope.setLifecycle(lifecycle);
+		lastScope.setLifecycle(lifecycle);
+
 		return lifecycle;
 	}
 }

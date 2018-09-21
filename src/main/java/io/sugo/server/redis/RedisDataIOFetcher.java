@@ -3,6 +3,7 @@ package io.sugo.server.redis;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sugo.common.cache.Caches;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +17,7 @@ public class RedisDataIOFetcher implements DataIOFetcher {
   private static final Logger log = LogManager.getLogger(RedisDataIOFetcher.class);
   private final static int BATCH_SIZE = 1 * 1024 * 1024;
   private final static int DIRECT_BUFFER_SIZE = 100 * 1024 * 1024;
-  private RedisClientCache cache;
+  private Caches.RedisClientCache cache;
 
   private String groupId;
   private final RedisInfo redisInfo;
@@ -29,7 +30,7 @@ public class RedisDataIOFetcher implements DataIOFetcher {
       @JsonProperty("masterName") String masterName,
       @JsonProperty("password") String password,
       @JsonProperty("groupId") String groupId,
-      @JacksonInject RedisClientCache redisClientCache
+      @JacksonInject Caches.RedisClientCache redisClientCache
   ) {
     this.groupId = groupId;
     redisInfo = new RedisInfo(hostAndPorts, clusterMode, sentinelMode, masterName, password);

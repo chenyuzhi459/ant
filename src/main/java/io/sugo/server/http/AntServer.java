@@ -2,10 +2,7 @@ package io.sugo.server.http;
 
 
 import io.sugo.common.guice.GuiceManager;
-import io.sugo.common.module.CommonModule;
-import io.sugo.common.module.JacksonModule;
-import io.sugo.common.module.JettyServerModule;
-import io.sugo.common.module.LifecycleModule;
+import io.sugo.common.module.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,6 +17,7 @@ public class AntServer {
                 .addModule(new JacksonModule())
                 .addModule(new LifecycleModule())
                 .addModule(new JettyServerModule())
+                .addModule(new HiveModule())
                 .build();
         log.info(String.format("Initialized [%d] Guice Modules", guiceManager.getModules().size()));
         ServerRunnable serverRunnable = new ServerRunnable(guiceManager.getInjector());

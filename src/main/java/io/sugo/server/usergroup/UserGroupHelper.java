@@ -5,8 +5,8 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import io.sugo.common.cache.Caches;
 import io.sugo.common.utils.JsonObjectIterator;
-import io.sugo.server.redis.RedisClientCache;
 import io.sugo.server.redis.RedisDataIOFetcher;
 import io.sugo.server.redis.RedisClientWrapper;
 import io.sugo.server.redis.RedisInfo;
@@ -23,13 +23,13 @@ import java.util.*;
 public class UserGroupHelper {
 	private static final Logger log = LogManager.getLogger(UserGroupHelper.class);
 	private final ObjectMapper jsonMapper;
-	private final RedisClientCache redisClientCache;
+	private final Caches.RedisClientCache redisClientCache;
 	private static final String AND_OPERATION = "and";
 	private static final String OR_OPERATION = "or";
 	private static final String EXCLUDE_OPERATION = "exclude";
 
 	@Inject
-	public UserGroupHelper(@Json ObjectMapper jsonMapper, RedisClientCache redisClientCache) {
+	public UserGroupHelper(@Json ObjectMapper jsonMapper, Caches.RedisClientCache redisClientCache) {
 		this.jsonMapper = jsonMapper;
 		this.redisClientCache = redisClientCache;
 	}

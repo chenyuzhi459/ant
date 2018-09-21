@@ -13,10 +13,13 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.WebConfig;
+import io.sugo.common.cache.Caches;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.guice.annotations.LazySingleton;
+import io.sugo.server.hive.SQLManager;
 import io.sugo.server.http.Configure;
 import io.sugo.server.http.jetty.JettyMonitoringConnectionFactory;
+import io.sugo.server.http.resource.hive.HiveClientResource;
 import io.sugo.server.http.resource.pathanalysis.PathAnalysisResource;
 import io.sugo.server.http.resource.usergroup.UserGroupResource;
 import org.apache.logging.log4j.LogManager;
@@ -70,6 +73,7 @@ public class JettyServerModule extends JerseyServletModule {
 			Set<Class<?>> resources = new HashSet<>();
 			resources.add(UserGroupResource.class);
 			resources.add(PathAnalysisResource.class);
+			resources.add(HiveClientResource.class);
 			ResourceConfig resourceConfig = new DefaultResourceConfig(resources);
 			resourceConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 			return resourceConfig;
@@ -83,6 +87,7 @@ public class JettyServerModule extends JerseyServletModule {
 	{
 		final Server server = makeJettyServer(configure);
 		initializeServer(injector, lifecycle, server);
+		initialServices(injector, lifecycle);
 		return server;
 	}
 
@@ -151,8 +156,55 @@ public class JettyServerModule extends JerseyServletModule {
 					}
 				}
 		);
-	}
 
+	}
+	static void initialServices(Injector injector, Lifecycle lifecycle){
+		final SQLManager sqlManager = injector.getInstance(SQLManager.class);
+		final Caches caches = injector.getInstance(Caches.class);
+		lifecycle.addHandler(
+				new Lifecycle.Handler()
+				{
+					@Override
+					public void start() throws Exception
+					{
+						sqlManager.start();
+					}
+
+					@Override
+					public void stop()
+					{
+						try {
+							sqlManager.stop();
+						}
+						catch (Exception e) {
+							log.warn("Unable to stop Jetty server.",e);
+						}
+					}
+				}
+		);
+
+		lifecycle.addHandler(
+				new Lifecycle.Handler()
+				{
+					@Override
+					public void start() throws Exception
+					{
+						caches.start();
+					}
+
+					@Override
+					public void stop()
+					{
+						try {
+							caches.stop();
+						}
+						catch (Exception e) {
+							log.warn("Unable to stop Jetty server.",e);
+						}
+					}
+				}
+		);
+	}
 	@Provides
 	@Singleton
 	public JacksonJsonProvider getJacksonJsonProvider(@Json ObjectMapper objectMapper)
