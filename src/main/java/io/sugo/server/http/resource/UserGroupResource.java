@@ -1,4 +1,4 @@
-package io.sugo.server.http.resource.usergroup;
+package io.sugo.server.http.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;

@@ -1,4 +1,4 @@
-package io.sugo.server.http.resource.hive;
+package io.sugo.server.http.resource;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
