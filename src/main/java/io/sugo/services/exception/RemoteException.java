@@ -1,16 +1,16 @@
-package io.sugo.services.usergroup.exception;
+package io.sugo.services.exception;
 
 /**
  * Created by chenyuzhi on 18-9-5.
  */
-public class UserGroupException extends RuntimeException {
+public class RemoteException extends RuntimeException {
 	private Object originalMessage;
 
 
-	public UserGroupException(Object originalMessage, String message) {
-		super(message);
+	public RemoteException(Object originalMessage) {
 		this.originalMessage = originalMessage;
 	}
+
 
 	public Object getOriginalMessage() {
 		return originalMessage;

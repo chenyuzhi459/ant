@@ -11,7 +11,7 @@ import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.RedisClientWrapper;
 import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.services.usergroup.exception.UserGroupException;
+import io.sugo.services.exception.RemoteException;
 import io.sugo.services.usergroup.model.UserGroupQuery;
 import io.sugo.common.guice.annotations.Json;
 import okhttp3.*;
@@ -49,8 +49,8 @@ public class UserGroupHelper {
 			RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
 			Request request = new Request.Builder().url(brokerUrl).post(body).build();
 
-			Response response = client.newCall(request).execute();
-			try {
+
+			try (Response response = client.newCall(request).execute()){
 				if(response.code() == 200){
 					InputStream stream = response.body().byteStream();
 					JsonObjectIterator iterator = new JsonObjectIterator(stream);
@@ -63,21 +63,17 @@ public class UserGroupHelper {
 					}
 				}else {
 					String errStr = response.body().string();
-					Object originalMessage = null;
+					Object originalMessage;
 					try {
 						originalMessage = jsonMapper.readValue(errStr, Object.class);
 					}catch (Exception e){
+						originalMessage = errStr;
 					}
-					throw new UserGroupException(originalMessage, errStr);
+					throw new RemoteException(originalMessage);
 				}
 
 				long after = System.currentTimeMillis();
 				log.info(String.format("GetUserGroupQueryResult total cost %d ms.", after - before));
-			}finally {
-				if(response != null){
-					//close response to avoid memery leak
-					response.close();
-				}
 			}
 
 		} catch (Throwable t) {
@@ -129,10 +125,9 @@ public class UserGroupHelper {
 				long endMillis = System.currentTimeMillis();
 				log.info(String.format("UserGroupQueryIncremental total cost %d ms.", endMillis - startMillis));
 			}
-		} catch (UserGroupException ugException) {
-			log.error( "Do userGroupQueryIncremental occurs remote exception!", ugException);
-			result = Collections.singletonList(ImmutableMap.of("error",
-					ugException.getOriginalMessage() != null ? ugException.getOriginalMessage() : ugException.getMessage()));
+		} catch (RemoteException rmException) {
+			log.error( "Do userGroupQueryIncremental occurs remote exception!", rmException);
+			result = Collections.singletonList(ImmutableMap.of("error", rmException.getOriginalMessage()));
 		}catch (Throwable t){
 			log.error( "Do userGroupQueryIncremental occurs error!",t);
 			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));
@@ -219,10 +214,9 @@ public class UserGroupHelper {
 			result.add(resultMap);
 			long endMillis = System.currentTimeMillis();
 			log.info(String.format("MultiUserGroupOperation total cost %d ms.", endMillis - startMillis));
-		}catch (UserGroupException ugException) {
-			log.error( "Do multiUserGroupOperation occurs remote exception!", ugException);
-			result = Collections.singletonList(ImmutableMap.of("error",
-					ugException.getOriginalMessage() != null ? ugException.getOriginalMessage() : ugException.getMessage()));
+		}catch (RemoteException rmException) {
+			log.error( "Do multiUserGroupOperation occurs remote exception!", rmException);
+			result = Collections.singletonList(ImmutableMap.of("error", rmException.getOriginalMessage()));
 		}catch (Throwable t){
 			log.error("Do multiUserGroupOperation occurs error!",t);
 			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));

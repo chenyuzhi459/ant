@@ -88,7 +88,7 @@ url:http://192.168.0.248:9001/hive/client/task/result
 结果示例:
 ```
 {
-    "data": [
+    "dimData": [
         {
             "queryId": "3",
             "result": "[78369]",

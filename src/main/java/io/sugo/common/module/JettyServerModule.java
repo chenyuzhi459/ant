@@ -22,6 +22,7 @@ import io.sugo.server.http.Configure;
 import io.sugo.server.http.jetty.JettyMonitoringConnectionFactory;
 import io.sugo.server.http.resource.HiveClientResource;
 import io.sugo.server.http.resource.PathAnalysisResource;
+import io.sugo.server.http.resource.TagResource;
 import io.sugo.server.http.resource.UserGroupResource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -76,6 +77,7 @@ public class JettyServerModule extends JerseyServletModule {
 			resources.add(UserGroupResource.class);
 			resources.add(PathAnalysisResource.class);
 			resources.add(HiveClientResource.class);
+			resources.add(TagResource.class);
 			ResourceConfig resourceConfig = new DefaultResourceConfig(resources);
 			resourceConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 			return resourceConfig;
