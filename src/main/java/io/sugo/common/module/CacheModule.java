@@ -4,8 +4,7 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import io.sugo.common.cache.Caches;
-import io.sugo.server.hive.SQLManager;
+import io.sugo.services.cache.Caches;
 
 /**
  * Created by chenyuzhi on 18-9-25.

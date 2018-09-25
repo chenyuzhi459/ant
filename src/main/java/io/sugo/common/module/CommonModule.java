@@ -2,7 +2,7 @@ package io.sugo.common.module;
 
 import com.google.inject.*;
 import com.google.inject.name.Names;
-import io.sugo.common.cache.Caches;
+import io.sugo.services.cache.Caches;
 import io.sugo.common.guice.annotations.LazySingleton;
 import io.sugo.common.guice.AntScopes;
 import io.sugo.server.http.Configure;

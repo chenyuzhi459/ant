@@ -5,9 +5,9 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.common.utils.StringUtil;
-import io.sugo.server.hive.SQLManager;
-import io.sugo.server.hive.bean.SQLBean;
-import io.sugo.server.hive.client.HiveClient;
+import io.sugo.services.hive.SQLManager;
+import io.sugo.services.hive.model.SQLBean;
+import io.sugo.services.hive.client.HiveClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

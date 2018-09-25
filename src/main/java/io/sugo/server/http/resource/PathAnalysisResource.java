@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
-import io.sugo.server.pathanalysis.dto.PathAnalysisDto;
-import io.sugo.server.pathanalysis.PathAnalyzer;
-import io.sugo.server.pathanalysis.model.AccessTree;
+import io.sugo.services.pathanalysis.dto.PathAnalysisDto;
+import io.sugo.services.pathanalysis.PathAnalyzer;
+import io.sugo.services.pathanalysis.model.AccessTree;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

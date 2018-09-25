@@ -1,10 +1,10 @@
 package io.sugo.common.module;
 
 import com.google.inject.*;
-import io.sugo.common.cache.Caches;
-import io.sugo.server.hive.SQLManager;
-import io.sugo.server.hive.client.HiveClient;
-import io.sugo.server.hive.client.HiveClientFactory;
+import io.sugo.services.cache.Caches;
+import io.sugo.services.hive.SQLManager;
+import io.sugo.services.hive.client.HiveClient;
+import io.sugo.services.hive.client.HiveClientFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
