@@ -82,7 +82,7 @@ public class UserGroupHelper {
 
 		} catch (Throwable t) {
 			log.error("Get userGroupQueryResult error.", t);
-			Throwables.propagate(t);
+			throw Throwables.propagate(t);
 		}
 
 		return result;

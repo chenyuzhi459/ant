@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static io.sugo.common.cache.Caches.*;
-
 /**
  * Created by chenyuzhi on 18-5-9.
  */
@@ -87,13 +85,12 @@ public class HiveClientResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response executeSync(SQLBean sqlBean) {
-//		log.info("sqlBean :"+sqlBean);
 		Response.ResponseBuilder builder ;
 		try {
 			List result = sqlManager.executeSQL(sqlBean);
 			builder = Response.ok(ImmutableMap.of("result",result,"success",true,"message","ok"));
 		} catch (Exception e){
-			log.error(e);
+			log.error("Execute sql error!",e);
 			builder = buildExecuteFailedMsg(Response.Status.INTERNAL_SERVER_ERROR,e.getMessage());
 		}
 		return builder.build();
@@ -110,7 +107,7 @@ public class HiveClientResource {
 		try {
 			String queryId = sqlBean.getQueryId();
 			if(!StringUtil.isEmpty(queryId)){
-				Collection sameSQLs = SQLManager.getSqlBeanInPendingQueueByQueryId(Collections.singletonList(queryId));
+				Collection sameSQLs = SQLManager.getSqlBeanInPendingQueue(Collections.singletonList(queryId));
 				if(sameSQLs.size() > 0) {
 					String message = String.format("sql [%s] has in the queue,please wait!",queryId);
 					log.warn(message);
@@ -126,7 +123,7 @@ public class HiveClientResource {
 			}
 
 		} catch (Exception e){
-			log.error(e);
+			log.error("Execute sql error!",e);
 			builder = buildExecuteFailedMsg(Response.Status.INTERNAL_SERVER_ERROR,e.getMessage());
 		}
 		return builder.build();

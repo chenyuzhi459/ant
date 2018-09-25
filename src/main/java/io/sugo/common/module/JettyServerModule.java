@@ -167,8 +167,8 @@ public class JettyServerModule extends JerseyServletModule {
 		final Key<Set<KeyHolder>> keyHolderKey = Key.get(new TypeLiteral<Set<KeyHolder>>(){}, Names.named("lifecycle"));
 		// get register services in LifecycleModule
 		List<Class>	serviceClasses=	injector.getInstance(keyHolderKey).stream()
-				.filter(keyHolder -> AntService.class.isAssignableFrom(keyHolder.getKey().getTypeLiteral().getRawType()))
 				.map((keyHolder -> keyHolder.getKey().getTypeLiteral().getRawType()))
+				.filter(keyClass -> AntService.class.isAssignableFrom(keyClass))
 				.collect(Collectors.toList());
 
 		for (Class<? extends AntService> serviceClass : serviceClasses) {

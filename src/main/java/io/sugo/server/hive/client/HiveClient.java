@@ -168,14 +168,13 @@ public class HiveClient implements Closeable{
 	public boolean retryToGetNewConn(long timeOutMillis){
 		int attempt = 0;
 		Exception exception = null;
-		close();
-		long currentTimeMillis = System.currentTimeMillis();
-		while (timeOutMillis<=0 || (System.currentTimeMillis() - currentTimeMillis) < timeOutMillis){
-			++attempt;
+		long startTimeMillis = System.currentTimeMillis();
+		while (timeOutMillis<=0 || (System.currentTimeMillis() - startTimeMillis) < timeOutMillis){
 			exception = null;
-			String retryMsg = String.format("try to retry get new Connection, attemp[%s]", attempt);
-			log.info(retryMsg);
 			try {
+				close();
+				Thread.sleep(connRetryInterval);
+				log.info(String.format("try to retry get new Connection, attemp[%s]", ++attempt));
 				conn = getNewConn();
 			} catch (Exception e) {
 				exception = e;
@@ -183,15 +182,8 @@ public class HiveClient implements Closeable{
 			}
 
 			if(exception == null){
+				log.info("retry get new Connection successFully!");
 				return true;
-			}
-
-			try {
-				// after 500ms to retry
-				close();
-				Thread.sleep(connRetryInterval);
-			} catch (InterruptedException e) {
-				log.error(e.getMessage(), e);
 			}
 		}
 		String errorMsg = String.format("retry get new Connection failed for timeout[%s s], attemp[%s]", timeOutMillis/1000,attempt);

@@ -2,10 +2,12 @@ package io.sugo.server.hive;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
 import io.sugo.common.utils.AntService;
 import io.sugo.common.utils.CapacityMap;
@@ -21,7 +23,6 @@ import org.joda.time.format.DateTimeFormatter;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.sugo.common.cache.Caches.*;
 import static io.sugo.common.utils.Constants.*;
@@ -31,9 +32,6 @@ public class SQLManager implements AntService{
 	public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS");
 	public static final BlockingQueue<SQLBean> PENDING_QUEUE = new LinkedBlockingQueue<>();
 	public static Map<String,SQLResult> RESULT_MAP ;
-
-	private static AtomicInteger executorThreadNum = new AtomicInteger(0);
-
 	private static final int DEFAULT_EXECUTION_DURATION_SEC = 30;
 	private static int DEFAULT_SQL_RESULT_LIVE_SIZE = 10;
 	private volatile boolean started = false;
@@ -55,17 +53,11 @@ public class SQLManager implements AntService{
 
 		final int executeDurationSec =configure.getInt(HIVE_PROPS, Hive.HIVE_SQL_EXECUTE_DURATION_SEC, DEFAULT_EXECUTION_DURATION_SEC);
 		final int resultLiveSize = configure.getInt(HIVE_PROPS, Hive.HIVE_SQL_RESULT_LIVE_SIZE, DEFAULT_SQL_RESULT_LIVE_SIZE);
-
-		executorService = Executors.newScheduledThreadPool(2, new ThreadFactory() {
-			@Override
-			public Thread newThread(Runnable r) {
-				Thread t = new Thread(r);
-				t.setName("SQLManager-Thread-" + executorThreadNum.getAndAdd(1));
-				return t;
-			}
-		});
-
 		RESULT_MAP = new CapacityMap<>(resultLiveSize);
+
+		executorService = Executors.newScheduledThreadPool(1,
+				new ThreadFactoryBuilder().setNameFormat("SQLManager-Thread-%s").build());
+
 		//定时执行sql计算任务
 		executorService.scheduleWithFixedDelay(new Runnable() {
 			@Override
@@ -110,7 +102,6 @@ public class SQLManager implements AntService{
 		executeDurationSec,
 		TimeUnit.SECONDS);
 
-
 		started = true;
 		log.info("Started SQLManager service.");
 	}
@@ -146,7 +137,6 @@ public class SQLManager implements AntService{
 		String successCancelKey = "success";
 		String failedCancelKey = "failed";
 
-		List<SQLBean> sqlBeansInPendingQueue = Lists.newArrayList();
 		PENDING_QUEUE.removeIf(new java.util.function.Predicate<SQLBean>() {
 			@Override
 			public boolean test(SQLBean sqlBean) {
@@ -162,13 +152,11 @@ public class SQLManager implements AntService{
 		});
 
 		for(String queryId:queryIds){
-
 			try {
 				HiveClient.cancel(queryId);
 				List successList = resultMap.computeIfAbsent(successCancelKey, k -> Lists.newArrayList());
 				successList.add(queryId);
 			} catch (Exception e) {
-//				e.printStackTrace();
 				log.warn(String.format("sql[%s] cancel failed, failed msg:%s",queryId,e.getMessage()));
 				List failedList = resultMap.computeIfAbsent(failedCancelKey, k -> Lists.newArrayList());
 				failedList.add(ImmutableMap.of("queryId",queryId,"message",e.getMessage()));
@@ -182,7 +170,8 @@ public class SQLManager implements AntService{
 		PENDING_QUEUE.offer(sqlBean);
 		log.info(String.format("add sql[%s] to queue successfully",sqlBean.getQueryId()));
 	}
-	public static Collection<SQLBean> getSqlBeanInPendingQueueByQueryId(List queryIds){
+
+	public static Collection<SQLBean> getSqlBeanInPendingQueue(List queryIds){
 		return Collections2.filter(PENDING_QUEUE, new Predicate<SQLBean>() {
 			@Override
 			public boolean apply(@Nullable SQLBean sqlBean) {
@@ -201,10 +190,14 @@ public class SQLManager implements AntService{
 			List result = hiveClient.executeQuery(sqlBean);
 			log.info(String.format("sql[%s] has executed successfully", Strings.isNullOrEmpty(queryId) ? "" : queryId));
 			return result;
+		}catch (Exception e){
+			if(hiveClient != null){
+				hiveClient.close();
+			}
+			throw Throwables.propagate(e);
 		}finally {
 			hiveClientCache.releaseHiveClient(clientKey, hiveClient);
 		}
-
 	}
 
 	public class SQLResult {
@@ -296,7 +289,5 @@ public class SQLManager implements AntService{
 					'}';
 		}
 	}
-
-
 
 }
