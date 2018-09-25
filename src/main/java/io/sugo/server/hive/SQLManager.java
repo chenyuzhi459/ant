@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import io.sugo.common.utils.AntService;
 import io.sugo.common.utils.CapacityMap;
 import io.sugo.common.utils.StringUtil;
 import io.sugo.server.hive.bean.SQLBean;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.sugo.common.cache.Caches.*;
 import static io.sugo.common.utils.Constants.*;
 
-public class SQLManager {
+public class SQLManager implements AntService{
 	private static final Logger log = LogManager.getLogger(SQLManager.class);
 	public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS");
 	public static final BlockingQueue<SQLBean> PENDING_QUEUE = new LinkedBlockingQueue<>();
@@ -46,7 +47,7 @@ public class SQLManager {
 		this.hiveClientCache = hiveClientCache;
 	}
 
-
+	@Override
 	public void start(){
 		if(started) {
 			return;
@@ -114,6 +115,7 @@ public class SQLManager {
 		log.info("Started SQLManager service.");
 	}
 
+	@Override
 	public void stop(){
 		if(started){
 			executorService.shutdown();

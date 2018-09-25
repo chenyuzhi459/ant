@@ -4,7 +4,9 @@ package io.sugo.common.module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.inject.*;
+import com.google.inject.name.Names;
 import com.google.inject.servlet.GuiceFilter;
 import com.metamx.common.lifecycle.Lifecycle;
 import com.sun.jersey.api.core.DefaultResourceConfig;
@@ -14,8 +16,10 @@ import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.WebConfig;
 import io.sugo.common.cache.Caches;
+import io.sugo.common.guice.KeyHolder;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.guice.annotations.LazySingleton;
+import io.sugo.common.utils.AntService;
 import io.sugo.server.hive.SQLManager;
 import io.sugo.server.http.Configure;
 import io.sugo.server.http.jetty.JettyMonitoringConnectionFactory;
@@ -39,6 +43,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.ServletException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class JettyServerModule extends JerseyServletModule {
 	private static final Logger log = LogManager.getLogger(JettyServerModule.class);
@@ -159,52 +164,39 @@ public class JettyServerModule extends JerseyServletModule {
 
 	}
 	static void initialServices(Injector injector, Lifecycle lifecycle){
-		final SQLManager sqlManager = injector.getInstance(SQLManager.class);
-		final Caches caches = injector.getInstance(Caches.class);
-		lifecycle.addHandler(
-				new Lifecycle.Handler()
-				{
-					@Override
-					public void start() throws Exception
-					{
-						sqlManager.start();
-					}
+		final Key<Set<KeyHolder>> keyHolderKey = Key.get(new TypeLiteral<Set<KeyHolder>>(){}, Names.named("lifecycle"));
+		// get register services in LifecycleModule
+		List<Class>	serviceClasses=	injector.getInstance(keyHolderKey).stream()
+				.filter(keyHolder -> AntService.class.isAssignableFrom(keyHolder.getKey().getTypeLiteral().getRawType()))
+				.map((keyHolder -> keyHolder.getKey().getTypeLiteral().getRawType()))
+				.collect(Collectors.toList());
 
-					@Override
-					public void stop()
+		for (Class<? extends AntService> serviceClass : serviceClasses) {
+			AntService service = injector.getInstance(serviceClass);
+			lifecycle.addHandler(
+					new Lifecycle.Handler()
 					{
-						try {
-							sqlManager.stop();
+						@Override
+						public void start() throws Exception
+						{
+							service.start();
 						}
-						catch (Exception e) {
-							log.warn("Unable to stop Jetty server.",e);
-						}
-					}
-				}
-		);
 
-		lifecycle.addHandler(
-				new Lifecycle.Handler()
-				{
-					@Override
-					public void start() throws Exception
-					{
-						caches.start();
-					}
-
-					@Override
-					public void stop()
-					{
-						try {
-							caches.stop();
-						}
-						catch (Exception e) {
-							log.warn("Unable to stop Jetty server.",e);
+						@Override
+						public void stop()
+						{
+							try {
+								service.stop();
+							}
+							catch (Exception e) {
+								log.warn("Unable to stop Jetty server.",e);
+							}
 						}
 					}
-				}
-		);
+			);
+		}
 	}
+
 	@Provides
 	@Singleton
 	public JacksonJsonProvider getJacksonJsonProvider(@Json ObjectMapper objectMapper)

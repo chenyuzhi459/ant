@@ -26,7 +26,6 @@ public class CommonModule implements Module {
 		binder.bindScope(LazySingleton.class, AntScopes.SINGLETON);
 		binder.bind(Configure.class).toInstance(configure);
 		bindConstants(binder);
-		binder.requestStaticInjection(Caches.class);
 
 	}
 
@@ -37,9 +36,4 @@ public class CommonModule implements Module {
 		binder.bindConstant().annotatedWith(Names.named(Hive.JDBC_PASSWORD)).to(configure.getProperty(HIVE_PROPS, Hive.HIVE_CONNECTOR_PASSWORD));
 	}
 
-	@Provides
-	@Singleton
-	public Caches.RedisClientCache provideRedisClientCache(){
-		return Caches.RedisClientCache.getInstance();
-	}
 }

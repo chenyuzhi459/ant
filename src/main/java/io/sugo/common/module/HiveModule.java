@@ -20,9 +20,4 @@ public class HiveModule implements Module {
 		binder.requestStaticInjection(HiveClient.class);
 	}
 
-	@Provides
-	@Singleton
-	public Caches.HiveClientCache provideHiveClientCache(){
-		return Caches.HiveClientCache.getInstance();
-	}
 }

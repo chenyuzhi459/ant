@@ -3,6 +3,7 @@ package io.sugo.common.cache;
 import com.google.common.cache.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
+import io.sugo.common.utils.AntService;
 import io.sugo.server.hive.client.HiveClient;
 import io.sugo.server.hive.client.HiveClientFactory;
 import io.sugo.server.http.Configure;
@@ -17,7 +18,7 @@ import static io.sugo.common.utils.Constants.*;
 /**
  * Created by chenyuzhi on 17-10-23.
  */
-public class Caches {
+public class Caches implements AntService{
 	private static final Logger log = LogManager.getLogger(Caches.class);
 	private static int DEFAULT_EXPIRE_MINUTE = 5;
 	private static Map<Cache, Set<String>> cachedKeysMap = new HashMap<>();
@@ -182,6 +183,7 @@ public class Caches {
 	}
 
 
+	@Override
 	public void start(){
 		if(startMonitorCache){
 			return;
@@ -210,6 +212,7 @@ public class Caches {
 		log.info("Started cache monitor service.");
 	}
 
+	@Override
 	public void stop(){
 		if(!startMonitorCache){
 			return;

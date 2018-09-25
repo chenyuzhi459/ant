@@ -14,6 +14,7 @@ public class AntServer {
     public static void main(String[] args) throws Exception {
         GuiceManager guiceManager = new GuiceManager.Builder()
                 .addModule(new CommonModule(args.length > 0 ? args[0] : "src/main/resources/config/"))
+                .addModule(new CacheModule())
                 .addModule(new JacksonModule())
                 .addModule(new LifecycleModule())
                 .addModule(new JettyServerModule())
