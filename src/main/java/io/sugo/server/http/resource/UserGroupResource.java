@@ -2,14 +2,17 @@ package io.sugo.server.http.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import io.sugo.services.usergroup.UserGroupHelper;
+import io.sugo.services.usergroup.model.UserGroupBean;
 import io.sugo.services.usergroup.model.UserGroupQuery;
 import io.sugo.common.guice.annotations.Json;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.parquet.Strings;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -37,17 +40,15 @@ public class UserGroupResource {
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
 	public Response handleSingleUserGroup(
-			Map<String, Object> singleUserGroupParam) {
+			UserGroupBean userGroupBean) {
 		try {
-			checkParam(singleUserGroupParam);
-			String brokerUrl = (String) singleUserGroupParam.get("brokerUrl");
-			Boolean append = (Boolean) singleUserGroupParam.get("append");
-			Map userGroupQueryMap = (Map)singleUserGroupParam.get("query");
-			UserGroupQuery userGroupQuery = jsonMapper.readValue(
-					jsonMapper.writeValueAsString(userGroupQueryMap), UserGroupQuery.class);
+			checkParam(userGroupBean);
+			String brokerUrl = userGroupBean.getBrokerUrl();
 			checkUrl(brokerUrl);
+			UserGroupQuery userGroupQuery = userGroupBean.getQuery();
+
 			List<Map> result;
-			if(append){
+			if(userGroupBean.isAppend()){
 				result = userGroupHelper.doUserGroupQueryIncremental(userGroupQuery, brokerUrl);
 			}else {
 				result = userGroupHelper.getUserGroupQueryResult(userGroupQuery, brokerUrl);
@@ -66,10 +67,10 @@ public class UserGroupResource {
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
 	public Response handleMultiUserGroup(
-			List<Map<String, Object>> userGroupList) {
+			List<UserGroupBean> userGroupList) {
 		try {
 			checkParam(userGroupList);
-			Map<String, Object> paramMap = parseMultiUserGroupParam(userGroupList);
+			Map<String, List<UserGroupBean>> paramMap = parseMultiUserGroupParam(userGroupList);
 			List<Map> result =  userGroupHelper.doMultiUserGroupOperation(paramMap);
 			return Response.ok(result == null ? Collections.emptyList(): result).build();
 		} catch (Throwable e) {
@@ -80,37 +81,23 @@ public class UserGroupResource {
 		}
 	}
 
-	public Map<String, Object> parseMultiUserGroupParam(List<Map<String, Object>> userGroupList) throws IOException {
-		Map<String, Object> paramMap = new HashMap<>(2);
-		List<Map<String, Object>> realUserGroupList = new ArrayList<>();
-		for(Map<String, Object> map : userGroupList){
-			String type = (String) map.get("type");
-			if(type == null || type.isEmpty()){
+	public Map<String, List<UserGroupBean>> parseMultiUserGroupParam(List<UserGroupBean> userGroupList) throws IOException {
+		Map<String, List<UserGroupBean>> paramMap = new HashMap<>(2);
+		for(UserGroupBean userGroupBean : userGroupList){
+			String type =  userGroupBean.getType();
+			if(Strings.isNullOrEmpty(type)){
 				continue;
 			}
-			if(type.equals("tindex")|| type.equals("uindex")){
-				String brokerUrl = (String) map.get("brokerUrl");
-				checkUrl(brokerUrl);
+			if(UserGroupBean.INDEX_TYPES.contains(type)){
+				checkUrl(userGroupBean.getBrokerUrl());
 			}
-
-			Map queryMap = (Map) map.get("query");
-			Preconditions.checkNotNull(queryMap, "query field can not be null.");
-			UserGroupQuery query = null;
-			try {
-				query = jsonMapper.readValue(jsonMapper.writeValueAsString(queryMap), UserGroupQuery.class);
-			}catch (Exception e){
-				log.error("MultiUserGroup param can not  deserialize instance of UserGroupQuery", e);
-				Throwables.propagate(e);
-			}
-			map.put("query", query);
 
 			if (type.equals("finalGroup")){
-				paramMap.put("finalGroup", map);
+				paramMap.put("finalGroup", ImmutableList.of(userGroupBean));
 			}else {
-				realUserGroupList.add(map);
+				paramMap.computeIfAbsent("AssistantGroupList", (key -> Lists.newArrayList())).add(userGroupBean);
 			}
 		}
-		paramMap.put("userGroupList", realUserGroupList);
 		return paramMap;
 	}
 

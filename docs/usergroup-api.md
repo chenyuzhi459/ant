@@ -11,6 +11,7 @@ body参数:
 
     参数名 | 是否必须 | 类型 | 描述  | 默认值
     ---- | ----- | --- | --- | ----    
+    type | 是 | string | 此处固定为`finalGroup`|
     brokerUrl | 是 | string | 表示`tindex/uindex`引擎的broker地址 |
     query| 是 | obeject | `UserGroupQuery`的json对象,具体配置请参考[Sugo-UserGroupQuery查询接口](http://docs.sugo.io/developer/query/query.html#UserGroup) |
     append | 是 | boolean | 表示对用户分群的操作,false表示进行覆盖操作, true表示进行累加操作 |
@@ -24,6 +25,7 @@ type:post
 url:http://localhost:6061/ant/usergroup/single
 Body数据:
 {
+      "type": "finalGroup",
       "brokerUrl": "http://192.168.0.225:8082/druid/v2?pretty",
       "query": {
             "queryType":"user_group",

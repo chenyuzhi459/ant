@@ -37,19 +37,25 @@ public class DataUpdateHelper {
 		long before = System.currentTimeMillis();
 		log.info(String.format("Begin to update data for userGroup[%s]...", userGroupDataConfig.getGroupId()));
 
-		serDeserializer.deserialize(userGroupData);
-		List<UpdateBatch> updateBatches = new ArrayList<>(userGroupData.size());
-		for(String distinctId : userGroupData){
-			Map<String, Object> updateValues = new HashMap<>(dimData.size() + 1);
-			updateValues.put(primaryColumn, distinctId);
-			updateValues.putAll(dimData);
-			updateBatches.add(new UpdateBatch(updateValues, appendFlags));
+		try {
+			serDeserializer.deserialize(userGroupData);
+			List<UpdateBatch> updateBatches = new ArrayList<>(userGroupData.size());
+			for(String distinctId : userGroupData){
+				Map<String, Object> updateValues = new HashMap<>(dimData.size() + 1);
+				updateValues.put(primaryColumn, distinctId);
+				updateValues.putAll(dimData);
+				updateBatches.add(new UpdateBatch(updateValues, appendFlags));
+			}
+			Map<String, Object> result = sendData(dataBean.getHproxyUrl(), updateBatches);
+			long after = System.currentTimeMillis();
+			log.info(String.format("Update data to datasource[%s] for userGroup[%s] total cost %d ms.",
+					dataBean.getDataSource(), userGroupDataConfig.getGroupId(), after - before));
+			return result;
+		}finally {
+			userGroupData.clear();
 		}
-		Map<String, Object> result = sendData(dataBean.getHproxyUrl(), updateBatches);
-		long after = System.currentTimeMillis();
-		log.info(String.format("Update data to datasource[%s] for userGroup[%s] total cost %d ms.",
-				dataBean.getDataSource(), userGroupDataConfig.getGroupId(), after - before));
-		return result;
+
+
 	}
 
 	private Map<String, Object> sendData(String url, List<UpdateBatch> updateBatches){
