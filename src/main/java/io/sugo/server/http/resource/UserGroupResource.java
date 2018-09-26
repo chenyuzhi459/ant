@@ -46,7 +46,6 @@ public class UserGroupResource {
 			UserGroupQuery userGroupQuery = jsonMapper.readValue(
 					jsonMapper.writeValueAsString(userGroupQueryMap), UserGroupQuery.class);
 			checkUrl(brokerUrl);
-			checkQuery(userGroupQuery);
 			List<Map> result;
 			if(append){
 				result = userGroupHelper.doUserGroupQueryIncremental(userGroupQuery, brokerUrl);
@@ -103,7 +102,6 @@ public class UserGroupResource {
 				log.error("MultiUserGroup param can not  deserialize instance of UserGroupQuery", e);
 				Throwables.propagate(e);
 			}
-			checkQuery(query);
 			map.put("query", query);
 
 			if (type.equals("finalGroup")){
@@ -125,10 +123,6 @@ public class UserGroupResource {
 
  	private void checkUrl(String url){
 		Preconditions.checkNotNull(url, "Url can not be null.");
-	}
-
-	private void checkQuery(UserGroupQuery userGroupQuery) {
-		Preconditions.checkNotNull(userGroupQuery.getDataConfig(), "Data config can not be null.");
 	}
 
 }

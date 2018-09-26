@@ -34,28 +34,28 @@ public class DataUpdateHelper {
 		final Set<String> userGroupData = new HashSet<>();
 		final RedisDataIOFetcher userGroupDataConfig = dataBean.getUserGroupConfig();
 		final UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(userGroupDataConfig);
+		long before = System.currentTimeMillis();
+		log.info(String.format("Begin to update data for userGroup[%s]...", userGroupDataConfig.getGroupId()));
 
 		serDeserializer.deserialize(userGroupData);
-
 		List<UpdateBatch> updateBatches = new ArrayList<>(userGroupData.size());
-
 		for(String distinctId : userGroupData){
 			Map<String, Object> updateValues = new HashMap<>(dimData.size() + 1);
 			updateValues.put(primaryColumn, distinctId);
 			updateValues.putAll(dimData);
 			updateBatches.add(new UpdateBatch(updateValues, appendFlags));
 		}
-
-		return sendData(dataBean, updateBatches);
+		Map<String, Object> result = sendData(dataBean, updateBatches);
+		long after = System.currentTimeMillis();
+		log.info(String.format("Update data for userGroup[%s] total cost %d ms.",  userGroupDataConfig.getGroupId(), after - before));
+		return result;
 	}
 
 	private Map<String, Object> sendData(DataBean dataBean, List<UpdateBatch> updateBatches){
-		Map<String, Object> result = null;
+		Map<String, Object> result;
 		String url = dataBean.getHproxyUrl();
 		try {
 			String queryStr = jsonMapper.writeValueAsString(updateBatches);
-			//TODO delete log
-			log.info(String.format("Update data === %s", queryStr));
 			log.info(String.format("Begin to send data to url[%s], size[%s]", dataBean.getHproxyUrl(), updateBatches.size()));
 
 			long before = System.currentTimeMillis();

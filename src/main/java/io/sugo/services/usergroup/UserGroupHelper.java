@@ -127,7 +127,7 @@ public class UserGroupHelper {
 			}
 		} catch (RemoteException rmException) {
 			log.error( "Do userGroupQueryIncremental occurs remote exception!", rmException);
-			result = Collections.singletonList(ImmutableMap.of("error", rmException.getOriginalMessage()));
+			result = Collections.singletonList(ImmutableMap.of("error", rmException.getRemoteMessage()));
 		}catch (Throwable t){
 			log.error( "Do userGroupQueryIncremental occurs error!",t);
 			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));
@@ -216,7 +216,7 @@ public class UserGroupHelper {
 			log.info(String.format("MultiUserGroupOperation total cost %d ms.", endMillis - startMillis));
 		}catch (RemoteException rmException) {
 			log.error( "Do multiUserGroupOperation occurs remote exception!", rmException);
-			result = Collections.singletonList(ImmutableMap.of("error", rmException.getOriginalMessage()));
+			result = Collections.singletonList(ImmutableMap.of("error", rmException.getRemoteMessage()));
 		}catch (Throwable t){
 			log.error("Do multiUserGroupOperation occurs error!",t);
 			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));
