@@ -13,7 +13,6 @@ import static io.sugo.common.utils.Constants.*;
  * Created by chenyuzhi on 18-9-6.
  */
 public class CommonModule implements Module {
-	private String configPath;
 	private Configure configure;
 
 	public CommonModule(String configPath){

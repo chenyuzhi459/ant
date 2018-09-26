@@ -11,7 +11,6 @@ public class RemoteException extends RuntimeException {
 		this.remoteMessage = remoteMessage;
 	}
 
-
 	public Object getRemoteMessage() {
 		return remoteMessage;
 	}
