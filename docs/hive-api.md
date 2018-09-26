@@ -13,7 +13,7 @@
 请求示例1:
 ```
 type: POST
-url:http://192.168.0.248:9001/hive/client/execute
+url:http://192.168.0.248:6061/hive/client/execute
 body:
 {
 	"sql":"select count(*) from events_json"
@@ -31,7 +31,7 @@ body:
 请求示例2:
 ```
 type: POST
-url:http://192.168.0.248:9001/hive/client/execute
+url:http://192.168.0.248:6061/hive/client/execute
 body:
 {
 	"sql":"select count(*) from events_json",
@@ -57,7 +57,7 @@ body:
 请求示例:
 ```
 type: GET
-url:http://192.168.0.248:9001/hive/client/task/queue
+url:http://192.168.0.248:6061/hive/client/task/queue
 ```
 结果示例:
 ```
@@ -83,7 +83,7 @@ url:http://192.168.0.248:9001/hive/client/task/queue
 请求示例:
 ```
 type: GET
-url:http://192.168.0.248:9001/hive/client/task/result
+url:http://192.168.0.248:6061/hive/client/task/result
 ```
 结果示例:
 ```
@@ -120,7 +120,7 @@ url:http://192.168.0.248:9001/hive/client/task/result
 请求示例:
 ```
 type: POST
-url:http://192.168.0.248:9001/hive/client/task/cancel
+url:http://192.168.0.248:6061/hive/client/task/cancel
 body:["3"]
 ```
 结果示例:
@@ -146,7 +146,7 @@ body:["3"]
 请求示例:
 ```
 type: POST
-url:http://192.168.0.248:9001/hive/client/execute/sync
+url:http://192.168.0.248:6061/hive/client/execute/sync
 body:
 {
 	"sql":"select count(*) from events_json"

@@ -57,7 +57,10 @@ public class HiveClient implements Closeable{
 		for(SQLBean sqlBean:targetSqlBeans){
 			stmt = runningSQLs.get(sqlBean);
 			String sql = sqlBean.getSql();
-			log.info(String.format("Cancel sql[%s] : %s",queryId, sql));
+			log.info(String.format("Try to cancel sql[%s] :\n" +
+					">>>>>>>>>>>>>>>>\n" +
+					" %s\n" +
+					"<<<<<<<<<<<<<<<<",queryId, sql));
 
 			stmt.cancel();
 			log.info(String.format("Finished cancel sql[%s]",queryId));
@@ -105,6 +108,8 @@ public class HiveClient implements Closeable{
 
 		HivePreparedStatement stmt;
 		synchronized (runningSQLs){
+			//synchronized to avoid lost any prepareStatement, which may cause the conn to hold yarn resources
+			// for a long time.
 			this.checkRunningQueue(queryId);
 			stmt = (HivePreparedStatement)conn.prepareStatement(sql);
 			if(!Strings.isNullOrEmpty(queryId)){
@@ -113,7 +118,10 @@ public class HiveClient implements Closeable{
 		}
 
 		try{
-			String executeMsg = String.format("Executing sql[%s]: %s", queryId == null ? "" : queryId, sql);
+			String executeMsg = String.format("Executing sql[%s]:\n" +
+					">>>>>>>>>>>>>>>>\n" +
+					" %s\n" +
+					"<<<<<<<<<<<<<<<<", queryId == null ? "" : queryId, sql);
 			log.info(executeMsg);
 			mapParams(stmt,params);
 			if(stmt.execute()) result = parseResultSet(stmt.getResultSet());
@@ -139,7 +147,7 @@ public class HiveClient implements Closeable{
 		if(Strings.isNullOrEmpty(queryId) ) return;
 		if(getSQLBeansByQueyId(queryId).isEmpty()) return;
 
-		throw new RuntimeException(String.format("sql [%s] has in the running queue,please wait!",queryId));
+		throw new RuntimeException(String.format("Sql [%s] has in the running queue,please wait!",queryId));
 	}
 
 	private List parseResultSet(ResultSet resultSet) throws SQLException {
@@ -173,19 +181,19 @@ public class HiveClient implements Closeable{
 			try {
 				close();
 				Thread.sleep(connRetryInterval);
-				log.info(String.format("try to retry get new Connection, attemp[%s]", ++attempt));
+				log.info(String.format("Begin to retry get new Connection, attemp[%s]", ++attempt));
 				conn = getNewConn();
 			} catch (Exception e) {
 				exception = e;
-				log.warn("retry get new Connection occurs exceptiion:" + e.getMessage());
+				log.warn("Retry get new Connection occurs exceptiion:" + e.getMessage());
 			}
 
 			if(exception == null){
-				log.info("retry get new Connection successFully!");
+				log.info("Retry get new Connection successfully!");
 				return true;
 			}
 		}
-		String errorMsg = String.format("retry get new Connection failed for timeout[%s s], attemp[%s]", timeOutMillis/1000,attempt);
+		String errorMsg = String.format("Retry get new Connection failed for timeout[%s s], attemp[%s]", timeOutMillis/1000,attempt);
 		log.error(errorMsg);
 		if(exception != null){
 			log.error(exception.getMessage(), exception);

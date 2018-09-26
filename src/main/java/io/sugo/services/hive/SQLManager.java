@@ -69,7 +69,7 @@ public class SQLManager implements AntService{
 					try {
 						sqlBean= PENDING_QUEUE.take();
 						queryId = sqlBean.getQueryId();
-						log.info(String.format("get sql[%s] from queue to run...",queryId));
+						log.info(String.format("Get sql[%s] from queue to run.",queryId));
 						List result = executeSQL(sqlBean);
 
 						SQLResult sqlResult = new SQLResult(queryId,result,
@@ -131,6 +131,29 @@ public class SQLManager implements AntService{
 
 		return result;
 	}
+
+	public List executeSQL(SQLBean sqlBean) throws Exception{
+		String queryId =  Strings.isNullOrEmpty(sqlBean.getQueryId()) ? "" : sqlBean.getQueryId();
+		HiveClient hiveClient = null;
+		String clientKey = Strings.isNullOrEmpty(queryId) ? Hive.SYNC_CLIENT_KEY : Hive.ASYNC_COMPUTE_CLIENT_KEY;
+		try {
+			log.info(String.format("Begin to execute sql[%s]...", queryId));
+			long before = System.currentTimeMillis();
+			hiveClient =hiveClientCache.getHiveClient(clientKey);
+			List result = hiveClient.executeQuery(sqlBean);
+			long after = System.currentTimeMillis();
+			log.info(String.format("Sql[%s] has been executed successfully, total cost %d ms.", queryId, after-before));
+			return result;
+		}catch (Exception e){
+			if(hiveClient != null){
+				hiveClient.close();
+			}
+			throw Throwables.propagate(e);
+		}finally {
+			hiveClientCache.releaseHiveClient(clientKey, hiveClient);
+		}
+	}
+
 	public Map cancel(List<String> queryIds){
 
 		Map<String,List> resultMap = Maps.newHashMap();
@@ -157,7 +180,7 @@ public class SQLManager implements AntService{
 				List successList = resultMap.computeIfAbsent(successCancelKey, k -> Lists.newArrayList());
 				successList.add(queryId);
 			} catch (Exception e) {
-				log.warn(String.format("sql[%s] cancel failed, failed msg:%s",queryId,e.getMessage()));
+				log.warn(String.format("Sql[%s] cancel failed, failed msg:%s",queryId,e.getMessage()));
 				List failedList = resultMap.computeIfAbsent(failedCancelKey, k -> Lists.newArrayList());
 				failedList.add(ImmutableMap.of("queryId",queryId,"message",e.getMessage()));
 			}
@@ -168,7 +191,7 @@ public class SQLManager implements AntService{
 
 	public static void addSqlBeanToPendingQueue(SQLBean sqlBean){
 		PENDING_QUEUE.offer(sqlBean);
-		log.info(String.format("add sql[%s] to queue successfully",sqlBean.getQueryId()));
+		log.info(String.format("Add sql[%s] to queue successfully",sqlBean.getQueryId()));
 	}
 
 	public static Collection<SQLBean> getSqlBeanInPendingQueue(List queryIds){
@@ -181,24 +204,6 @@ public class SQLManager implements AntService{
 		});
 	}
 
-	public List executeSQL(SQLBean sqlBean) throws Exception{
-		String queryId = sqlBean.getQueryId();
-		HiveClient hiveClient = null;
-		String clientKey = Strings.isNullOrEmpty(queryId) ? Hive.SYNC_CLIENT_KEY : Hive.ASYNC_COMPUTE_CLIENT_KEY;
-		try {
-			hiveClient =hiveClientCache.getHiveClient(clientKey);
-			List result = hiveClient.executeQuery(sqlBean);
-			log.info(String.format("sql[%s] has executed successfully", Strings.isNullOrEmpty(queryId) ? "" : queryId));
-			return result;
-		}catch (Exception e){
-			if(hiveClient != null){
-				hiveClient.close();
-			}
-			throw Throwables.propagate(e);
-		}finally {
-			hiveClientCache.releaseHiveClient(clientKey, hiveClient);
-		}
-	}
 
 	public class SQLResult {
 
