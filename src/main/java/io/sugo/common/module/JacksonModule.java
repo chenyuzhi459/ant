@@ -35,6 +35,7 @@ public class JacksonModule implements Module {
 
     //jsonMapper序列化和反序列时通过guice的Injector进行注入. 从而使注解与guice统一起来
     private void setupJackson(Injector injector, final ObjectMapper mapper) {
+        log.info("Init objectMapper.");
         final GuiceAnnotationIntrospector guiceIntrospector = new GuiceAnnotationIntrospector();
 
         mapper.setInjectableValues(new GuiceInjectableValues(injector));

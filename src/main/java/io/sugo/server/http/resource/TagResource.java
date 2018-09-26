@@ -1,5 +1,6 @@
 package io.sugo.server.http.resource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.services.tag.DataUpdateHelper;
@@ -22,10 +23,12 @@ import java.util.Map;
 public class TagResource {
 	private static final Logger log = LogManager.getLogger(TagResource.class);
 	private final DataUpdateHelper dataUpdateHelper;
+	private final ObjectMapper jsonMapper;
 
 	@Inject
-	public TagResource(DataUpdateHelper dataUpdateHelper) {
+	public TagResource(DataUpdateHelper dataUpdateHelper, ObjectMapper jsonMapper) {
 		this.dataUpdateHelper = dataUpdateHelper;
+		this.jsonMapper = jsonMapper;
 	}
 
 
@@ -35,6 +38,7 @@ public class TagResource {
 	@Consumes({MediaType.APPLICATION_JSON})
 	public Response updateBatchData(DataBean dataBean) {
 		try {
+			log.info(String.format("TagResource original param: %s", this.jsonMapper.writeValueAsString(dataBean)));
 			Map<String, Object> result = this.dataUpdateHelper.update(dataBean);
 			return Response.ok(result).build();
 		}catch (Exception e){

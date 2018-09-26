@@ -45,18 +45,18 @@ public class DataUpdateHelper {
 			updateValues.putAll(dimData);
 			updateBatches.add(new UpdateBatch(updateValues, appendFlags));
 		}
-		Map<String, Object> result = sendData(dataBean, updateBatches);
+		Map<String, Object> result = sendData(dataBean.getHproxyUrl(), updateBatches);
 		long after = System.currentTimeMillis();
-		log.info(String.format("Update data for userGroup[%s] total cost %d ms.",  userGroupDataConfig.getGroupId(), after - before));
+		log.info(String.format("Update data to datasource[%s] for userGroup[%s] total cost %d ms.",
+				dataBean.getDataSource(), userGroupDataConfig.getGroupId(), after - before));
 		return result;
 	}
 
-	private Map<String, Object> sendData(DataBean dataBean, List<UpdateBatch> updateBatches){
+	private Map<String, Object> sendData(String url, List<UpdateBatch> updateBatches){
 		Map<String, Object> result;
-		String url = dataBean.getHproxyUrl();
 		try {
 			String queryStr = jsonMapper.writeValueAsString(updateBatches);
-			log.info(String.format("Begin to send data to url[%s], size[%s]", dataBean.getHproxyUrl(), updateBatches.size()));
+			log.info(String.format("Begin to send data to url[%s], size[%s]", url, updateBatches.size()));
 
 			long before = System.currentTimeMillis();
 			OkHttpClient client = new OkHttpClient();

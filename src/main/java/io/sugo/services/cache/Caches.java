@@ -31,18 +31,11 @@ public class Caches implements AntService{
 
 	public static class HiveClientCache {
 		private static final Logger log = LogManager.getLogger(HiveClientCache.class);
-
 		private final Cache<String, BlockingQueue<HiveClient>> cache;
-		private final Set<String> keys = new HashSet<>();
 
-		private static HiveClientCache instance;
-		public static HiveClientCache getInstance() {
+		@Inject
+		private HiveClientCache() {
 			int expireMin = configure.getInt(HIVE_PROPS, Hive.HIVE_COMPUTE_CONN_TIMEOUT_MIN, DEFAULT_EXPIRE_MINUTE);
-			instance = new HiveClientCache(expireMin);
-			return instance;
-		}
-
-		private HiveClientCache(int expireMin) {
 			log.info("HiveClientCache initing...");
 			CacheBuilder builder = CacheBuilder.newBuilder()
 //					.maximumSize(5)
@@ -64,7 +57,7 @@ public class Caches implements AntService{
 						}
 					});
 			cache = builder.build();
-			log.info("HiveClientCache has inited successfully...");
+			log.info("HiveClientCache has inited successfully.");
 
 		}
 
@@ -104,23 +97,15 @@ public class Caches implements AntService{
 
 			return hiveClient;
 		}
-
-
 	}
 
 	public static class RedisClientCache {
 		private static final Logger log = LogManager.getLogger(RedisClientCache.class);
 		private final Cache<String, BlockingQueue<RedisClientWrapper>> cache;
 
-		private static RedisClientCache instance;
-
-		public static RedisClientCache getInstance() {
+		@Inject
+		private RedisClientCache() {
 			int expireMin = configure.getInt(SYSTEM_PROPS, Sys.REDIS_CONN_TIMEOUT_MIN, DEFAULT_EXPIRE_MINUTE);
-			instance = new RedisClientCache(expireMin);
-			return instance;
-		}
-
-		private RedisClientCache(int expireMin) {
 			log.info("RedisClientCache initing...");
 			CacheBuilder builder = CacheBuilder.newBuilder()
 					.recordStats()
@@ -144,7 +129,7 @@ public class Caches implements AntService{
 					);
 
 			cache = builder.build();
-			log.info("RedisClientCache has inited successfully...");
+			log.info("RedisClientCache has inited successfully.");
 
 		}
 

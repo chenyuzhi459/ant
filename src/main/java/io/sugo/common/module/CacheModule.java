@@ -4,6 +4,7 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import io.sugo.common.guice.annotations.LazySingleton;
 import io.sugo.services.cache.Caches;
 
 /**
@@ -14,17 +15,7 @@ public class CacheModule implements Module {
 	public void configure(Binder binder) {
 		binder.requestStaticInjection(Caches.class);
 		LifecycleModule.register(binder, Caches.class);
-	}
-
-	@Provides
-	@Singleton
-	public Caches.RedisClientCache provideRedisClientCache(){
-		return Caches.RedisClientCache.getInstance();
-	}
-
-	@Provides
-	@Singleton
-	public Caches.HiveClientCache provideHiveClientCache(){
-		return Caches.HiveClientCache.getInstance();
+		binder.bind(Caches.RedisClientCache.class).in(LazySingleton.class);
+		binder.bind(Caches.HiveClientCache.class).in(LazySingleton.class);
 	}
 }
