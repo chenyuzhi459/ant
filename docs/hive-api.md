@@ -1,4 +1,4 @@
-1. **执行sql语句, 支持同步/异步方式执行**  
+##  1. **执行sql语句, 支持同步/异步方式执行**  
 请求方式:POST  
 请求地址:`/hive/client/execute`  
 响应类型:application/json 
@@ -48,7 +48,7 @@ body:
 }
 ```
 
-2. **查看执行队列**  
+##  2. **查看执行队列**  
 请求方式:GET  
 请求地址:`/hive/client/task/queue`  
 响应类型:application/json 
@@ -74,7 +74,7 @@ url:http://192.168.0.248:6061/hive/client/task/queue
 }
 ```
 
-3. **查看异步执行的sql结果**  
+##  3. **查看异步执行的sql结果**  
 请求方式:GET  
 请求地址:`/hive/client/task/result`  
 响应类型:application/json 
@@ -107,7 +107,7 @@ url:http://192.168.0.248:6061/hive/client/task/result
 }
 ```
 
-4. **取消某个异步执行的sql**  
+##  4. **取消某个异步执行的sql**  
 请求方式:POST  
 请求地址:`/hive/client/task/cancel`  
 响应类型:application/json 
@@ -132,7 +132,7 @@ body:["3"]
 }
 ```
 
-5. **同步执行sql语句**  
+##  5. **同步执行sql语句**  
 请求方式:POST  
 请求地址:`/hive/client/execute/sync`  
 响应类型:application/json 
