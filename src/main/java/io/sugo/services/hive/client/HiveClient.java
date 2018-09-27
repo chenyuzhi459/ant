@@ -46,28 +46,6 @@ public class HiveClient implements Closeable{
 		connRetryInterval = configure.getLong(HIVE_PROPS, Hive.HIVE_CONN_RETRY_INTERVAL_SEC, DEFAULT_RETRYINTERVAL_SEC) * 1000;
 	}
 
-	public static boolean cancel(String queryId) throws SQLException {
-		Set<SQLBean> targetSqlBeans = getSQLBeansByQueyId(queryId);
-
-		if(targetSqlBeans.isEmpty()){
-			return true;
-		}
-
-		HivePreparedStatement stmt ;
-		for(SQLBean sqlBean:targetSqlBeans){
-			stmt = runningSQLs.get(sqlBean);
-			String sql = sqlBean.getSql();
-			log.info(String.format("Try to cancel sql[%s] :\n" +
-					">>>>>>>>>>>>>>>>\n" +
-					" %s\n" +
-					"<<<<<<<<<<<<<<<<",queryId, sql));
-
-			stmt.cancel();
-			log.info(String.format("Finished cancel sql[%s]",queryId));
-		}
-		return true;
-	}
-
 	private void mapParams(HivePreparedStatement stmt, List params) throws SQLException {
 		if(params == null || params.isEmpty()) return;
 		int length = params.size();
@@ -106,15 +84,9 @@ public class HiveClient implements Closeable{
 		String sql = sqlBean.getSql();
 		List params= sqlBean.getParams();
 
-		HivePreparedStatement stmt;
-		synchronized (runningSQLs){
-			//synchronized to avoid lost any prepareStatement, which may cause the conn to hold yarn resources
-			// for a long time.
-			this.checkRunningQueue(queryId);
-			stmt = (HivePreparedStatement)conn.prepareStatement(sql);
-			if(!Strings.isNullOrEmpty(queryId)){
-				runningSQLs.put(sqlBean,stmt);
-			}
+		HivePreparedStatement stmt = (HivePreparedStatement)conn.prepareStatement(sql);
+		if(!Strings.isNullOrEmpty(queryId) && runningSQLs.put(sqlBean,stmt) != null){
+			throw new RuntimeException(String.format("Sql [%s] has in the running queue,please wait!",queryId));
 		}
 
 		try{
@@ -132,6 +104,27 @@ public class HiveClient implements Closeable{
 		}
 	}
 
+	public static boolean cancel(String queryId) throws SQLException {
+		Set<SQLBean> targetSqlBeans = getSQLBeansByQueyId(queryId);
+
+		if(targetSqlBeans.isEmpty()){
+			return true;
+		}
+
+		HivePreparedStatement stmt ;
+		for(SQLBean sqlBean:targetSqlBeans){
+			stmt = runningSQLs.get(sqlBean);
+			String sql = sqlBean.getSql();
+			log.info(String.format("Try to cancel sql[%s] :\n" +
+					">>>>>>>>>>>>>>>>\n" +
+					" %s\n" +
+					"<<<<<<<<<<<<<<<<",queryId, sql));
+
+			stmt.cancel();
+			log.info(String.format("Finished cancel sql[%s]",queryId));
+		}
+		return true;
+	}
 
 	private static Set<SQLBean> getSQLBeansByQueyId(String queryId){
 		return Sets.filter(runningSQLs.keySet(), new Predicate<SQLBean>() {
@@ -141,13 +134,6 @@ public class HiveClient implements Closeable{
 				return sqlBean.getQueryId().equals(queryId);
 			}
 		});
-	}
-
-	private void checkRunningQueue(String queryId){
-		if(Strings.isNullOrEmpty(queryId) ) return;
-		if(getSQLBeansByQueyId(queryId).isEmpty()) return;
-
-		throw new RuntimeException(String.format("Sql [%s] has in the running queue,please wait!",queryId));
 	}
 
 	private List parseResultSet(ResultSet resultSet) throws SQLException {
