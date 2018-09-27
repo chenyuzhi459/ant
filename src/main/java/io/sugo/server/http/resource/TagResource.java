@@ -39,7 +39,7 @@ public class TagResource {
 
 
 	@POST
-	@Path("/batchUpdate")
+	@Path("/usergroup/batchUpdate")
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
 	public Response updateBatchData(DataBean dataBean) {

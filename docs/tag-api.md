@@ -1,9 +1,9 @@
 ##  为用户分群的数据更新标签
-- `/ant/tag/batchUpdate`  
+- `/ant/tag/usergroup/batchUpdate`  
 **基本信息**   
 接口说明: 为用户分群的数据更新标签   
 请求方式:POST  
-请求地址:`/ant/tag/batchUpdate`  
+请求地址:`/ant/tag/usergroup/batchUpdate`  
 响应类型:application/json  
 数据类型:application/json     
 url请求参数: 无  
@@ -25,7 +25,7 @@ body参数:
 请求示例:
 ```
 type:post
-url:http://localhost:6061/ant/tag/batchUpdate
+url:http://localhost:6061/ant/tag/usergroup/batchUpdate
 Body数据:
 {
 	"hproxyUrl":"http://192.168.0.225:8085/druid/proxy/batchupdate/ssss",
