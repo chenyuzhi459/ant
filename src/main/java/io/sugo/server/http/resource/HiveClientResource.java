@@ -109,7 +109,7 @@ public class HiveClientResource {
 			if(!StringUtil.isEmpty(queryId)){
 				Collection sameSQLs = SQLManager.getSqlBeanInPendingQueue(Collections.singletonList(queryId));
 				if(sameSQLs.size() > 0) {
-					String message = String.format("sql [%s] has in the queue,please wait!",queryId);
+					String message = String.format("Sql [%s] has in the queue,please wait!",queryId);
 					log.warn(message);
 					builder = buildExecuteFailedMsg(Response.Status.INTERNAL_SERVER_ERROR,message);
 				}else{
