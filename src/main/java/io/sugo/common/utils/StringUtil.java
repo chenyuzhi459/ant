@@ -3,6 +3,10 @@
  */
 package io.sugo.common.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Throwables;
+import com.google.inject.Inject;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -22,6 +26,8 @@ import java.util.regex.Pattern;
  *
  */
 public class StringUtil {
+    @Inject
+    private static ObjectMapper jsonMapper;
 
     /**
      * 拷贝数组.
@@ -787,4 +793,11 @@ public class StringUtil {
         return rs;
     }
 
+    public static String toJson(Object object){
+        try {
+            return jsonMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw Throwables.propagate(e);
+        }
+    }
 }

@@ -6,10 +6,14 @@ package io.sugo.services.exception;
 public class RemoteException extends RuntimeException {
 	private Object remoteMessage;
 
-
-	public RemoteException(Object remoteMessage) {
+	public RemoteException(Object remoteMessage, String message) {
+		super(message);
 		this.remoteMessage = remoteMessage;
 	}
+
+//	public RemoteException(Object remoteMessage) {
+//		this.remoteMessage = remoteMessage;
+//	}
 
 	public Object getRemoteMessage() {
 		return remoteMessage;

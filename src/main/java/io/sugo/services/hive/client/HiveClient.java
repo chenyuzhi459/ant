@@ -91,7 +91,7 @@ public class HiveClient implements Closeable{
 
 		try{
 			String executeMsg = String.format("Executing sql[%s]:\n" +
-					">>>>>>>>>>>>>>>>\n" +
+					">>>>>>>>>>>>>>>>[SQL]\n" +
 					" %s\n" +
 					"<<<<<<<<<<<<<<<<", queryId == null ? "" : queryId, sql);
 			log.info(executeMsg);
@@ -116,7 +116,7 @@ public class HiveClient implements Closeable{
 			stmt = runningSQLs.get(sqlBean);
 			String sql = sqlBean.getSql();
 			log.info(String.format("Try to cancel sql[%s] :\n" +
-					">>>>>>>>>>>>>>>>\n" +
+					">>>>>>>>>>>>>>>>[SQL]\n" +
 					" %s\n" +
 					"<<<<<<<<<<<<<<<<",queryId, sql));
 

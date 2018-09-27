@@ -3,9 +3,6 @@ package io.sugo.services.usergroup.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,14 +17,14 @@ public class UserGroupBean {
 	private  String type;
 	private  String brokerUrl;
 	private  UserGroupQuery query;
-	private  String op;        // for AssistantGroup
-	private  Boolean append;   // for finalGroup
+	private  String op;        // used for AssistantGroup
+	private  Boolean append;   // used for finalGroup
 
 	@JsonCreator
 	public UserGroupBean(
 			@JsonProperty("type") String type,
 			@JsonProperty("brokerUrl") String brokerUrl,
-			@JsonProperty(value = "query", required = true) UserGroupQuery query,
+			@JsonProperty("query") UserGroupQuery query,
 			@JsonProperty("op") String op,
 			@JsonProperty("append") Boolean append) {
 

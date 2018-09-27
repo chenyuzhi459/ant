@@ -6,10 +6,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import io.sugo.common.utils.StringUtil;
+import io.sugo.services.exception.RemoteException;
 import io.sugo.services.usergroup.UserGroupHelper;
 import io.sugo.services.usergroup.model.UserGroupBean;
 import io.sugo.services.usergroup.model.UserGroupQuery;
 import io.sugo.common.guice.annotations.Json;
+import org.apache.commons.math3.analysis.function.Log1p;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.parquet.Strings;
@@ -39,46 +42,51 @@ public class UserGroupResource {
 	@Path("/single")
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response handleSingleUserGroup(
-			UserGroupBean userGroupBean) {
+	public Response handleSingleUserGroup(UserGroupBean userGroupBean) {
+		Response.ResponseBuilder resBuilder;
 		try {
-			checkParam(userGroupBean);
+			check(userGroupBean, true);
 			String brokerUrl = userGroupBean.getBrokerUrl();
-			checkUrl(brokerUrl);
 			UserGroupQuery userGroupQuery = userGroupBean.getQuery();
 
-			List<Map> result;
-			if(userGroupBean.isAppend()){
-				result = userGroupHelper.doUserGroupQueryIncremental(userGroupQuery, brokerUrl);
-			}else {
-				result = userGroupHelper.getUserGroupQueryResult(userGroupQuery, brokerUrl);
-			}
-			return Response.ok(result == null ? Collections.emptyList(): result).build();
+			List<Map> result = userGroupBean.isAppend() ?
+					userGroupHelper.doUserGroupQueryIncremental(userGroupQuery, brokerUrl) :
+					userGroupHelper.getUserGroupQueryResult(userGroupQuery, brokerUrl);
+			resBuilder = Response.ok(result);
 		} catch (Throwable e) {
-			log.error("Resource handle singleUserGroup error!",e);
-			return Response.serverError().entity(Collections.
-					singletonList(ImmutableMap.of("error", e.getMessage())))
-					.build();
+			boolean isRmException = e instanceof RemoteException;
+			String errMsg = String.format("Resource handle singleUserGroup occurs %s, param:%s",
+					isRmException ? "remote exception" : "error", StringUtil.toJson(userGroupBean));
+			log.error(errMsg, e);
+
+			Object originalInfo = isRmException ? ((RemoteException) e).getRemoteMessage() : e.getMessage();
+			resBuilder = Response.serverError().entity(Collections.singletonList(ImmutableMap.of("error", originalInfo)));
 		}
+
+		return resBuilder.build();
 	}
 
 	@POST
 	@Path("/multi")
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response handleMultiUserGroup(
-			List<UserGroupBean> userGroupList) {
+	public Response handleMultiUserGroup(List<UserGroupBean> userGroupList) {
+		Response.ResponseBuilder resBuilder;
 		try {
-			checkParam(userGroupList);
 			Map<String, List<UserGroupBean>> paramMap = parseMultiUserGroupParam(userGroupList);
 			List<Map> result =  userGroupHelper.doMultiUserGroupOperation(paramMap);
-			return Response.ok(result == null ? Collections.emptyList(): result).build();
+			resBuilder = Response.ok(result);
 		} catch (Throwable e) {
-			log.error("Resource handle multiUserGroup error!",e);
-			return Response.serverError().entity(Collections.
-					singletonList(ImmutableMap.of("error", e.getMessage())))
-					.build();
+			boolean isRmException = e instanceof RemoteException;
+			String errMsg = String.format("Resource handle multiUserGroup occurs %s, param:%s",
+					isRmException ? "remote exception" : "error", StringUtil.toJson(userGroupList));
+			log.error(errMsg, e);
+
+			Object originalInfo = isRmException ? ((RemoteException) e).getRemoteMessage() : e.getMessage();
+			resBuilder = Response.serverError().entity(Collections.singletonList(ImmutableMap.of("error", originalInfo)));
 		}
+
+		return resBuilder.build();
 	}
 
 	public Map<String, List<UserGroupBean>> parseMultiUserGroupParam(List<UserGroupBean> userGroupList) throws IOException {
@@ -88,9 +96,8 @@ public class UserGroupResource {
 			if(Strings.isNullOrEmpty(type)){
 				continue;
 			}
-			if(UserGroupBean.INDEX_TYPES.contains(type)){
-				checkUrl(userGroupBean.getBrokerUrl());
-			}
+
+			check(userGroupBean, UserGroupBean.INDEX_TYPES.contains(type));
 
 			if (type.equals("finalGroup")){
 				paramMap.put("finalGroup", ImmutableList.of(userGroupBean));
@@ -101,15 +108,12 @@ public class UserGroupResource {
 		return paramMap;
 	}
 
-	private void checkParam(Object param){
-		try {
-			log.info(String.format("UserGroupResource original param: %s", jsonMapper.writeValueAsString(param)));
-		}catch (Exception e){
+	private void check(UserGroupBean userGroupBean, boolean checkBrokerUrl){
+		Preconditions.checkNotNull(userGroupBean.getQuery(), "query can not be null.");
+		Preconditions.checkNotNull(userGroupBean.getQuery().getDataConfig(), "dataConfig can not be null.");
+		if(checkBrokerUrl){
+			Preconditions.checkNotNull(userGroupBean.getBrokerUrl(), "brokerUrl can not be null.");
 		}
-	}
-
- 	private void checkUrl(String url){
-		Preconditions.checkNotNull(url, "Url can not be null.");
 	}
 
 }

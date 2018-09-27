@@ -2,10 +2,12 @@ package io.sugo.common.module;
 
 import com.google.inject.*;
 import com.google.inject.name.Names;
+import io.sugo.common.utils.StringUtil;
 import io.sugo.services.cache.Caches;
 import io.sugo.common.guice.annotations.LazySingleton;
 import io.sugo.common.guice.AntScopes;
 import io.sugo.server.http.Configure;
+import io.sugo.services.hive.client.HiveClientFactory;
 
 import static io.sugo.common.utils.Constants.*;
 
@@ -25,7 +27,7 @@ public class CommonModule implements Module {
 		binder.bindScope(LazySingleton.class, AntScopes.SINGLETON);
 		binder.bind(Configure.class).toInstance(configure);
 		bindConstants(binder);
-
+		binder.requestStaticInjection(StringUtil.class);
 	}
 
 

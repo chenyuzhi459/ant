@@ -6,13 +6,17 @@ import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
+import io.sugo.common.utils.DefaultObjectMapper;
 import io.sugo.services.exception.RemoteException;
 import io.sugo.services.tag.model.DataBean;
 import io.sugo.services.tag.model.UpdateBatch;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by chenyuzhi on 18-9-25.
@@ -25,7 +29,6 @@ public class DataUpdateHelper {
 	public DataUpdateHelper(@Json ObjectMapper jsonMapper) {
 		this.jsonMapper = jsonMapper;
 	}
-
 
 	public Map<String, Object>  update(DataBean dataBean){
 		final Map<String, Object> dimData = dataBean.getDimData();
@@ -65,25 +68,27 @@ public class DataUpdateHelper {
 			log.info(String.format("Begin to send data to url[%s], size[%s]", url, updateBatches.size()));
 
 			long before = System.currentTimeMillis();
-			OkHttpClient client = new OkHttpClient();
+			// set a long readTimeout because hproxy will take long time to return when data format wrong.
+			OkHttpClient client = new OkHttpClient.Builder()
+					.readTimeout(30, TimeUnit.SECONDS).build();
 			RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
 			Request request = new Request.Builder().url(url).post(body).build();
 
 
 			try (Response response = client.newCall(request).execute()){
 				if(response.code() == 200){
-					result = this.jsonMapper.readValue(response.body().byteStream(), Map.class);
+					String resultStr = response.body().string();
+					result = this.jsonMapper.readValue(resultStr, Map.class);
+					if( (Integer) result.get("failed") > 0){
+						throw new RemoteException(result, resultStr);
+					}
 					long after = System.currentTimeMillis();
 					log.info(String.format("Send data total cost %d ms.", after - before));
 				}else {
 					String errStr = response.body().string();
-					Object originalMessage;
-					try {
-						originalMessage = jsonMapper.readValue(errStr, Object.class);
-					}catch (Exception e){
-						originalMessage = errStr;
-					}
-					throw new RemoteException(originalMessage);
+					Object originalMessage = jsonMapper.readValue(errStr, Object.class);
+
+					throw new RemoteException(originalMessage, errStr);
 				}
 			}
 		}catch (Exception e){

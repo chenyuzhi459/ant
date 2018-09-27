@@ -3,8 +3,11 @@ package io.sugo.server.http.resource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
+import io.sugo.common.utils.StringUtil;
+import io.sugo.services.exception.RemoteException;
 import io.sugo.services.pathanalysis.dto.PathAnalysisDto;
 import io.sugo.services.pathanalysis.PathAnalyzer;
 import io.sugo.services.pathanalysis.model.AccessTree;
@@ -39,17 +42,24 @@ public class PathAnalysisResource {
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
     public Response normalPath(PathAnalysisDto pathAnalysisDto) {
-        check(pathAnalysisDto);
+        Response.ResponseBuilder resBuilder;
         try {
+            check(pathAnalysisDto);
             String queryStr = pathAnalysisDto.buildScanQuery();
             boolean isReverseDirection = PathAnalysisDto.REVERSE_DIRECTION.equals(pathAnalysisDto.getDirection());
             AccessTree tree = pathAnalyzer.getAccessTree(queryStr,
                     pathAnalysisDto.getHomePage(), isReverseDirection, pathAnalysisDto.getBrokerUrl());
-            return Response.ok(tree == null ? Collections.EMPTY_LIST : tree).build();
+            resBuilder = Response.ok(tree == null ? Collections.EMPTY_LIST : tree);
         } catch (Throwable e) {
-            log.error("Resource handle pathAnalysis error!",e);
-            return Response.serverError().entity(e.getMessage()).build();
+            boolean isRmException = e instanceof RemoteException;
+            String errMsg = String.format("Resource handle pathAnalysis  occurs %s, param:%s",
+                    isRmException ? "remote exception" : "error", StringUtil.toJson(pathAnalysisDto));
+            log.error(errMsg, e);
+
+            Object originalInfo = isRmException ? ((RemoteException) e).getRemoteMessage() : e.getMessage();
+            resBuilder = Response.serverError().entity(ImmutableMap.of("error", originalInfo));
         }
+        return resBuilder.build();
     }
 
 //    @POST

@@ -17,12 +17,12 @@ public class DataBean {
 	private final Map<String, Boolean> appendFlags;
 
 	public DataBean(
-			@JsonProperty(value = "hproxyUrl",required = true) String hproxyUrl,
-			@JsonProperty(value = "dataSource", required = true) String dataSource,
-			@JsonProperty(value = "primaryColumn", required = true) String primaryColumn,
-			@JsonProperty(value = "userGroupConfig", required = true) RedisDataIOFetcher userGroupConfig,
-			@JsonProperty(value = "dimData", required = true) Map<String, Object> dimData,
-			@JsonProperty(value = "appendFlags") Map<String, Boolean> appendFlags) {
+			@JsonProperty("hproxyUrl") String hproxyUrl,
+			@JsonProperty("dataSource") String dataSource,
+			@JsonProperty("primaryColumn") String primaryColumn,
+			@JsonProperty("userGroupConfig") RedisDataIOFetcher userGroupConfig,
+			@JsonProperty("dimData") Map<String, Object> dimData,
+			@JsonProperty("appendFlags") Map<String, Boolean> appendFlags) {
 		this.hproxyUrl = hproxyUrl;
 		this.dataSource = dataSource;
 		this.primaryColumn = primaryColumn;

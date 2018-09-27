@@ -1,9 +1,12 @@
 package io.sugo.services.pathanalysis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import io.sugo.common.utils.JsonObjectIterator;
 import io.sugo.server.http.AntServer;
+import io.sugo.services.exception.RemoteException;
 import io.sugo.services.pathanalysis.model.AccessPath;
 import io.sugo.services.pathanalysis.model.AccessTree;
 import io.sugo.services.pathanalysis.model.PathNode;
@@ -22,71 +25,73 @@ import java.util.List;
 public class PathAnalyzer {
 
     private static final Logger log = LogManager.getLogger(AntServer.class);
-
+    private final ObjectMapper jsonMapper;
     private final TreePlanter planter;
 
     @Inject
-    public PathAnalyzer(TreePlanter planter) {
+    public PathAnalyzer(TreePlanter planter, ObjectMapper jsonMapper) {
         this.planter = planter;
+        this.jsonMapper = jsonMapper;
     }
 
     public AccessTree getAccessTree(String queryStr, String homePage, boolean reversed, String queryUrl) {
         long before = System.currentTimeMillis();
-//        log.info("Begin to path analysis...");
         log.info(String.format(
                 "Begin to path analysis...\n" +
-                ">>>>>>>>>>>>>>>>\n " +
-                "Scan query url= %s . Param= %s\n" +
+                ">>>>>>>>>>>>>>>>[ScanQuery]\n " +
+                "url= %s \n param= %s\n" +
                 "<<<<<<<<<<<<<<<<", queryUrl, queryStr));
 
         int depth = reversed ? PathAnalysisConstant.TREE_DEPTH_REVERSE : PathAnalysisConstant.TREE_DEPTH_NORMAL;
 
-        Response queryResponse = null;
-        try {
-            OkHttpClient client = new OkHttpClient();
-            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
-            Request request = new Request.Builder().url(queryUrl).post(body).build();
+        OkHttpClient client = new OkHttpClient();
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
+        Request request = new Request.Builder().url(queryUrl).post(body).build();
 
-            queryResponse = client.newCall(request).execute();
-            InputStream stream = queryResponse.body().byteStream();
+        try (Response queryResponse = client.newCall(request).execute()){
+            if(queryResponse.code() == 200){
+                InputStream stream = queryResponse.body().byteStream();
 
-            JsonObjectIterator iterator = new JsonObjectIterator(stream);
+                JsonObjectIterator iterator = new JsonObjectIterator(stream);
 
-            while (iterator.hasNext()) {
-                HashMap resultValue = iterator.next();
-                if (resultValue != null) {
-                    List<PageAccessRecordVo> records = Lists.newArrayList();
-                    List<List<Object>> events = (List<List<Object>>) resultValue.get("events");
-                    for (List<Object> event : events) {
-                        try {
-                            PageAccessRecordVo record = new PageAccessRecordVo();
-                            record.setSessionId(event.get(1).toString());
-                            record.setUserId(event.get(2).toString());
-                            record.setPageName(event.get(3).toString());
-                            Object accessTime = event.get(4);
-                            if (accessTime != null) {
-                                record.setAccessTime(new Date((Long) (accessTime)));
-                            } else { // If the data generation time is null, then use the data ingestion time.
-                                accessTime = event.get(0);
-                                record.setAccessTime(new DateTime(accessTime).toDate());
-                            }
-                            records.add(record);
-                        } catch (Exception ignore) {}
+                while (iterator.hasNext()) {
+                    HashMap resultValue = iterator.next();
+                    if (resultValue != null) {
+                        List<PageAccessRecordVo> records = Lists.newArrayList();
+                        List<List<Object>> events = (List<List<Object>>) resultValue.get("events");
+                        for (List<Object> event : events) {
+                            try {
+                                PageAccessRecordVo record = new PageAccessRecordVo();
+                                record.setSessionId(event.get(1).toString());
+                                record.setUserId(event.get(2).toString());
+                                record.setPageName(event.get(3).toString());
+                                Object accessTime = event.get(4);
+                                if (accessTime != null) {
+                                    record.setAccessTime(new Date((Long) (accessTime)));
+                                } else { // If the data generation time is null, then use the data ingestion time.
+                                    accessTime = event.get(0);
+                                    record.setAccessTime(new DateTime(accessTime).toDate());
+                                }
+                                records.add(record);
+                            } catch (Exception ignore) {}
+                        }
+                        records.sort(reversed ? PageAccessRecordVo.DESC_COMPARATOR : PageAccessRecordVo.ASC_COMPARATOR);
+                        analyze(records, homePage, depth);
                     }
-                    records.sort(reversed ? PageAccessRecordVo.DESC_COMPARATOR : PageAccessRecordVo.ASC_COMPARATOR);
-                    analyze(records, homePage, depth);
                 }
+
+                long after = System.currentTimeMillis();
+                log.info(String.format("Path analysis total cost %d ms.", after - before));
+            }else {
+                String errStr = queryResponse.body().string();
+                Object originalMessage = this.jsonMapper.readValue(errStr, Object.class);
+
+                throw new RemoteException(originalMessage, errStr);
             }
 
-            long after = System.currentTimeMillis();
-            log.info(String.format("Path analysis total cost %d ms.", after - before));
         } catch (Throwable t) {
             log.error("Path analysis error.", t);
-        }finally {
-            if(queryResponse != null){
-                //close response to avoid memery leak
-                queryResponse.close();
-            }
+            throw Throwables.propagate(t);
         }
 
         return planter.getRoot();

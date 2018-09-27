@@ -42,8 +42,8 @@ public class UserGroupHelper {
 		try {
 			String queryStr = jsonMapper.writeValueAsString(query);
 			log.info(String.format("Begin to request getUserGroupQueryResult, requestMetada:\n" +
-					">>>>>>>>>>>>>>>>\n " +
-					"UserGroup query url= %s . Param= %s\n" +
+					">>>>>>>>>>>>>>>>[UserGroupQuery]\n " +
+					"url= %s \n param= %s\n" +
 					"<<<<<<<<<<<<<<<<", brokerUrl, queryStr));
 
 			long before = System.currentTimeMillis();
@@ -72,13 +72,9 @@ public class UserGroupHelper {
 					});
 				}else {
 					String errStr = response.body().string();
-					Object originalMessage;
-					try {
-						originalMessage = jsonMapper.readValue(errStr, Object.class);
-					}catch (Exception e){
-						originalMessage = errStr;
-					}
-					throw new RemoteException(originalMessage);
+					Object originalMessage = jsonMapper.readValue(errStr, Object.class);
+
+					throw new RemoteException(originalMessage, errStr);
 				}
 
 				long after = System.currentTimeMillis();
@@ -124,13 +120,7 @@ public class UserGroupHelper {
 				long endMillis = System.currentTimeMillis();
 				log.info(String.format("UserGroupQueryIncremental total cost %d ms.", endMillis - startMillis));
 			}
-		} catch (RemoteException rmException) {
-			log.error( "Do userGroupQueryIncremental occurs remote exception!", rmException);
-			result = Collections.singletonList(ImmutableMap.of("error", rmException.getRemoteMessage()));
-		}catch (Throwable t){
-			log.error( "Do userGroupQueryIncremental occurs error!",t);
-			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));
-		}finally {
+		} finally {
 			currentData.clear();
 			backupData.clear();
 
@@ -209,12 +199,6 @@ public class UserGroupHelper {
 			result = Collections.singletonList(ImmutableMap.of("event",  ImmutableMap.of("RowCount", finalLen)));
 			long endMillis = System.currentTimeMillis();
 			log.info(String.format("MultiUserGroupOperation total cost %d ms.", endMillis - startMillis));
-		}catch (RemoteException rmException) {
-			log.error( "Do multiUserGroupOperation occurs remote exception!", rmException);
-			result = Collections.singletonList(ImmutableMap.of("error", rmException.getRemoteMessage()));
-		}catch (Throwable t){
-			log.error("Do multiUserGroupOperation occurs error!",t);
-			result = Collections.singletonList(ImmutableMap.of("error", t.getMessage()));
 		}finally {
 			acculatedData.clear();
 			currentData.clear();

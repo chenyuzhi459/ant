@@ -28,7 +28,7 @@ public class UserGroupQuery {
 			@JsonProperty("filter") Map filter,
 			@JsonProperty("granularity") String granularity,
 			@JsonProperty("dimension") String dimension,
-			@JsonProperty(value = "dataConfig",required = true) RedisDataIOFetcher dataConfig,
+			@JsonProperty("dataConfig") RedisDataIOFetcher dataConfig,
 			@JsonProperty("aggregations") List aggregations,
 			@JsonProperty("postAggregations") List postAggregations,
 			@JsonProperty("having") Map having,
