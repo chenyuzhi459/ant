@@ -6,15 +6,13 @@ import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.common.utils.DefaultObjectMapper;
 import io.sugo.services.exception.RemoteException;
-import io.sugo.services.tag.model.DataBean;
+import io.sugo.services.tag.model.UserGroupUpdateBean;
 import io.sugo.services.tag.model.UpdateBatch;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -30,12 +28,12 @@ public class DataUpdateHelper {
 		this.jsonMapper = jsonMapper;
 	}
 
-	public Map<String, Object>  update(DataBean dataBean){
-		final Map<String, Object> dimData = dataBean.getDimData();
-		final Map<String, Boolean> appendFlags = dataBean.getAppendFlags();
-		final String primaryColumn = dataBean.getPrimaryColumn();
+	public Map<String, Object>  update(UserGroupUpdateBean userGroupUpdateBean){
+		final Map<String, Object> dimData = userGroupUpdateBean.getDimData();
+		final Map<String, Boolean> appendFlags = userGroupUpdateBean.getAppendFlags();
+		final String primaryColumn = userGroupUpdateBean.getPrimaryColumn();
 		final Set<String> userGroupData = new HashSet<>();
-		final RedisDataIOFetcher userGroupDataConfig = dataBean.getUserGroupConfig();
+		final RedisDataIOFetcher userGroupDataConfig = userGroupUpdateBean.getUserGroupConfig();
 		final UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(userGroupDataConfig);
 		long before = System.currentTimeMillis();
 		log.info(String.format("Begin to update data for userGroup[%s]...", userGroupDataConfig.getGroupId()));
@@ -49,16 +47,14 @@ public class DataUpdateHelper {
 				updateValues.putAll(dimData);
 				updateBatches.add(new UpdateBatch(updateValues, appendFlags));
 			}
-			Map<String, Object> result = sendData(dataBean.getHproxyUrl(), updateBatches);
+			Map<String, Object> result = sendData(userGroupUpdateBean.getHproxyUrl(), updateBatches);
 			long after = System.currentTimeMillis();
 			log.info(String.format("Update data to datasource[%s] for userGroup[%s] total cost %d ms.",
-					dataBean.getDataSource(), userGroupDataConfig.getGroupId(), after - before));
+					userGroupUpdateBean.getDataSource(), userGroupDataConfig.getGroupId(), after - before));
 			return result;
 		}finally {
 			userGroupData.clear();
 		}
-
-
 	}
 
 	private Map<String, Object> sendData(String url, List<UpdateBatch> updateBatches){
