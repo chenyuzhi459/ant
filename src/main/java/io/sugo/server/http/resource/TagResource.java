@@ -7,6 +7,7 @@ import com.google.inject.Inject;
 import io.sugo.common.utils.StringUtil;
 import io.sugo.services.exception.RemoteException;
 import io.sugo.services.tag.DataUpdateHelper;
+import io.sugo.services.tag.model.QueryUpdateBean;
 import io.sugo.services.tag.model.UserGroupUpdateBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,20 +35,42 @@ public class TagResource {
 		this.jsonMapper = jsonMapper;
 	}
 
+	@POST
+	@Path("/query/batchUpdate")
+	@Produces({MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response updateQueryData(QueryUpdateBean queryUpdateBean) {
+		Response.ResponseBuilder resBuilder;
+		try {
+			check(queryUpdateBean);
+			Map<String, Object> result = this.dataUpdateHelper.updateQueryData(queryUpdateBean);
+			resBuilder = Response.ok(result);
+		} catch (Throwable e) {
+			boolean isRmException = e instanceof RemoteException;
+			String errMsg = String.format("UpdateQueryData occurs %s, param:%s",
+					isRmException ? "remote exception" : "error", StringUtil.toJson(queryUpdateBean));
+			log.error(errMsg, e);
+
+			Object originalInfo = isRmException ? ((RemoteException) e).getRemoteMessage() : e.getMessage();
+			resBuilder = Response.serverError().entity(ImmutableMap.of("error", originalInfo));
+		}
+
+		return resBuilder.build();
+	}
 
 	@POST
 	@Path("/usergroup/batchUpdate")
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response updateBatchData(UserGroupUpdateBean userGroupUpdateBean) {
+	public Response updateUserGroupData(UserGroupUpdateBean userGroupUpdateBean) {
 		Response.ResponseBuilder resBuilder;
 		try {
 			check(userGroupUpdateBean);
-			Map<String, Object> result = this.dataUpdateHelper.update(userGroupUpdateBean);
+			Map<String, Object> result = this.dataUpdateHelper.updateUserGroup(userGroupUpdateBean);
 			resBuilder = Response.ok(result);
 		} catch (Throwable e) {
 			boolean isRmException = e instanceof RemoteException;
-			String errMsg = String.format("UpdateBatchData occurs %s, param:%s",
+			String errMsg = String.format("UpdateUserGroupData occurs %s, param:%s",
 					isRmException ? "remote exception" : "error", StringUtil.toJson(userGroupUpdateBean));
 			log.error(errMsg, e);
 
@@ -56,6 +79,14 @@ public class TagResource {
 		}
 
 		return resBuilder.build();
+	}
+
+	private void check(QueryUpdateBean queryUpdateBean) {
+		Preconditions.checkNotNull(queryUpdateBean.getBrokerUrl(), "brokerUrl can not be null.");
+		Preconditions.checkNotNull(queryUpdateBean.getQuery(), "query can not be null.");
+		Preconditions.checkNotNull(queryUpdateBean.getHproxyUrl(), "hproxyUrl can not be null.");
+		Preconditions.checkNotNull(queryUpdateBean.getDataSource(), "dataSource can not be null.");
+		Preconditions.checkNotNull(queryUpdateBean.getDimMap(), "dimMap can not be null.");
 	}
 
 	private void check(UserGroupUpdateBean userGroupUpdateBean) {

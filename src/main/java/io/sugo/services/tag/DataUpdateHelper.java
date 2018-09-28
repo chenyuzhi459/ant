@@ -32,7 +32,7 @@ public class DataUpdateHelper {
 		this.jsonMapper = jsonMapper;
 	}
 
-	public Map<String, Object>  update(UserGroupUpdateBean userGroupUpdateBean){
+	public Map<String, Object> updateUserGroup(UserGroupUpdateBean userGroupUpdateBean){
 		final Map<String, Object> dimData = userGroupUpdateBean.getDimData();
 		final Map<String, Boolean> appendFlags = userGroupUpdateBean.getAppendFlags();
 		final String primaryColumn = userGroupUpdateBean.getPrimaryColumn();
@@ -40,7 +40,8 @@ public class DataUpdateHelper {
 		final RedisDataIOFetcher userGroupDataConfig = userGroupUpdateBean.getUserGroupConfig();
 		final UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(userGroupDataConfig);
 		long before = System.currentTimeMillis();
-		log.info(String.format("Begin to update data for userGroup[%s]...", userGroupDataConfig.getGroupId()));
+		log.info(String.format("Begin to update data to datasource[%s] for userGroup[%s]...",
+				userGroupUpdateBean.getDataSource(), userGroupDataConfig.getGroupId()));
 
 		try {
 			serDeserializer.deserialize(userGroupData);
@@ -65,25 +66,26 @@ public class DataUpdateHelper {
 		Map<String, String> dimMap = queryUpdateBean.getDimMap();
 		Map<String, Boolean> appendFlags = queryUpdateBean.getAppendFlags();
 
+		log.info(String.format("Begin to update data to datasource[%s] for query...", queryUpdateBean.getDataSource()));
 		long before = System.currentTimeMillis();
 		List<Map<String, Object>> queryResult = getGroupByQueryResult(queryUpdateBean);
 		List<UpdateBatch> updateBatches = new LinkedList<>();
 		for(Map<String, Object> itemMap : queryResult){
-			Map<String, Object> data = (Map<String, Object>)itemMap.get("event");
-			Set<String> queryDims = data.keySet();
-			for(String queryDim : queryDims){
-				String updateDim = dimMap.get(queryDim);
-				if(updateDim == null){
-					data.remove(queryDim);
+			Map<String, Object> eventData = (Map<String, Object>)itemMap.get("event");
+			Map<String, Object> convertData = new HashMap<>();
+			Iterator<Map.Entry<String, String>> dimMapIter = dimMap.entrySet().iterator();
+			while (dimMapIter.hasNext()){
+				Map.Entry<String, String> entry = dimMapIter.next();
+				String queryDim = entry.getKey();
+				String updateDim = entry.getValue();
+				Object dataItem = eventData.get(queryDim);
+				if(dataItem == null){
 					continue;
 				}
-
-				if(queryDim.equals(updateDim)){
-					continue;
-				}
-				data.put(updateDim, data.remove(queryDim));
+				convertData.put(updateDim, dataItem);
 			}
-			updateBatches.add(new UpdateBatch(data, appendFlags));
+
+			updateBatches.add(new UpdateBatch(convertData, appendFlags));
 		}
 		Map<String, Object> result = sendData(queryUpdateBean.getHproxyUrl(), updateBatches);
 		long after = System.currentTimeMillis();
