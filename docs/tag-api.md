@@ -89,7 +89,7 @@ Body数据:
     "hproxyUrl":"http://192.168.0.225:8085/druid/proxy/batchupdate/ssss",
     "dataSource":"ssss",
     "dimMap":{"distinct_id":"distinct_id", "count":"i_count","sum_age":"d_sum_age"},
-    "appendFlags": {"i_count":false,"l_sum_age" : false},
+    "appendFlags": {"i_count":false,"d_sum_age" : false},
     "query":{
         "queryType": "lucene_groupBy",
         "dataSource": "schedule_desc",
