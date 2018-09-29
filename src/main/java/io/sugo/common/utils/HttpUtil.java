@@ -22,7 +22,7 @@ import static io.sugo.common.utils.Constants.*;
  * Created by chenyuzhi on 18-9-29.
  */
 public class HttpUtil {
-	private static final Logger log = LogManager.getLogger(JsonObjectIterator.class);
+	private static final Logger log = LogManager.getLogger(HttpUtil.class);
 	public static final int DEFAULT_READ_TIMEOUT_SECOND = 30;
 
 	@Inject @Named(Sys.PROXY_CONN_READ_TIMEOUT)
