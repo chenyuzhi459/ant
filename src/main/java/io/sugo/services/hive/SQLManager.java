@@ -122,6 +122,7 @@ public class SQLManager implements AntService{
 		try {
 			hiveClient = hiveClientCache.getHiveClient(key);
 			result = hiveClient.retryToGetNewConn(timeoutMillis);
+			return result;
 		}catch (Exception e){
 			log.error("Retry get new  hiveConn error.", e);
 			return false;
@@ -129,7 +130,6 @@ public class SQLManager implements AntService{
 			hiveClientCache.releaseHiveClient(key, hiveClient);
 		}
 
-		return result;
 	}
 
 	public List executeSQL(SQLBean sqlBean) throws Exception{
@@ -193,17 +193,6 @@ public class SQLManager implements AntService{
 		PENDING_QUEUE.offer(sqlBean);
 		log.info(String.format("Add sql[%s] to queue successfully",sqlBean.getQueryId()));
 	}
-
-	public static Collection<SQLBean> getSqlBeanInPendingQueue(List queryIds){
-		return Collections2.filter(PENDING_QUEUE, new Predicate<SQLBean>() {
-			@Override
-			public boolean apply(@Nullable SQLBean sqlBean) {
-				assert sqlBean != null;
-				return queryIds.contains(sqlBean.getQueryId());
-			}
-		});
-	}
-
 
 	public class SQLResult {
 

@@ -1,4 +1,4 @@
-package io.sugo.common.module;
+package io.sugo.common.modules;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;

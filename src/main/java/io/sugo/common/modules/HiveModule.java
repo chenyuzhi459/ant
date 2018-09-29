@@ -1,7 +1,6 @@
-package io.sugo.common.module;
+package io.sugo.common.modules;
 
 import com.google.inject.*;
-import io.sugo.services.cache.Caches;
 import io.sugo.services.hive.SQLManager;
 import io.sugo.services.hive.client.HiveClient;
 import io.sugo.services.hive.client.HiveClientFactory;

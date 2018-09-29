@@ -1,15 +1,12 @@
 package io.sugo.services.tag;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.HttpUtil;
-import io.sugo.common.utils.JsonObjectIterator;
 import io.sugo.services.exception.RemoteException;
 import io.sugo.services.tag.model.QueryUpdateBean;
 import io.sugo.services.tag.model.UserGroupUpdateBean;
@@ -17,10 +14,7 @@ import io.sugo.services.tag.model.UpdateBatch;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by chenyuzhi on 18-9-25.
@@ -118,12 +112,12 @@ public class DataUpdateHelper {
 	private Map<String, Object> sendData(String url, List<UpdateBatch> updateBatches){
 		Map<String, Object> result;
 		try {
-			String queryStr = jsonMapper.writeValueAsString(updateBatches);
+			String updateStr = jsonMapper.writeValueAsString(updateBatches);
 			log.info(String.format("Begin to send data to url[%s], size[%s]", url, updateBatches.size()));
 
 			long before = System.currentTimeMillis();
 
-			try (Response response = HttpUtil.post(url, queryStr)){
+			try (Response response = HttpUtil.post(url, updateStr)){
 				if(response.code() == 200){
 					String resultStr = response.body().string();
 					result = this.jsonMapper.readValue(resultStr, Map.class);

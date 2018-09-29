@@ -1,9 +1,7 @@
-package io.sugo.common.module;
+package io.sugo.common.modules;
 
 import com.google.inject.Binder;
 import com.google.inject.Module;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 import io.sugo.common.guice.annotations.LazySingleton;
 import io.sugo.services.cache.Caches;
 

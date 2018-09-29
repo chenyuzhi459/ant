@@ -2,7 +2,7 @@ package io.sugo.server.http;
 
 
 import io.sugo.common.guice.GuiceManager;
-import io.sugo.common.module.*;
+import io.sugo.common.modules.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -107,16 +107,8 @@ public class HiveClientResource {
 		try {
 			String queryId = sqlBean.getQueryId();
 			if(!StringUtil.isEmpty(queryId)){
-				Collection sameSQLs = SQLManager.getSqlBeanInPendingQueue(Collections.singletonList(queryId));
-				if(sameSQLs.size() > 0) {
-					String message = String.format("Sql [%s] has in the queue,please wait!",queryId);
-					log.warn(message);
-					builder = buildExecuteFailedMsg(Response.Status.INTERNAL_SERVER_ERROR,message);
-				}else{
-					SQLManager.addSqlBeanToPendingQueue(sqlBean);
-					builder =  Response.ok(ImmutableMap.of("result",Collections.emptyList(),"success",true,"message","accepted"));
-				}
-
+				SQLManager.addSqlBeanToPendingQueue(sqlBean);
+				builder =  Response.ok(ImmutableMap.of("result",Collections.emptyList(),"success",true,"message","accepted"));
 			}else {
 				List result = sqlManager.executeSQL(sqlBean);
 				builder = Response.ok(ImmutableMap.of("result",result,"success",true,"message","ok"));

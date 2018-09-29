@@ -2,9 +2,7 @@ package io.sugo.common.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import io.sugo.server.http.Configure;
 import io.sugo.services.exception.RemoteException;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import static io.sugo.common.utils.Constants.*;
 
 /**
@@ -42,7 +41,7 @@ public class HttpUtil {
 	}
 
 	public static List<Map> getQueryResult(String broker, String content){
-		try(Response res = post(broker, content)){
+		try(Response res = post(broker, content)){    //TODO 支持多个broker以','分隔的情况
 			List<Map> result = new ArrayList<>();
 			if(res.code() == 200){
 				InputStream stream = res.body().byteStream();
