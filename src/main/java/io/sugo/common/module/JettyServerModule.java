@@ -18,6 +18,7 @@ import io.sugo.common.guice.KeyHolder;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.guice.annotations.LazySingleton;
 import io.sugo.common.utils.AntService;
+import io.sugo.common.utils.Constants;
 import io.sugo.server.http.Configure;
 import io.sugo.server.http.jetty.JettyMonitoringConnectionFactory;
 import io.sugo.server.http.resource.HiveClientResource;
@@ -42,6 +43,7 @@ import javax.servlet.ServletException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import static io.sugo.common.utils.Constants.*;
 
 public class JettyServerModule extends JerseyServletModule {
 	private static final Logger log = LogManager.getLogger(JettyServerModule.class);
@@ -96,14 +98,14 @@ public class JettyServerModule extends JerseyServletModule {
 	}
 
 	static Server makeJettyServer(Configure configure){
-		int maxConn = configure.getInt("system.properties","server.max.conn", 200);
+		int maxConn = configure.getInt(Constants.SYSTEM_PROPS, Sys.SERVER_MAX_CONN, 200);
 		final Server server = new Server(new QueuedThreadPool(maxConn));
 
 		// Without this bean set, the default ScheduledExecutorScheduler runs as non-daemon, causing lifecycle hooks to fail
 		// to fire on main exit. Related bug: https://github.com/druid-io/druid/pull/1627
 		server.addBean(new ScheduledExecutorScheduler("JettyScheduler", true), true);
 		ServerConnector connector = new ServerConnector(server);
-		connector.setPort(configure.getInt("system.properties","http.port"));
+		connector.setPort(configure.getInt(Constants.SYSTEM_PROPS, Sys.HTTP_PORT));
 		connector.setIdleTimeout(600000);
 		// workaround suggested in -
 		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=435322#c66 for jetty half open connection issues during failovers

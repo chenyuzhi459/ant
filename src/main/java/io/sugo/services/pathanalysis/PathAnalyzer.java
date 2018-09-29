@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import io.sugo.common.utils.HttpUtil;
 import io.sugo.common.utils.JsonObjectIterator;
 import io.sugo.server.http.AntServer;
 import io.sugo.services.exception.RemoteException;
@@ -16,9 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  */
@@ -44,55 +43,37 @@ public class PathAnalyzer {
 
         int depth = reversed ? PathAnalysisConstant.TREE_DEPTH_REVERSE : PathAnalysisConstant.TREE_DEPTH_NORMAL;
 
-        OkHttpClient client = new OkHttpClient();
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
-        Request request = new Request.Builder().url(queryUrl).post(body).build();
+        List<Map> queryResult = HttpUtil.getQueryResult(queryUrl, queryStr);
+        Iterator<Map> iterator = queryResult.iterator();
 
-        try (Response queryResponse = client.newCall(request).execute()){
-            if(queryResponse.code() == 200){
-                InputStream stream = queryResponse.body().byteStream();
-
-                JsonObjectIterator iterator = new JsonObjectIterator(stream);
-
-                while (iterator.hasNext()) {
-                    HashMap resultValue = iterator.next();
-                    if (resultValue != null) {
-                        List<PageAccessRecordVo> records = Lists.newArrayList();
-                        List<List<Object>> events = (List<List<Object>>) resultValue.get("events");
-                        for (List<Object> event : events) {
-                            try {
-                                PageAccessRecordVo record = new PageAccessRecordVo();
-                                record.setSessionId(event.get(1).toString());
-                                record.setUserId(event.get(2).toString());
-                                record.setPageName(event.get(3).toString());
-                                Object accessTime = event.get(4);
-                                if (accessTime != null) {
-                                    record.setAccessTime(new Date((Long) (accessTime)));
-                                } else { // If the data generation time is null, then use the data ingestion time.
-                                    accessTime = event.get(0);
-                                    record.setAccessTime(new DateTime(accessTime).toDate());
-                                }
-                                records.add(record);
-                            } catch (Exception ignore) {}
+        while (iterator.hasNext()) {
+            Map resultValue = iterator.next();
+            if (resultValue != null) {
+                List<PageAccessRecordVo> records = Lists.newArrayList();
+                List<List<Object>> events = (List<List<Object>>) resultValue.get("events");
+                for (List<Object> event : events) {
+                    try {
+                        PageAccessRecordVo record = new PageAccessRecordVo();
+                        record.setSessionId(event.get(1).toString());
+                        record.setUserId(event.get(2).toString());
+                        record.setPageName(event.get(3).toString());
+                        Object accessTime = event.get(4);
+                        if (accessTime != null) {
+                            record.setAccessTime(new Date((Long) (accessTime)));
+                        } else { // If the data generation time is null, then use the data ingestion time.
+                            accessTime = event.get(0);
+                            record.setAccessTime(new DateTime(accessTime).toDate());
                         }
-                        records.sort(reversed ? PageAccessRecordVo.DESC_COMPARATOR : PageAccessRecordVo.ASC_COMPARATOR);
-                        analyze(records, homePage, depth);
-                    }
+                        records.add(record);
+                    } catch (Exception ignore) {}
                 }
-
-                long after = System.currentTimeMillis();
-                log.info(String.format("Path analysis total cost %d ms.", after - before));
-            }else {
-                String errStr = queryResponse.body().string();
-                Object originalMessage = this.jsonMapper.readValue(errStr, Object.class);
-
-                throw new RemoteException(originalMessage, errStr);
+                records.sort(reversed ? PageAccessRecordVo.DESC_COMPARATOR : PageAccessRecordVo.ASC_COMPARATOR);
+                analyze(records, homePage, depth);
             }
-
-        } catch (Throwable t) {
-            log.error("Path analysis error.", t);
-            throw Throwables.propagate(t);
         }
+
+        long after = System.currentTimeMillis();
+        log.info(String.format("Path analysis total cost %d ms.", after - before));
 
         return planter.getRoot();
     }

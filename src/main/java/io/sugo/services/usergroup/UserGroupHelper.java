@@ -1,10 +1,12 @@
 package io.sugo.services.usergroup;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import io.sugo.common.utils.HttpUtil;
 import io.sugo.server.http.resource.UserGroupResource;
 import io.sugo.services.cache.Caches;
 import io.sugo.common.utils.JsonObjectIterator;
@@ -36,9 +38,7 @@ public class UserGroupHelper {
 		this.redisClientCache = redisClientCache;
 	}
 
-	public List<Map> getUserGroupQueryResult(UserGroupQuery query, String brokerUrl){
-		List<Map> result = new ArrayList<>();
-
+	public List<Map> getUserGroupQueryResult(UserGroupQuery query, String brokerUrl) {
 		try {
 			String queryStr = jsonMapper.writeValueAsString(query);
 			log.info(String.format("Begin to request getUserGroupQueryResult, requestMetada:\n" +
@@ -47,49 +47,25 @@ public class UserGroupHelper {
 					"<<<<<<<<<<<<<<<<", brokerUrl, queryStr));
 
 			long before = System.currentTimeMillis();
-			OkHttpClient client = new OkHttpClient();
-			RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
-			Request request = new Request.Builder().url(brokerUrl).post(body).build();
 
+			List<Map> queryResult = HttpUtil.getQueryResult(brokerUrl, queryStr);
+			Map queryResultMap = queryResult.get(0);
+			//prune queryResultMap
+			queryResultMap.remove("v");
+			queryResultMap.computeIfPresent("event", (key, value)->{
+				Map<String, Object> eventMap = (Map)value;
+				return Maps.filterKeys(eventMap, (key2-> key2.equals("RowCount")));
+			});
 
-			try (Response response = client.newCall(request).execute()){
-				if(response.code() == 200){
-					InputStream stream = response.body().byteStream();
-					JsonObjectIterator iterator = new JsonObjectIterator(stream);
-
-					while (iterator.hasNext()) {
-						HashMap resultValue = iterator.next();
-						if (resultValue != null) {
-							result.add(resultValue);
-						}
-					}
-					Map queryResultMap = result.get(0);
-					//prune queryResultMap
-					queryResultMap.remove("v");
-					queryResultMap.computeIfPresent("event", (key, value)->{
-						Map<String, Object> eventMap = (Map)value;
-						return Maps.filterKeys(eventMap, (key2-> key2.equals("RowCount")));
-					});
-				}else {
-					String errStr = response.body().string();
-					Object originalMessage = jsonMapper.readValue(errStr, Object.class);
-
-					throw new RemoteException(originalMessage, errStr);
-				}
-
-				long after = System.currentTimeMillis();
-				log.info(String.format("GetUserGroupQueryResult total cost %d ms.", after - before));
-			}
-
-		} catch (Throwable t) {
-			log.error("Get userGroupQueryResult error.", t);
+			long after = System.currentTimeMillis();
+			log.info(String.format("GetUserGroupQueryResult total cost %d ms.", after - before));
+			return queryResult;
+		}catch (Throwable t){
 			throw Throwables.propagate(t);
 		}
-
-		return result;
 	}
 
-	public List<Map> doUserGroupQueryIncremental(UserGroupQuery query, String brokerUrl){
+	public List<Map> doUserGroupQueryIncremental(UserGroupQuery query, String brokerUrl) {
 		List<Map> result;
 		log.info("Begin to doUserGroupQueryIncremental...");
 		long startMillis = System.currentTimeMillis();

@@ -24,29 +24,18 @@ import java.util.Properties;
  */
 public class Constants {
     private static final Logger log = LogManager.getLogger(Constants.class);
-    private static Properties configs = new Properties();
-
-//    private static final String UTF_8 = "UTF-8";
-//
-//    public static final String PREFIX_ARG = "-";
-//
-////    private static String basePath = "src/main/resources";
-//    public static  String SYSTEM_CONFIG_FILE ;
-//    public static  String LOG4J_CONFIG_FILE ;
-//
-//    public static final String PROJECT_NAME = "hive.projectname";
 
     public static final String SYSTEM_PROPS = "system.properties";
     public static final String HIVE_PROPS = "hive.properties";
 
     public static class Sys{
-//        server.max.conn=100
-//        redis.conn.timeout.min=2
-//        http.port=6061
+
+        public static final String PROXY_CONN_READ_TIMEOUT = "proxyConnReadTimeout";
 
         public static final String SERVER_MAX_CONN = "server.max.conn";
         public static final String HTTP_PORT = "http.port";
         public static final String REDIS_CONN_TIMEOUT_MIN = "redis.conn.timeout.min";
+        public static final String PROXY_CONN_READ_TIMEOUT_SEC = "proxy.conn.read.timeout.sec";
 
     }
 

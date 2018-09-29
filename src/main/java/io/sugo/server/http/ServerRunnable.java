@@ -3,9 +3,10 @@ package io.sugo.server.http;
 import com.google.common.base.Throwables;
 import com.google.inject.Injector;
 import com.metamx.common.lifecycle.Lifecycle;
-import io.sugo.services.hive.SQLManager;
+import io.sugo.common.utils.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import static io.sugo.common.utils.Constants.*;
 
 /**
  * Created by chenyuzhi on 18-9-18.
@@ -36,7 +37,7 @@ public class ServerRunnable implements Runnable {
 	{
 		try {
 			final Lifecycle lifecycle = injector.getInstance(Lifecycle.class);
-			int httpPort = injector.getInstance(Configure.class).getInt("system.properties","http.port");
+			int httpPort = injector.getInstance(Configure.class).getInt(Constants.SYSTEM_PROPS, Sys.HTTP_PORT);
 
 			log.info(
 					String.format("Starting up with processors[%,d], memory[%,d].",

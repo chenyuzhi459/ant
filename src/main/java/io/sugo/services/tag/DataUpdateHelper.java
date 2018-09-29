@@ -1,5 +1,6 @@
 package io.sugo.services.tag;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
@@ -7,6 +8,7 @@ import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
+import io.sugo.common.utils.HttpUtil;
 import io.sugo.common.utils.JsonObjectIterator;
 import io.sugo.services.exception.RemoteException;
 import io.sugo.services.tag.model.QueryUpdateBean;
@@ -62,15 +64,15 @@ public class DataUpdateHelper {
 		}
 	}
 
-	public Map<String, Object> updateQueryData(QueryUpdateBean queryUpdateBean){
+	public Map<String, Object> updateQueryData(QueryUpdateBean queryUpdateBean) {
 		Map<String, String> dimMap = queryUpdateBean.getDimMap();
 		Map<String, Boolean> appendFlags = queryUpdateBean.getAppendFlags();
 
 		log.info(String.format("Begin to update data to datasource[%s] for query...", queryUpdateBean.getDataSource()));
 		long before = System.currentTimeMillis();
-		List<Map<String, Object>> queryResult = getGroupByQueryResult(queryUpdateBean);
+		List<Map> queryResult = getGroupByQueryResult(queryUpdateBean);
 		List<UpdateBatch> updateBatches = new LinkedList<>();
-		for(Map<String, Object> itemMap : queryResult){
+		for(Map itemMap : queryResult){
 			Map<String, Object> eventData = (Map<String, Object>)itemMap.get("event");
 			Map<String, Object> convertData = new HashMap<>();
 			Iterator<Map.Entry<String, String>> dimMapIter = dimMap.entrySet().iterator();
@@ -94,8 +96,7 @@ public class DataUpdateHelper {
 		return result;
 	}
 
-	private List<Map<String, Object>> getGroupByQueryResult(QueryUpdateBean queryUpdateBean){
-		List<Map<String, Object>> result = new ArrayList<>();
+	private List<Map> getGroupByQueryResult(QueryUpdateBean queryUpdateBean) {
 		try {
 			String brokerUrl = queryUpdateBean.getBrokerUrl();
 			String queryStr = jsonMapper.writeValueAsString(queryUpdateBean.getQuery());
@@ -105,46 +106,13 @@ public class DataUpdateHelper {
 					"<<<<<<<<<<<<<<<<", brokerUrl, queryStr));
 
 			long before = System.currentTimeMillis();
-			OkHttpClient client = new OkHttpClient();
-			RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
-			Request request = new Request.Builder().url(brokerUrl).post(body).build();
-
-
-			try (Response response = client.newCall(request).execute()){
-				if(response.code() == 200){
-					InputStream stream = response.body().byteStream();
-					JsonObjectIterator iterator = new JsonObjectIterator(stream);
-
-					while (iterator.hasNext()) {
-						HashMap resultValue = iterator.next();
-						if (resultValue != null) {
-							result.add(resultValue);
-						}
-					}
-//					Map queryResultMap = result.get(0);
-//					//prune queryResultMap
-//					queryResultMap.remove("v");
-//					queryResultMap.computeIfPresent("event", (key, value)->{
-//						Map<String, Object> eventMap = (Map)value;
-//						return Maps.filterKeys(eventMap, (key2-> key2.equals("RowCount")));
-//					});
-				}else {
-					String errStr = response.body().string();
-					Object originalMessage = jsonMapper.readValue(errStr, Object.class);
-
-					throw new RemoteException(originalMessage, errStr);
-				}
-
-				long after = System.currentTimeMillis();
-				log.info(String.format("GetUserGroupQueryResult total cost %d ms.", after - before));
-			}
-
-		} catch (Throwable t) {
-			log.error("Get userGroupQueryResult error.", t);
+			List<Map> result = HttpUtil.getQueryResult(brokerUrl, queryStr);
+			long after = System.currentTimeMillis();
+			log.info(String.format("GetUserGroupQueryResult total cost %d ms.", after - before));
+			return result;
+		}catch (Throwable t){
 			throw Throwables.propagate(t);
 		}
-
-		return result;
 	}
 
 	private Map<String, Object> sendData(String url, List<UpdateBatch> updateBatches){
@@ -154,14 +122,8 @@ public class DataUpdateHelper {
 			log.info(String.format("Begin to send data to url[%s], size[%s]", url, updateBatches.size()));
 
 			long before = System.currentTimeMillis();
-			// set a long readTimeout because hproxy will take long time to return when data format wrong.
-			OkHttpClient client = new OkHttpClient.Builder()
-					.readTimeout(30, TimeUnit.SECONDS).build();
-			RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), queryStr);
-			Request request = new Request.Builder().url(url).post(body).build();
 
-
-			try (Response response = client.newCall(request).execute()){
+			try (Response response = HttpUtil.post(url, queryStr)){
 				if(response.code() == 200){
 					String resultStr = response.body().string();
 					result = this.jsonMapper.readValue(resultStr, Map.class);
