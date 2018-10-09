@@ -1,6 +1,5 @@
 package io.sugo.server.http.resource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -11,8 +10,6 @@ import io.sugo.services.exception.RemoteException;
 import io.sugo.services.usergroup.UserGroupHelper;
 import io.sugo.services.usergroup.model.UserGroupBean;
 import io.sugo.services.usergroup.model.UserGroupQuery;
-import io.sugo.common.guice.annotations.Json;
-import org.apache.commons.math3.analysis.function.Log1p;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.parquet.Strings;
@@ -30,12 +27,10 @@ import java.util.*;
 public class UserGroupResource {
 	private static final Logger log = LogManager.getLogger(UserGroupResource.class);
 	private UserGroupHelper userGroupHelper;
-	private final ObjectMapper jsonMapper;
 
 	@Inject
-	public UserGroupResource(@Json ObjectMapper jsonMapper, UserGroupHelper userGroupHelper) {
+	public UserGroupResource(UserGroupHelper userGroupHelper) {
 		this.userGroupHelper = userGroupHelper;
-		this.jsonMapper = jsonMapper;
 	}
 
 	@POST
@@ -46,12 +41,12 @@ public class UserGroupResource {
 		Response.ResponseBuilder resBuilder;
 		try {
 			check(userGroupBean, true);
-			String brokerUrl = userGroupBean.getBrokerUrl();
+			String broker = userGroupBean.getBroker();
 			UserGroupQuery userGroupQuery = userGroupBean.getQuery();
 
 			List<Map> result = userGroupBean.isAppend() ?
-					userGroupHelper.doUserGroupQueryIncremental(userGroupQuery, brokerUrl) :
-					userGroupHelper.getUserGroupQueryResult(userGroupQuery, brokerUrl);
+					userGroupHelper.doUserGroupQueryIncremental(userGroupQuery, broker) :
+					userGroupHelper.getUserGroupQueryResult(userGroupQuery, broker);
 			resBuilder = Response.ok(result);
 		} catch (Throwable e) {
 			boolean isRmException = e instanceof RemoteException;
@@ -108,11 +103,11 @@ public class UserGroupResource {
 		return paramMap;
 	}
 
-	private void check(UserGroupBean userGroupBean, boolean checkBrokerUrl){
+	private void check(UserGroupBean userGroupBean, boolean checkBroker){
 		Preconditions.checkNotNull(userGroupBean.getQuery(), "query can not be null.");
 		Preconditions.checkNotNull(userGroupBean.getQuery().getDataConfig(), "dataConfig can not be null.");
-		if(checkBrokerUrl){
-			Preconditions.checkNotNull(userGroupBean.getBrokerUrl(), "brokerUrl can not be null.");
+		if(checkBroker){
+			Preconditions.checkNotNull(userGroupBean.getBroker(), "broker can not be null.");
 		}
 	}
 

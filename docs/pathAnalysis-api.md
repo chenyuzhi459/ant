@@ -16,7 +16,7 @@ body参数:
     homePage | 是 | string | 表示开始分析的路径(页面)名称 |
     startDate | 是 | date-string | 路径分析的开始时间,格式为`yyyy-MM-dd'T'HH:mm:ss.SSS` |
     endDate | 是 | date-string | 路径分析的结束时间,格式为`yyyy-MM-dd'T'HH:mm:ss.SSS` |
-    brokerUrl | 是 | string | 表示`tindex/uindex`引擎的broker地址 |
+    broker | 是 | string | 表示`tindex/uindex`引擎的broker地址,支持以`,`分隔符传入多个broker |
     direction | 否 | string | 表示路径分析的方向是升序还是降序(dimension.date),可选值为`normal/reverse` |normal 
     filters| 否 | array<object> | `fiter`的json对象数组,具体配置请参考后面的`filter配置` |
     pages | 否 | array<string> | 表示只对页面名称(dimension.pageName)在该范围内的页面进行路径分析 |
@@ -43,7 +43,7 @@ Body数据:
     "homePage": "ScanViewController",
     "startDate": "2018-08-31T16:00:00.000Z",
     "endDate": "2018-09-3T15:59:59.999Z",
-    "brokerUrl": "http://192.168.0.220:8082/druid/v2?pretty",
+    "broker": "192.168.0.220:8082",
     "direction": "reverse"
 }
 ```

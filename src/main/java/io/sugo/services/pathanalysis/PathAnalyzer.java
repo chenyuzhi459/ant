@@ -33,17 +33,17 @@ public class PathAnalyzer {
         this.jsonMapper = jsonMapper;
     }
 
-    public AccessTree getAccessTree(String queryStr, String homePage, boolean reversed, String queryUrl) {
+    public AccessTree getAccessTree(String queryStr, String homePage, boolean reversed, String broker) {
         long before = System.currentTimeMillis();
         log.info(String.format(
                 "Begin to path analysis...\n" +
                 ">>>>>>>>>>>>>>>>[ScanQuery]\n " +
-                "url= %s \n param= %s\n" +
-                "<<<<<<<<<<<<<<<<", queryUrl, queryStr));
+                "broker= %s \n param= %s\n" +
+                "<<<<<<<<<<<<<<<<", broker, queryStr));
 
         int depth = reversed ? PathAnalysisConstant.TREE_DEPTH_REVERSE : PathAnalysisConstant.TREE_DEPTH_NORMAL;
 
-        List<Map> queryResult = HttpUtil.getQueryResult(queryUrl, queryStr);
+        List<Map> queryResult = HttpUtil.getQueryResult(broker, queryStr);
         Iterator<Map> iterator = queryResult.iterator();
 
         while (iterator.hasNext()) {

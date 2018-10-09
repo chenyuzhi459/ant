@@ -8,31 +8,31 @@ import java.util.Map;
  * Created by chenyuzhi on 18-9-27.
  */
 public class QueryUpdateBean {
-	private final String brokerUrl;
+	private final String broker;
 	private final Map<String, Object> query;
-	private final String hproxyUrl;
+	private final String hproxy;
 	private final String dataSource;
 	private final Map<String, String> dimMap;
 	private final Map<String, Boolean> appendFlags;
 
 	public QueryUpdateBean(
-			@JsonProperty("brokerUrl") String brokerUrl,
+			@JsonProperty("broker") String broker,
 			@JsonProperty("query") Map<String, Object> query,
-			@JsonProperty("hproxyUrl") String hproxyUrl,
+			@JsonProperty("hproxy") String hproxy,
 			@JsonProperty("dataSource") String dataSource,
 			@JsonProperty("dimMap") Map<String, String> dimMap,
 			@JsonProperty("appendFlags") Map<String, Boolean> appendFlags) {
-		this.brokerUrl = brokerUrl;
+		this.broker = broker;
 		this.query = query;
-		this.hproxyUrl = hproxyUrl;
+		this.hproxy = hproxy;
 		this.dataSource = dataSource;
 		this.dimMap = dimMap;
 		this.appendFlags = appendFlags;
 	}
 
-	@JsonProperty("brokerUrl")
-	public String getBrokerUrl() {
-		return brokerUrl;
+	@JsonProperty("broker")
+	public String getBroker() {
+		return broker;
 	}
 
 	@JsonProperty("query")
@@ -40,9 +40,9 @@ public class QueryUpdateBean {
 		return query;
 	}
 
-	@JsonProperty("hproxyUrl")
-	public String getHproxyUrl() {
-		return hproxyUrl;
+	@JsonProperty("hproxy")
+	public String getHproxy() {
+		return hproxy;
 	}
 
 	@JsonProperty("dataSource")

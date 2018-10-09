@@ -82,15 +82,15 @@ public class TagResource {
 	}
 
 	private void check(QueryUpdateBean queryUpdateBean) {
-		Preconditions.checkNotNull(queryUpdateBean.getBrokerUrl(), "brokerUrl can not be null.");
+		Preconditions.checkNotNull(queryUpdateBean.getBroker(), "broker can not be null.");
 		Preconditions.checkNotNull(queryUpdateBean.getQuery(), "query can not be null.");
-		Preconditions.checkNotNull(queryUpdateBean.getHproxyUrl(), "hproxyUrl can not be null.");
+		Preconditions.checkNotNull(queryUpdateBean.getHproxy(), "hproxy can not be null.");
 		Preconditions.checkNotNull(queryUpdateBean.getDataSource(), "dataSource can not be null.");
 		Preconditions.checkNotNull(queryUpdateBean.getDimMap(), "dimMap can not be null.");
 	}
 
 	private void check(UserGroupUpdateBean userGroupUpdateBean) {
-		Preconditions.checkNotNull(userGroupUpdateBean.getHproxyUrl(), "hproxyUrl can not be null.");
+		Preconditions.checkNotNull(userGroupUpdateBean.getHproxy(), "hproxy can not be null.");
 		Preconditions.checkNotNull(userGroupUpdateBean.getDataSource(), "dataSource can not be null.");
 		Preconditions.checkNotNull(userGroupUpdateBean.getPrimaryColumn(), "primaryColumn can not be null.");
 		Preconditions.checkNotNull(userGroupUpdateBean.getUserGroupConfig(), "userGroupConfig can not be null.");

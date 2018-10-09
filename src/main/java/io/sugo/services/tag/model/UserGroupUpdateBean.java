@@ -9,7 +9,7 @@ import java.util.Map;
  * Created by chenyuzhi on 18-9-25.
  */
 public class UserGroupUpdateBean {
-	private final String hproxyUrl;
+	private final String hproxy;
 	private final String dataSource;
 	private final String primaryColumn;
 	private final RedisDataIOFetcher userGroupConfig;
@@ -17,13 +17,13 @@ public class UserGroupUpdateBean {
 	private final Map<String, Boolean> appendFlags;
 
 	public UserGroupUpdateBean(
-			@JsonProperty("hproxyUrl") String hproxyUrl,
+			@JsonProperty("hproxy") String hproxy,
 			@JsonProperty("dataSource") String dataSource,
 			@JsonProperty("primaryColumn") String primaryColumn,
 			@JsonProperty("userGroupConfig") RedisDataIOFetcher userGroupConfig,
 			@JsonProperty("dimData") Map<String, Object> dimData,
 			@JsonProperty("appendFlags") Map<String, Boolean> appendFlags) {
-		this.hproxyUrl = hproxyUrl;
+		this.hproxy = hproxy;
 		this.dataSource = dataSource;
 		this.primaryColumn = primaryColumn;
 		this.userGroupConfig = userGroupConfig;
@@ -32,8 +32,8 @@ public class UserGroupUpdateBean {
 	}
 
 	@JsonProperty
-	public String getHproxyUrl() {
-		return hproxyUrl;
+	public String getHproxy() {
+		return hproxy;
 	}
 
 	@JsonProperty

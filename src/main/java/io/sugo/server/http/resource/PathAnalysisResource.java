@@ -48,7 +48,7 @@ public class PathAnalysisResource {
             String queryStr = pathAnalysisDto.buildScanQuery();
             boolean isReverseDirection = PathAnalysisDto.REVERSE_DIRECTION.equals(pathAnalysisDto.getDirection());
             AccessTree tree = pathAnalyzer.getAccessTree(queryStr,
-                    pathAnalysisDto.getHomePage(), isReverseDirection, pathAnalysisDto.getBrokerUrl());
+                    pathAnalysisDto.getHomePage(), isReverseDirection, pathAnalysisDto.getBroker());
             resBuilder = Response.ok(tree == null ? Collections.EMPTY_LIST : tree);
         } catch (Throwable e) {
             boolean isRmException = e instanceof RemoteException;
@@ -62,22 +62,6 @@ public class PathAnalysisResource {
         return resBuilder.build();
     }
 
-//    @POST
-//    @Path("/reverse")
-//    @Produces({MediaType.APPLICATION_JSON})
-//    @Consumes({MediaType.APPLICATION_JSON})
-//    public Response reversePath(PathAnalysisDto pathAnalysisDto) {
-//        check(pathAnalysisDto);
-//        try {
-//            String queryStr = pathAnalysisDto.buildScanQuery();
-//            AccessTree tree = pathAnalyzer.getAccessTree(queryStr,
-//                    pathAnalysisDto.getHomePage(), true, pathAnalysisDto.getBrokerUrl());
-//
-//            return Response.ok(tree == null ? Collections.EMPTY_LIST : tree).build();
-//        } catch (Throwable e) {
-//            return Response.serverError().entity(e.getMessage()).build();
-//        }
-//    }
 
     private void check(PathAnalysisDto pathAnalysisDto) {
         try {
@@ -87,7 +71,7 @@ public class PathAnalysisResource {
 
         Preconditions.checkNotNull(pathAnalysisDto.getDataSource(), "Data source can not be null.");
         Preconditions.checkNotNull(pathAnalysisDto.getHomePage(), "Home page can not be null.");
-        Preconditions.checkNotNull(pathAnalysisDto.getBrokerUrl(), "BrokerUrl can not be null.");
+        Preconditions.checkNotNull(pathAnalysisDto.getBroker(), "Broker can not be null.");
         Preconditions.checkNotNull(pathAnalysisDto.getDimension().getSessionId(), "SessionId can not be null.");
         Preconditions.checkNotNull(pathAnalysisDto.getDimension().getUserId(), "UserId can not be null.");
         Preconditions.checkNotNull(pathAnalysisDto.getDimension().getPageName(), "PageName can not be null.");

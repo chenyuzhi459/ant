@@ -1,27 +1,22 @@
 package io.sugo.services.usergroup;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.sugo.common.utils.HttpUtil;
-import io.sugo.server.http.resource.UserGroupResource;
 import io.sugo.services.cache.Caches;
-import io.sugo.common.utils.JsonObjectIterator;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.RedisClientWrapper;
 import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.services.exception.RemoteException;
 import io.sugo.services.usergroup.model.UserGroupBean;
 import io.sugo.services.usergroup.model.UserGroupQuery;
 import io.sugo.common.guice.annotations.Json;
-import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.io.InputStream;
+
 import java.util.*;
 
 public class UserGroupHelper {
@@ -38,17 +33,17 @@ public class UserGroupHelper {
 		this.redisClientCache = redisClientCache;
 	}
 
-	public List<Map> getUserGroupQueryResult(UserGroupQuery query, String brokerUrl) {
+	public List<Map> getUserGroupQueryResult(UserGroupQuery query, String broker) {
 		try {
 			String queryStr = jsonMapper.writeValueAsString(query);
 			log.info(String.format("Begin to request getUserGroupQueryResult, requestMetada:\n" +
 					">>>>>>>>>>>>>>>>[UserGroupQuery]\n " +
-					"url= %s \n param= %s\n" +
-					"<<<<<<<<<<<<<<<<", brokerUrl, queryStr));
+					"broker= %s \n param= %s\n" +
+					"<<<<<<<<<<<<<<<<", broker, queryStr));
 
 			long before = System.currentTimeMillis();
 
-			List<Map> queryResult = HttpUtil.getQueryResult(brokerUrl, queryStr);
+			List<Map> queryResult = HttpUtil.getQueryResult(broker, queryStr);
 			Map queryResultMap = queryResult.get(0);
 			//prune queryResultMap
 			queryResultMap.remove("v");
@@ -65,7 +60,7 @@ public class UserGroupHelper {
 		}
 	}
 
-	public List<Map> doUserGroupQueryIncremental(UserGroupQuery query, String brokerUrl) {
+	public List<Map> doUserGroupQueryIncremental(UserGroupQuery query, String broker) {
 		List<Map> result;
 		log.info("Begin to doUserGroupQueryIncremental...");
 		long startMillis = System.currentTimeMillis();
@@ -77,7 +72,7 @@ public class UserGroupHelper {
 		String backupKey = generateRedisBackUpKey(redisKey);
 		boolean backup = backupRedisData(redisClient, redisKey, backupKey);
 		try {
-			result = getUserGroupQueryResult(query, brokerUrl);
+			result = getUserGroupQueryResult(query, broker);
 			if(backup){
 				UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(redisIOFactory);
 				UserGroupSerDeserializer backupSerDeserializer = new UserGroupSerDeserializer(redisIOFactory.clone(backupKey));
@@ -139,7 +134,7 @@ public class UserGroupHelper {
 				UserGroupQuery query = userGroupBean.getQuery();
 				boolean isTempUserGroup =UserGroupBean.INDEX_TYPES.contains(userGroupBean.getType());
 				if(isTempUserGroup){
-					getUserGroupQueryResult(query, userGroupBean.getBrokerUrl());
+					getUserGroupQueryResult(query, userGroupBean.getBroker());
 					tempUserGroupMap.computeIfAbsent(query.getDataConfig().getRedisInfo(), k -> new HashSet<>())
 							.add(query.getDataConfig().getGroupId());
 				}

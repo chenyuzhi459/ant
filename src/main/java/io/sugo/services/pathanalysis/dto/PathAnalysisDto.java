@@ -49,7 +49,7 @@ public class PathAnalysisDto {
     private String endDate;
 
     @JsonProperty
-    private String brokerUrl;
+    private String broker;
 
     @JsonProperty(defaultValue = NORMAL_DIRECTION)
     private String direction;
@@ -161,8 +161,8 @@ public class PathAnalysisDto {
         this.filters = filters;
     }
 
-    public String getBrokerUrl() {
-        return brokerUrl;
+    public String getBroker() {
+        return broker;
     }
 
     public String getDirection() {
@@ -174,8 +174,8 @@ public class PathAnalysisDto {
         return this;
     }
 
-    public PathAnalysisDto setBrokerUrl(String brokerUrl) {
-        this.brokerUrl = brokerUrl;
+    public PathAnalysisDto setBroker(String broker) {
+        this.broker = broker;
         return this;
     }
 
