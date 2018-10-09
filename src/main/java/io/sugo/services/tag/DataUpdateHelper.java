@@ -97,7 +97,7 @@ public class DataUpdateHelper {
 		try {
 			String broker = queryUpdateBean.getBroker();
 			String queryStr = jsonMapper.writeValueAsString(queryUpdateBean.getQuery());
-			log.info(String.format("Begin to request getGroupByQueryResult, requestMetada:\n" +
+			log.info(String.format("Begin to request GroupByQueryResult, requestMetada:\n" +
 					">>>>>>>>>>>>>>>>[GroupByQuery]\n " +
 					"broker= %s \n param= %s\n" +
 					"<<<<<<<<<<<<<<<<", broker, queryStr));
@@ -105,7 +105,7 @@ public class DataUpdateHelper {
 			long before = System.currentTimeMillis();
 			List<Map> result = HttpUtil.getQueryResult(broker, queryStr);
 			long after = System.currentTimeMillis();
-			log.info(String.format("GetUserGroupQueryResult total cost %d ms.", after - before));
+			log.info(String.format("GroupByQuery total cost %d ms.", after - before));
 			return result;
 		}catch (Throwable t){
 			throw Throwables.propagate(t);

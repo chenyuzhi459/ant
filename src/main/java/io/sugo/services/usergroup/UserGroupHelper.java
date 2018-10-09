@@ -36,7 +36,7 @@ public class UserGroupHelper {
 	public List<Map> getUserGroupQueryResult(UserGroupQuery query, String broker) {
 		try {
 			String queryStr = jsonMapper.writeValueAsString(query);
-			log.info(String.format("Begin to request getUserGroupQueryResult, requestMetada:\n" +
+			log.info(String.format("Begin to request UserGroupQueryResult, requestMetada:\n" +
 					">>>>>>>>>>>>>>>>[UserGroupQuery]\n " +
 					"broker= %s \n param= %s\n" +
 					"<<<<<<<<<<<<<<<<", broker, queryStr));
@@ -53,7 +53,7 @@ public class UserGroupHelper {
 			});
 
 			long after = System.currentTimeMillis();
-			log.info(String.format("GetUserGroupQueryResult total cost %d ms.", after - before));
+			log.info(String.format("UserGroupQuery total cost %d ms.", after - before));
 			return queryResult;
 		}catch (Throwable t){
 			throw Throwables.propagate(t);
