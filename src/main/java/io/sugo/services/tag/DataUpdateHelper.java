@@ -88,6 +88,7 @@ public class DataUpdateHelper {
 
 			updateBatches.add(new UpdateBatch(convertData, appendFlags));
 		}
+
 		log.info(String.format("Sending data to datasource[%s], size[%s]", datasource, updateBatches.size()));
 		Map<String, Object> result = updateBatches.isEmpty() ?
 				ImmutableMap.of("success", 0, "failed", 0, "errors", Collections.emptyList()) :
