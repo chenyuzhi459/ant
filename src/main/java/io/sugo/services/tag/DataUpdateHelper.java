@@ -2,6 +2,7 @@ package io.sugo.services.tag;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
@@ -49,7 +50,9 @@ public class DataUpdateHelper {
 			}
 
 			log.info(String.format("Sending data to datasource[%s], size[%s]", datasource, updateBatches.size()));
-			Map<String, Object> result = HttpUtil.sendData(userGroupUpdateBean.getHproxy(), datasource, updateBatches);
+			Map<String, Object> result = updateBatches.isEmpty() ?
+					ImmutableMap.of("success", 0, "failed", 0, "errors", Collections.emptyList()) :
+					HttpUtil.sendData(userGroupUpdateBean.getHproxy(), datasource, updateBatches);
 			long after = System.currentTimeMillis();
 			log.info(String.format("Update data to datasource[%s] for userGroup[%s] total cost %d ms.",
 					userGroupUpdateBean.getDataSource(), userGroupDataConfig.getGroupId(), after - before));
@@ -86,7 +89,9 @@ public class DataUpdateHelper {
 			updateBatches.add(new UpdateBatch(convertData, appendFlags));
 		}
 		log.info(String.format("Sending data to datasource[%s], size[%s]", datasource, updateBatches.size()));
-		Map<String, Object> result = HttpUtil.sendData(queryUpdateBean.getHproxy(), datasource, updateBatches);
+		Map<String, Object> result = updateBatches.isEmpty() ?
+				ImmutableMap.of("success", 0, "failed", 0, "errors", Collections.emptyList()) :
+				HttpUtil.sendData(queryUpdateBean.getHproxy(), datasource, updateBatches);
 		long after = System.currentTimeMillis();
 		log.info(String.format("Update data to datasource[%s] for query, total cost %d ms.",
 				queryUpdateBean.getDataSource(),  after - before));
