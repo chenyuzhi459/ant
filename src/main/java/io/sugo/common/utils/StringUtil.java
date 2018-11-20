@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.inject.Inject;
+import io.sugo.dgraph.query.Query;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -26,6 +27,7 @@ import java.util.regex.Pattern;
  *
  */
 public class StringUtil {
+    public static final String INDENT = "  ";
     @Inject
     private static ObjectMapper jsonMapper;
 
@@ -799,5 +801,14 @@ public class StringUtil {
         } catch (JsonProcessingException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public static String getIndent(int n){
+
+        StringBuilder indentsBuilder = new StringBuilder();
+        while (n-- > 0){
+            indentsBuilder.append(INDENT);
+        }
+        return indentsBuilder.toString();
     }
 }
