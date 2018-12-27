@@ -1,7 +1,6 @@
 package io.sugo.common.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 import io.sugo.services.exception.RemoteException;
@@ -25,9 +24,8 @@ import static io.sugo.common.utils.Constants.*;
  */
 public class HttpUtil {
 	private static final Logger log = LogManager.getLogger(HttpUtil.class);
-	public static final int DEFAULT_READ_TIMEOUT_SECOND = 30;
 
-	@Inject @Named(Sys.PROXY_CONN_READ_TIMEOUT)
+	@Inject @Named(Sys.HTTP_FORWARD_CONN_READ_TIMEOUT_SEC)
 	private static int connReadTimeout;
 	@Inject
 	private static ObjectMapper jsonMapper;

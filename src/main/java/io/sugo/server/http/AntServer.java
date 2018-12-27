@@ -19,6 +19,7 @@ public class AntServer {
                 .addModule(new LifecycleModule())
                 .addModule(new JettyServerModule())
                 .addModule(new HiveModule())
+                .addModule(new PathAnalysisModule())
                 .build();
         log.info(String.format("Initialized [%d] Guice Modules", guiceManager.getModules().size()));
         ServerRunnable serverRunnable = new ServerRunnable(guiceManager.getInjector());

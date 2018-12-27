@@ -30,13 +30,18 @@ public class Constants {
 
     public static class Sys{
 
-        public static final String PROXY_CONN_READ_TIMEOUT = "proxyConnReadTimeout";
+        //http 转发druid请求超时配置
+        public static final String HTTP_FORWARD_CONN_READ_TIMEOUT_SEC = "http.forward.conn.read.timeout.sec";
 
         public static final String SERVER_MAX_CONN = "server.max.conn";
         public static final String HTTP_PORT = "http.port";
+        //redis配置
         public static final String REDIS_CONN_TIMEOUT_MIN = "redis.conn.timeout.min";
-        public static final String PROXY_CONN_READ_TIMEOUT_SEC = "proxy.conn.read.timeout.sec";
 
+        //path analysis 配置
+        public static final String PATH_ANALYSIS_SCAN_QUERY_LIMIT_SIZE = "path.analysis.scan.query.limit.size";
+        public static final String PATH_ANALYSIS_SCAN_QUERY_BATCH_SIZE = "path.analysis.scan.query.batch.size";
+        public static final String PATH_ANALYSIS_SCAN_QUERY_TIMEOUT_MILLIS = "path.analysis.scan.query.timeout.millis";
     }
 
     public static class Hive{
@@ -56,13 +61,12 @@ public class Constants {
         public static final String HIVE_COMPUTE_CONN_TIMEOUT_MIN="hive.conn.timeout.min";
     }
 
-    public static class ScanQueryConstant {
-        public static final int BATCH_SIZE = 10000;
+    //ScanQuery 常量配置
+    public static final int SCAN_QUERY_DEFAULT_BATCH_SIZE = 10000;
+    public static final int SCAN_QUERY_DEFAULT_LIMIT_SIZE = 2000000;
+    public static final int SCAN_QUERY_DEFAULT_TIME_OUT_MILLIS = 60 * 1000; // 1 minute
 
-        public static final int LIMIT_SIZE = 2000000;
+    //Http转发 常量配置
+    public static final int HTTP_FORWARD_DEFAULT_READ_TIMEOUT_SEC = 30;
 
-        public static final String TIME_OUT_KEY = "timeout";
-
-        public static final int TIME_OUT = 60 * 1000; // 1 minute
-    }
 }

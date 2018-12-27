@@ -7,10 +7,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import io.sugo.server.http.Configure;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +25,16 @@ public class PathAnalysisDto {
     private static final ObjectMapper jsonMapper = new ObjectMapper();
     public static final String NORMAL_DIRECTION = "normal";
     public static final String REVERSE_DIRECTION = "reverse";
+
+    @Inject @Named(Sys.PATH_ANALYSIS_SCAN_QUERY_BATCH_SIZE)
+    private static int SCAN_QUERY_BATCH_SIZE;
+
+    @Inject @Named(Sys.PATH_ANALYSIS_SCAN_QUERY_LIMIT_SIZE)
+    private static int SCAN_QUERY_LIMIT_SIZE;
+
+    @Inject @Named(Sys.PATH_ANALYSIS_SCAN_QUERY_TIMEOUT_MILLIS)
+    private static int SCAN_QUERY_TIMOUT_MILLIS;
+
 
     @JsonProperty
     private String dataSource;
@@ -182,8 +195,8 @@ public class PathAnalysisDto {
     public String buildScanQuery() throws Exception {
         ScanQuery query = new ScanQuery();
         query.setDataSource(this.dataSource);
-        query.setBatchSize(ScanQueryConstant.BATCH_SIZE);
-        query.setLimit(this.limit == null ? ScanQueryConstant.LIMIT_SIZE : this.limit);
+        query.setBatchSize(SCAN_QUERY_BATCH_SIZE);
+        query.setLimit(this.limit == null ? SCAN_QUERY_LIMIT_SIZE : this.limit);
 
         // Set filters
         if (this.filters != null) {
@@ -257,7 +270,7 @@ public class PathAnalysisDto {
         Map<String, Object> context = Maps.newHashMap();
 
         public ScanQuery() {
-            context.put(ScanQueryConstant.TIME_OUT_KEY, ScanQueryConstant.TIME_OUT);
+            context.put("timeout", SCAN_QUERY_TIMOUT_MILLIS);
         }
 
         public String getQueryType() {
