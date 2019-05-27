@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+//import com.metamx.common.Pair;
 import io.sugo.common.utils.HttpUtil;
 import io.sugo.services.cache.Caches;
 import io.sugo.common.redis.RedisDataIOFetcher;
@@ -14,6 +16,7 @@ import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.services.usergroup.model.UserGroupBean;
 import io.sugo.services.usergroup.model.UserGroupQuery;
 import io.sugo.common.guice.annotations.Json;
+import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -186,6 +189,74 @@ public class UserGroupHelper {
 		return result;
 	}
 
+
+	//检查分群之间是否两两互斥
+	public List<Map> checkMutex(Map<String, List<UserGroupBean>> userGroupParams){
+		log.info("Begin to checkMutex...");
+		long startMillis = System.currentTimeMillis();
+		List<Map> result;
+		Map<String, String> intersectGroups = new HashMap<>();
+		Map<String, Set<String>> dataMap = new HashMap<>();
+		List<UserGroupBean> assistantGroupList = userGroupParams.get("AssistantGroupList");
+
+		Set<String> firstGroupData;
+		Set<String> secondGroupData;
+		try {
+			if(assistantGroupList== null || assistantGroupList.isEmpty()){
+				return Collections.singletonList(ImmutableMap.of("error", "AssistantGroup array is empty"));
+			}
+
+			UserGroupSerDeserializer itemSerDeserializer;
+
+			for(int i = 0; i < assistantGroupList.size(); i++){
+				UserGroupBean userGroupBean = assistantGroupList.get(i);
+
+				boolean isTempUserGroup = UserGroupBean.INDEX_TYPES.contains(userGroupBean.getType());
+				if(isTempUserGroup){
+					UserGroupQuery query = userGroupBean.getQuery();
+					getUserGroupQueryResult(query, userGroupBean.getBroker());
+				}
+			}
+
+			for(int i = 0; i < assistantGroupList.size(); i++){
+				UserGroupBean userGroup1 = assistantGroupList.get(i);
+				RedisDataIOFetcher redisDataFetcher1 = userGroup1.getQuery().getDataConfig();
+				firstGroupData = getDataWithCache(dataMap, redisDataFetcher1);
+
+				//从当前位置的后面开始移动
+				for(int j = i + 1;  j< assistantGroupList.size(); j++){
+					UserGroupBean userGroup2 = assistantGroupList.get(j);
+					RedisDataIOFetcher redisDataFetcher2 = userGroup2.getQuery().getDataConfig();
+					secondGroupData = getDataWithCache(dataMap, redisDataFetcher2);
+					//交集检查 TODO 与DataIntersection的合并优化
+					Set<String> intersectData = DataIntersectionWithoutChange(firstGroupData, secondGroupData);
+					if(intersectData == null || intersectData.isEmpty()) continue;
+					intersectGroups.put(redisDataFetcher1.getGroupId(), redisDataFetcher2.getGroupId());
+				}
+			}
+
+			result = Collections.singletonList(ImmutableMap.of(
+					"status", "success",
+					"size", intersectGroups.size(),
+					"result", intersectGroups
+					));
+			long endMillis = System.currentTimeMillis();
+			log.info(String.format("CheckMutex total cost %d ms.", endMillis - startMillis));
+		}finally {
+			dataMap.clear();
+		}
+		return result;
+	}
+
+	private Set<String> getDataWithCache(Map<String, Set<String>> cache, RedisDataIOFetcher fetcher){
+		UserGroupSerDeserializer itemSerDeserializer = new UserGroupSerDeserializer(fetcher);
+		return cache.computeIfAbsent(fetcher.getGroupId(),(k) ->{
+			Set<String> data = new HashSet<>();
+			itemSerDeserializer.deserialize(data);
+			return data;
+		});
+	}
+
 	private int writeDataToRedis(UserGroupSerDeserializer serDeserializer, Set<String> dataSet){
 		for(String data: dataSet){
 			if(data != null){
@@ -200,6 +271,7 @@ public class UserGroupHelper {
 		switch (operation){
 			case AND_OPERATION :
 				return DataIntersection(data1, data2);
+//				return DataIntersectionWithoutChange(data1, data2);
 			case OR_OPERATION :
 				return DataUion(data1, data2);
 			case EXCLUDE_OPERATION:
@@ -220,6 +292,10 @@ public class UserGroupHelper {
 	private Set<String> DataIntersection(Set<String> data1, Set<String> data2){
 		data1.retainAll(data2);
 		return data1;
+	}
+
+	private Set<String> DataIntersectionWithoutChange(Set<String> data1, Set<String> data2){
+		return Sets.intersection(data1, data2);
 	}
 
 	//补集 'data1-data2'

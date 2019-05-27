@@ -181,3 +181,108 @@ Body数据:
     }
 ]
 ```
+
+##  多个用户分群两两互斥检测操作请求
+- `/ant/usergroup/multi`  
+**基本信息**   
+接口说明:对多个用户分群做互斥检测的(会根据条件自动在redis生成分群)   
+请求方式:POST  
+请求地址:`/ant/usergroup/checkMutex`  
+响应类型:application/json  
+数据类型:application/json     
+url请求参数: 无  
+body参数:  body参数为一个对象数组, 每个对象描述了一个用户分群的属性,下表是对象属性的描述  
+
+    参数名 | 是否必须 | 类型 | 描述  | 默认值
+    ---- | ----- | --- | --- | ----    
+    type | 是 | string | 表示用户分群的类型,有三个可选值`tindex/uindex/usergroup`, 其中前两种类型表示从`tindex,uindex`引擎生成用户分群,usergroup表示是redis中的用户分群|
+    query| 是 | obeject | `UserGroupQuery`的json对象,具体配置请参考[Sugo-UserGroupQuery查询接口](http://docs.sugo.io/developer/query/query.html#UserGroup) |
+    broker | 否 | string | 表示`tindex/uindex`引擎的broker地址, 在type=`tindex/uindex`时需要配置, 支持以`,`分隔符传入多个broker |
+ 
+    
+
+    
+请求示例:
+```
+type:post
+url:http://localhost:6061/ant/usergroup/checkMutex
+Body数据:
+[
+  {
+      "type": "tindex",
+      "broker": "192.168.0.225:8082",
+      "query": {
+            "queryType":"user_group",
+            "dataSource":"schedule_desc",
+            "granularity":"all",
+            "intervals": "1000/3000",
+            "filter": {
+                "type": "selector",
+                "dimension": "sugo_province",
+                "value": "广东省"
+            },
+            "dimension":"distinct_id",
+            "dataConfig": {
+                "hostAndPorts":"192.168.0.223:6379",  
+                "clusterMode":false,  
+                "groupId":"schedule_desc_sugo_province"  
+            },
+            "context":{
+                "timeout": 180000,
+                "useOffheap": true,
+                "groupByStrategy": "v2"
+            }
+      }
+  },
+
+  {
+    "type": "usergroup",
+    "query": {
+      "dataConfig": { 
+            "hostAndPorts": "192.168.0.220:6379",
+            "clusterMode": false,
+            "sentinelMode": false,
+            "groupId": "usergroup_MEtKmwMyf"
+      }
+    }
+  },
+  {
+      "type": "uindex",
+      "broker": "192.168.0.223:8082",
+      "query": {
+                "queryType":"user_group",
+                "dataSource":"tag_bank",
+                "granularity":"all",
+                "intervals": "1000/3000",
+                "filter": {
+                    "type": "selector",
+                    "dimension": "ub_risk",
+                    "value": "R4"
+                },
+                "dimension":"distinct_id",
+                "dataConfig": {
+                    "hostAndPorts":"192.168.0.223:6379",  
+                    "clusterMode":false,  
+                    "groupId":"tag_bank_ub_risk"  
+                },
+                "context":{
+                    "timeout": 180000,
+                    "useOffheap": true,
+                    "groupByStrategy": "v2"
+                }
+      }
+  }
+]
+```
+结果示例:
+```
+[
+    {
+        "status": "success",
+        "size": 1,
+        "result": {
+            "schedule_desc_sugo_province": "tag_bank_ub_risk"
+        }
+    }
+]
+```

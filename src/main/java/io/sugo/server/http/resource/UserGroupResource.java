@@ -84,6 +84,29 @@ public class UserGroupResource {
 		return resBuilder.build();
 	}
 
+	@POST
+	@Path("/checkMutex")
+	@Produces({MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response checkMutexUserGroup(List<UserGroupBean> userGroupList) {
+		Response.ResponseBuilder resBuilder;
+		try {
+			Map<String, List<UserGroupBean>> paramMap = parseMultiUserGroupParam(userGroupList);
+			List<Map> result =  userGroupHelper.checkMutex(paramMap);
+			resBuilder = Response.ok(result);
+		} catch (Throwable e) {
+			boolean isRmException = e instanceof RemoteException;
+			String errMsg = String.format("Resource handle checkMutex occurs %s, param:%s",
+					isRmException ? "remote exception" : "error", StringUtil.toJson(userGroupList));
+			log.error(errMsg, e);
+
+			Object originalInfo = isRmException ? ((RemoteException) e).getRemoteMessage() : e.getMessage();
+			resBuilder = Response.serverError().entity(Collections.singletonList(ImmutableMap.of("error", originalInfo)));
+		}
+
+		return resBuilder.build();
+	}
+
 	public Map<String, List<UserGroupBean>> parseMultiUserGroupParam(List<UserGroupBean> userGroupList) throws IOException {
 		Map<String, List<UserGroupBean>> paramMap = new HashMap<>(2);
 		for(UserGroupBean userGroupBean : userGroupList){
