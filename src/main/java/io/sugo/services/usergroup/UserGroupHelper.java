@@ -190,7 +190,11 @@ public class UserGroupHelper {
 	}
 
 
-	//检查分群之间是否两两互斥
+	/**
+	 *检查分群之间是否两两互斥
+	 * 从第一个分群开始逐个与后面直到最后一个比较(比如一次检查5个分群,则总共检查4+3+2+1=10c次)
+	 */
+
 	public List<Map> checkMutex(Map<String, List<UserGroupBean>> userGroupParams){
 		log.info("Begin to checkMutex...");
 		long startMillis = System.currentTimeMillis();
@@ -205,8 +209,6 @@ public class UserGroupHelper {
 			if(assistantGroupList== null || assistantGroupList.isEmpty()){
 				return Collections.singletonList(ImmutableMap.of("error", "AssistantGroup array is empty"));
 			}
-
-			UserGroupSerDeserializer itemSerDeserializer;
 
 			for(int i = 0; i < assistantGroupList.size(); i++){
 				UserGroupBean userGroupBean = assistantGroupList.get(i);
@@ -228,7 +230,7 @@ public class UserGroupHelper {
 					UserGroupBean userGroup2 = assistantGroupList.get(j);
 					RedisDataIOFetcher redisDataFetcher2 = userGroup2.getQuery().getDataConfig();
 					secondGroupData = getDataWithCache(dataMap, redisDataFetcher2);
-					//交集检查 TODO 与DataIntersection的合并优化
+					//与doMultiUserGroupOperation的And Operation不同, 这里要把分群数据缓存起来,用于后续的比较,避免每次都去redis取
 					Set<String> intersectData = DataIntersectionWithoutChange(firstGroupData, secondGroupData);
 					if(intersectData == null || intersectData.isEmpty()) continue;
 					intersectGroups.put(redisDataFetcher1.getGroupId(), redisDataFetcher2.getGroupId());
