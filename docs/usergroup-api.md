@@ -183,7 +183,7 @@ Body数据:
 ```
 
 ##  多个用户分群两两互斥检测操作请求
-- `/ant/usergroup/multi`  
+- `/ant/usergroup/checkMutex`  
 **基本信息**   
 接口说明:对多个用户分群做互斥检测的(会根据条件自动在redis生成分群)   
 请求方式:POST  
