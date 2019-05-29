@@ -281,7 +281,7 @@ Body数据:
         "status": "success",
         "size": 1,
         "result": {
-            "schedule_desc_sugo_province": "tag_bank_ub_risk"
+            "schedule_desc_sugo_province": ["tag_bank_ub_risk"]
         }
     }
 ]

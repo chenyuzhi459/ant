@@ -199,7 +199,7 @@ public class UserGroupHelper {
 		log.info("Begin to checkMutex...");
 		long startMillis = System.currentTimeMillis();
 		List<Map> result;
-		Map<String, String> intersectGroups = new HashMap<>();
+		Map<String, Set<String>> intersectGroups = new HashMap<>();
 		Map<String, Set<String>> dataMap = new HashMap<>();
 		List<UserGroupBean> assistantGroupList = userGroupParams.get("AssistantGroupList");
 
@@ -233,7 +233,8 @@ public class UserGroupHelper {
 					//与doMultiUserGroupOperation的And Operation不同, 这里要把分群数据缓存起来,用于后续的比较,避免每次都去redis取
 					Set<String> intersectData = DataIntersectionWithoutChange(firstGroupData, secondGroupData);
 					if(intersectData == null || intersectData.isEmpty()) continue;
-					intersectGroups.put(redisDataFetcher1.getGroupId(), redisDataFetcher2.getGroupId());
+					intersectGroups.computeIfAbsent(redisDataFetcher1.getGroupId(), (k)-> new HashSet<>())
+							.add(redisDataFetcher2.getGroupId());
 				}
 			}
 
