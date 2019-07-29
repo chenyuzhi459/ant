@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import io.sugo.services.hive.model.SQLBean;
 import io.sugo.server.http.Configure;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.hive.jdbc.HivePreparedStatement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +30,8 @@ import static io.sugo.common.utils.Constants.*;
  */
 public class HiveClient implements Closeable{
 	private static final Logger log = LogManager.getLogger(HiveClient.class);
+	private static final Object lock = new Object();
+	private static BasicDataSource basicDataSource = null;
 	private static String driverName = "org.apache.hive.jdbc.HiveDriver";
 
 	@Inject @Named(Hive.JDBC_URL)
@@ -38,7 +41,7 @@ public class HiveClient implements Closeable{
 	@Inject @Named(Hive.JDBC_PASSWORD)
 	private static String password;
 	private static long DEFAULT_RETRYINTERVAL_SEC = 10;
-	private static Map<SQLBean,HivePreparedStatement> runningSQLs = new ConcurrentHashMap<>();
+	private static Map<SQLBean,PreparedStatement> runningSQLs = new ConcurrentHashMap<>();
 	private Connection conn;
 	private long connRetryInterval;
 
@@ -46,7 +49,7 @@ public class HiveClient implements Closeable{
 		connRetryInterval = configure.getLong(HIVE_PROPS, Hive.HIVE_CONN_RETRY_INTERVAL_SEC, DEFAULT_RETRYINTERVAL_SEC) * 1000;
 	}
 
-	private void mapParams(HivePreparedStatement stmt, List params) throws SQLException {
+	private void mapParams(PreparedStatement stmt, List params) throws SQLException {
 		if(params == null || params.isEmpty()) return;
 		int length = params.size();
 		int sqlParameterIndex;
@@ -84,7 +87,7 @@ public class HiveClient implements Closeable{
 		String sql = sqlBean.getSql();
 		List params= sqlBean.getParams();
 
-		HivePreparedStatement stmt = (HivePreparedStatement)conn.prepareStatement(sql);
+		PreparedStatement stmt = conn.prepareStatement(sql);
 		if(!Strings.isNullOrEmpty(queryId) && runningSQLs.put(sqlBean,stmt) != null){
 			throw new RuntimeException(String.format("Sql [%s] has in the running queue,please wait!",queryId));
 		}
@@ -111,7 +114,7 @@ public class HiveClient implements Closeable{
 			return true;
 		}
 
-		HivePreparedStatement stmt ;
+		PreparedStatement stmt ;
 		for(SQLBean sqlBean:targetSqlBeans){
 			stmt = runningSQLs.get(sqlBean);
 			String sql = sqlBean.getSql();
@@ -153,9 +156,22 @@ public class HiveClient implements Closeable{
 
 
 	public Connection getNewConn() throws ClassNotFoundException, SQLException {
-		Class.forName(driverName);
-		Connection newConn = DriverManager.getConnection(url, user, password);
-		return newConn;
+		if(basicDataSource == null){
+			synchronized (lock){
+				if(basicDataSource == null){
+					basicDataSource = new BasicDataSource();
+					basicDataSource.setUrl(url);
+					basicDataSource.setUsername(user);
+					basicDataSource.setPassword(password);
+					basicDataSource.setDriverClassName(driverName);
+					basicDataSource.setValidationQuery("show databases");
+					basicDataSource.setTestOnBorrow(true);
+					basicDataSource.setTestWhileIdle(true);
+					//(支持连接断开报错后重连)	http://www.winseliu.com/blog/2016/04/08/dbcp-parameters/
+				}
+			}
+		}
+		return basicDataSource.getConnection();
 	}
 
 	public boolean retryToGetNewConn(long timeOutMillis){
@@ -197,7 +213,7 @@ public class HiveClient implements Closeable{
 		}
 	}
 
-	public static Map<SQLBean,HivePreparedStatement> getRunningSQLs(){
+	public static Map<SQLBean,PreparedStatement> getRunningSQLs(){
 		return runningSQLs;
 	}
 }
