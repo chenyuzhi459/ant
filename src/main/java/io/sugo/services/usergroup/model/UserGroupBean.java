@@ -37,7 +37,6 @@ public class UserGroupBean extends GroupBean{
 	) {
 
 		super(type, query);
-//		this.broker = broker;
 		this.op = op == null ? "" : op;
 
 
@@ -49,16 +48,6 @@ public class UserGroupBean extends GroupBean{
 		return TYPE;
 	}
 
-//	@JsonProperty
-//	@JsonInclude(JsonInclude.Include.NON_NULL)
-//	public String getBroker() {
-//		return broker;
-//	}
-
-//	@JsonProperty
-//	public Query getQuery() {
-//		return query;
-//	}
 
 	@JsonProperty
 	@JsonInclude(JsonInclude.Include.NON_NULL)

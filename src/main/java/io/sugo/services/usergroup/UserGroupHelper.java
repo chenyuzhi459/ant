@@ -39,51 +39,6 @@ public class UserGroupHelper {
 
 
 
-	public List<Map> doUserGroupQueryIncremental(UserGroupQuery query, String broker) {
-		List<Map> result;
-		log.info("Begin to doUserGroupQueryIncremental...");
-		long startMillis = System.currentTimeMillis();
-		RedisDataIOFetcher redisIOFactory = query.getDataConfig();
-		RedisClientWrapper redisClient = redisClientCache.getRedisClient(redisIOFactory.getRedisInfo());
-		String redisKey = redisIOFactory.getGroupId();
-		Set<String> currentData = new HashSet<>();
-		Set<String> backupData = new HashSet<>();
-		String backupKey = generateRedisBackUpKey(redisKey);
-		boolean backup = backupRedisData(redisClient, redisKey, backupKey);
-		try {
-			result = QueryUtil.getUserGroupQueryResult(broker,query);
-			if(backup){
-				UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(redisIOFactory);
-				UserGroupSerDeserializer backupSerDeserializer = new UserGroupSerDeserializer(redisIOFactory.clone(backupKey));
-
-				serDeserializer.deserialize(currentData);
-				backupSerDeserializer.deserialize(backupData);
-				doDataOperation(OR_OPERATION, currentData, backupData);
-				int finalLen = writeDataToRedis(serDeserializer, currentData);
-				// 成功更新后, 立刻设backup = false, 避免出现异常后被backupData覆盖.
-				backup = false;
-				redisClient.del(backupKey);
-				backupData.clear();
-				currentData.clear();
-
-				result = Collections.singletonList(ImmutableMap.of("event",  ImmutableMap.of("RowCount", finalLen)));
-				long endMillis = System.currentTimeMillis();
-				log.info(String.format("UserGroupQueryIncremental total cost %d ms.", endMillis - startMillis));
-			}
-		} finally {
-			currentData.clear();
-			backupData.clear();
-
-			if(redisClient != null){
-				if(backup){
-					redisClient.rename(backupKey, redisKey);
-				}
-				redisClientCache.releaseRedisClient(redisIOFactory.getRedisInfo(), redisClient);
-			}
-		}
-		return result;
-	}
-
 	public List<Map> doMultiUserGroupOperation(Map<String, List<GroupBean>> userGroupParams){
 		List<Map> result;
 		log.info("Begin to doMultiUserGroupOperation...");
@@ -104,35 +59,18 @@ public class UserGroupHelper {
 				return Collections.singletonList(ImmutableMap.of("error", "AssistantGroup array is empty"));
 			}
 
-			UserGroupSerDeserializer itemSerDeserializer;
-
 			for(int i = 0; i < assistantGroupList.size(); i++){
 				UserGroupBean userGroupBean = (UserGroupBean)assistantGroupList.get(i);
 
 				String op = userGroupBean.getOp();
 				UserGroupQuery query = (UserGroupQuery)userGroupBean.getQuery();
-				boolean isTempUserGroup =UserGroupBean.INDEX_TYPES.contains(userGroupBean.getType());
-				if(isTempUserGroup){
-					//TODO 根据面向对象思想优化代码
-					String broker;
-					if(userGroupBean instanceof UindexGroupBean ){
-						broker = ((UindexGroupBean) userGroupBean).getBroker();
-					}else {
-						broker = ((TindexGroupBean) userGroupBean).getBroker();
-					}
-					QueryUtil.getUserGroupQueryResult(broker,query);
-					tempUserGroupMap.computeIfAbsent(query.getDataConfig().getRedisInfo(), k -> new HashSet<>())
-							.add(query.getDataConfig().getGroupId());
-				}
-
-				itemSerDeserializer = new UserGroupSerDeserializer(query.getDataConfig());
 				if(i == 0){
-					itemSerDeserializer.deserialize(acculatedData);
+					acculatedData = userGroupBean.getData(tempUserGroupMap);
 					continue;
 				}
 
 				if(!op.isEmpty()){
-					itemSerDeserializer.deserialize(currentData);
+					currentData = userGroupBean.getData(tempUserGroupMap);
 					acculatedData = doDataOperation(op, acculatedData, currentData);
 				}
 				currentData.clear();

@@ -11,6 +11,7 @@ import io.sugo.services.tag.DataUpdateHelper;
 import io.sugo.services.tag.model.QueryUpdateBean;
 import io.sugo.services.usergroup.model.query.GroupByQuery;
 import io.sugo.services.usergroup.model.query.Query;
+import io.sugo.services.usergroup.model.query.UserGroupQuery;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.Set;
 /**
  * Created by chenyuzhi on 19-8-5.
  */
-public class TindexGroupBean extends UserGroupBean {
+public class TindexGroupBean extends UindexGroupBean {
 	private static final String TYPE = "tindex";
 	protected QueryUpdateBean to;   //用于说明把计算结果发往哪个地方
 	protected  String broker;
@@ -38,8 +39,7 @@ public class TindexGroupBean extends UserGroupBean {
 			@JacksonInject DataUpdateHelper dataUpdateHelper
 
 	) {
-		super(type,query, op);
-		Preconditions.checkNotNull(broker, "broker can not be null.");
+		super(type,broker,query, op);
 		//兼容旧接口,暂不做检查
 //		Preconditions.checkNotNull(groupByDim, "groupByDim can not be null.");
 		this.broker = broker;
@@ -56,7 +56,10 @@ public class TindexGroupBean extends UserGroupBean {
 
 	@Override
 	public  Set<String>  getData(Map<RedisInfo, Set<String>> tempGroups) {
-		//TODO 后续考虑兼容旧接口临时分群的处理
+		if(query instanceof UserGroupQuery){
+			//兼容旧接口
+			return super.getData(tempGroups);
+		}
 		List<Map> queryResult = QueryUtil.getGroupByQueryResult(getBroker(),(GroupByQuery)query);
 		if(to != null){
 			this.dataUpdateHelper.updateQueryData(queryResult, to, groupByDim);

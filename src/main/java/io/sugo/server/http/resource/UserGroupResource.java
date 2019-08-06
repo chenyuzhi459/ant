@@ -35,33 +35,6 @@ public class UserGroupResource {
 		this.userGroupHelper = userGroupHelper;
 	}
 
-//	@POST
-//	@Path("/single")
-//	@Produces({MediaType.APPLICATION_JSON})
-//	@Consumes({MediaType.APPLICATION_JSON})
-//	public Response handleSingleUserGroup(UserGroupBean userGroupBean) {
-//		Response.ResponseBuilder resBuilder;
-//		try {
-//			check(userGroupBean, true);
-//			String broker = userGroupBean.getBroker();
-//			UserGroupQuery userGroupQuery = (UserGroupQuery)userGroupBean.getQuery();
-//
-//			List<Map> result = userGroupBean.isAppend() ?
-//					userGroupHelper.doUserGroupQueryIncremental(userGroupQuery, broker) :
-//					QueryUtil.getUserGroupQueryResult(broker,userGroupQuery);
-//			resBuilder = Response.ok(result);
-//		} catch (Throwable e) {
-//			boolean isRmException = e instanceof RemoteException;
-//			String errMsg = String.format("Resource handle singleUserGroup occurs %s, param:%s",
-//					isRmException ? "remote exception" : "error", StringUtil.toJson(userGroupBean));
-//			log.error(errMsg, e);
-//
-//			Object originalInfo = isRmException ? ((RemoteException) e).getRemoteMessage() : e.getMessage();
-//			resBuilder = Response.serverError().entity(Collections.singletonList(ImmutableMap.of("error", originalInfo)));
-//		}
-//
-//		return resBuilder.build();
-//	}
 
 	@POST
 	@Path("/multi")
