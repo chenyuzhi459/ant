@@ -40,7 +40,8 @@ public class TindexGroupBean extends UserGroupBean {
 	) {
 		super(type,query, op);
 		Preconditions.checkNotNull(broker, "broker can not be null.");
-		Preconditions.checkNotNull(groupByDim, "groupByDim can not be null.");
+		//兼容旧接口,暂不做检查
+//		Preconditions.checkNotNull(groupByDim, "groupByDim can not be null.");
 		this.broker = broker;
 		this.dataUpdateHelper = dataUpdateHelper;
 		this.groupByDim = groupByDim;
