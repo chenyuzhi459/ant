@@ -18,11 +18,8 @@ import java.util.Set;
 
 public class UserGroupBean extends GroupBean{
 	public static final Set<String> INDEX_TYPES = new HashSet<>(Arrays.asList("tindex","uindex"));
-	private static final String TYPE="usergroup";
+	public static final String TYPE="usergroup";
 	public static final String FINAL_GROUP_TYPE = "finalGroup";
-//	protected  String type;
-//	protected  String broker;
-//	protected Query query;      //maybe userGroupQuery or groupByQuery
 	protected  String op;        // used for AssistantGroup
 
 

@@ -9,22 +9,20 @@ import java.util.Map;
 
 /**
  * Created by chenyuzhi on 19-8-5.
- * 输出一个固定的值
  */
-
-public class FixedParser implements Parser{
-	public static final String TYPE = "fixed";
+public class MappingParser implements Parser {
+	public static final String TYPE = "mapping";
 	private String dimension;
-	private Object value;
+	private String mapName;
 
 	@JsonCreator
-	public FixedParser(
-			@JsonProperty("name") String name,
-			@JsonProperty("value") Object value) {
-		Preconditions.checkNotNull(name, "dimension can not be null.");
-		Preconditions.checkNotNull(value, "value can not be null.");
-		this.dimension = name;
-		this.value = value;
+	public MappingParser(
+		@JsonProperty("name") String dimension,
+		@JsonProperty("mapName") String mapName) {
+		Preconditions.checkNotNull(dimension, "dimension can not be null.");
+		Preconditions.checkNotNull(mapName, "mapName can not be null.");
+		this.dimension = dimension;
+		this.mapName = mapName;
 	}
 
 
@@ -42,11 +40,12 @@ public class FixedParser implements Parser{
 
 	@JsonProperty
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public Object getValue() {
-		return value;
+	public String getMapName() {
+		return mapName;
 	}
 
-	public Object getParsedVal(Map<String,Object> data){
-		return value;
+	@Override
+	public Object getParsedVal(Map<String, Object> data) {
+		return data.get(mapName);
 	}
 }

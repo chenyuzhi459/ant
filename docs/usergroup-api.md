@@ -342,19 +342,28 @@ Body数据:
                 "timeout": 180000,
                 "useOffheap": true,
                 "groupByStrategy": "v2"
-            }
+            },
+	          "limitSpec": {
+			        "type": "default",
+			        "limit": 3
+			    }
       },
       "groupByDim":"distinct_id",
       "to":{
       	"hproxy":"192.168.0.225:8085",
       	"dataSource":"tag_test2",
-      	"parser":{
-      		"type":"default",
-      		"dimMap":{
-      			"distinct_id":"distinct_id",
-      			"sum(age)":"p_intValue"
+      	"parsers":[
+      		{
+	      		"type":"mapping",
+	      		"name":"distinct_id",
+	      		"mapName":"distinct_id"
+      		},
+      		{
+  	      		"type":"mapping",
+	      		"name":"p_intValue",
+	      		"mapName":"sum(age)"
       		}
-      	}
+  		]
       	
       }
   },
@@ -426,12 +435,12 @@ Body数据:
 **基本信息**   
 说明:说明根据tindex的分组统计结果转换为uindex的数据格式
 
-    参数名 | 是否必须 | 类型 | 描述  | 默认值
-    ---- | ----- | --- | --- | ----    
-    type | 是 | string | 表示转换器的类型,可选值为`default|fixed`|default
-    dimMap| 否 | <key-value> | type=`default`时需要配置,key表示tindex的统计结果变量名,value表示uindex对应的字段名 |
-    dimData | 否 | <key-value> | type=`fixed`时需要配置,key表示uindex对应的字段名,value表示uindex字段对应的固定值 |
-    u_primaryCol | 否 | string | 当type=`fixed`时需要配置,表示uindex的唯一ID |
+参数名 | 是否必须 | 类型 | 描述  | 默认值
+---- | ----- | --- | --- | ----    
+type | 是 | string | 表示转换器的类型,可选值为`default|fixed`|default
+dimMap| 否 | <key-value> | type=`default`时需要配置,key表示tindex的统计结果变量名,value表示uindex对应的字段名 |
+dimData | 否 | <key-value> | type=`fixed`时需要配置,key表示uindex对应的字段名,value表示uindex字段对应的固定值 |
+u_primaryCol | 否 | string | 当type=`fixed`时需要配置,表示uindex的唯一ID |
 
  
     
@@ -440,21 +449,16 @@ Body数据:
 示例1:
 ```
 {
-    "type":"default",
-    "dimMap":{
-        "distinct_id":"distinct_id",
-        "sum(age)":"p_intValue"
-    }
+    "type":"mapping",
+    "name":"p_intValue",
+    "mapName":"sum(age)"
 }
 ```
 示例2:
 ```
 {
     "type":"fixed",
-    "dimData":{
-        "i_intValue":"1",
-        "s_stringValue":"s_stringValue"
-    },
-    "u_primaryCol":"distinct_id"
+    "name":"s_stringValue",
+    "value":"456"
 }
 ```          

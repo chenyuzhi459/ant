@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.utils.QueryUtil;
+import io.sugo.services.cache.Caches;
 import io.sugo.services.tag.DataUpdateHelper;
 import io.sugo.services.tag.model.QueryUpdateBean;
 import io.sugo.services.usergroup.model.query.GroupByQuery;
@@ -36,10 +37,11 @@ public class TindexGroupBean extends UindexGroupBean {
 			@JsonProperty("op") String op,
 			@JsonProperty("groupByDim") String groupByDim,
 			@JsonProperty("to") QueryUpdateBean to,
-			@JacksonInject DataUpdateHelper dataUpdateHelper
+			@JacksonInject DataUpdateHelper dataUpdateHelper,
+			@JacksonInject Caches.RedisClientCache redisClientCache
 
 	) {
-		super(type,broker,query, op);
+		super(type,broker,query, op, redisClientCache);
 		//兼容旧接口,暂不做检查
 //		Preconditions.checkNotNull(groupByDim, "groupByDim can not be null.");
 		this.broker = broker;
@@ -90,5 +92,10 @@ public class TindexGroupBean extends UindexGroupBean {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public QueryUpdateBean getTo() {
 		return to;
+	}
+
+	@Override
+	public void close() {
+
 	}
 }

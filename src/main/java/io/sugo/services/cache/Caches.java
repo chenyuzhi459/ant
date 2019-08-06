@@ -165,6 +165,13 @@ public class Caches implements AntService{
 
 			return wrapper;
 		}
+
+		public long delete(RedisInfo redisInfo, String userGroupKeys){
+			RedisClientWrapper redisClient = getRedisClient(redisInfo);
+			Long result = redisClient.del(userGroupKeys);
+			releaseRedisClient(redisInfo, redisClient);
+			return result;
+		}
 	}
 
 

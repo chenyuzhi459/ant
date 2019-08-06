@@ -21,7 +21,7 @@ import java.util.*;
  */
 public class DataUpdateHelper {
 	private static final Logger log = LogManager.getLogger(DataUpdateHelper.class);
-	public static final int DEFAULT_BATCH_SIZE = 100;
+	public static final int DEFAULT_BATCH_SIZE = 1000;
 	private final ObjectMapper jsonMapper;
 
 	@Inject
@@ -66,7 +66,6 @@ public class DataUpdateHelper {
 
 	public Map<String, Object> updateQueryData(List<Map> queryResult, QueryUpdateBean queryUpdateBean, String groupByDim) {
 		int sendRows = 0;
-		Parser parser = queryUpdateBean.getParser();
 		Map<String, Boolean> appendFlags = queryUpdateBean.getAppendFlags();
 		final String datasource = queryUpdateBean.getDataSource();
 
@@ -76,7 +75,7 @@ public class DataUpdateHelper {
 		List<UpdateBatch> updateBatches = new LinkedList<>();
 		for(Map itemMap : queryResult){
 			Map<String, Object> eventData = (Map<String, Object>)itemMap.get("event");
-			Map<String, Object> convertData = parser.parse(eventData, groupByDim);
+			Map<String, Object> convertData = queryUpdateBean.convert(eventData);
 			updateBatches.add(new UpdateBatch(convertData, appendFlags));
 			if(updateBatches.size() % DEFAULT_BATCH_SIZE == 0){
 				HttpUtil.sendData(queryUpdateBean.getHproxy(), datasource, updateBatches);

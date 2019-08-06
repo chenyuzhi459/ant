@@ -25,13 +25,10 @@ public abstract class GroupBean implements Closeable{
 	public GroupBean(
 			@JsonProperty("type") String type,
 			@JsonProperty("query") Query query
-
-
 	) {
 		Preconditions.checkNotNull(query, "query can not be null.");
 		this.type = type;
 		this.query = query;
-
 	}
 
 	public abstract String getType();

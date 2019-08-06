@@ -30,8 +30,7 @@ public class UserGroupHelper {
 
 	@Inject
 	public UserGroupHelper(@Json ObjectMapper jsonMapper,
-						   Caches.RedisClientCache redisClientCache,
-						   DataUpdateHelper dataUpdateHelper) {
+						   Caches.RedisClientCache redisClientCache) {
 		this.jsonMapper = jsonMapper;
 		this.redisClientCache = redisClientCache;
 
@@ -66,11 +65,13 @@ public class UserGroupHelper {
 				UserGroupQuery query = (UserGroupQuery)userGroupBean.getQuery();
 				if(i == 0){
 					acculatedData = userGroupBean.getData(tempUserGroupMap);
+					userGroupBean.close();
 					continue;
 				}
 
 				if(!op.isEmpty()){
 					currentData = userGroupBean.getData(tempUserGroupMap);
+					userGroupBean.close();
 					acculatedData = doDataOperation(op, acculatedData, currentData);
 				}
 				currentData.clear();
@@ -97,9 +98,6 @@ public class UserGroupHelper {
 		}finally {
 			acculatedData.clear();
 			currentData.clear();
-			tempUserGroupMap.forEach((redisInfo, userGroupKeys) ->{
-				deleteUserGroups(redisInfo, userGroupKeys.toArray(new String[userGroupKeys.size()]));
-			});
 			if(finalUserGroupRedisClient != null){
 				if(backup){
 					finalUserGroupRedisClient.rename(finalUserGroupBackupKey, finalUserGroupKey);
@@ -110,9 +108,9 @@ public class UserGroupHelper {
 		return result;
 	}
 
-	public List<Map> doMultiOperation(Map<String, List<GroupBean>> userGroupParams){
+	public List<Map> doMultiUserGroupOperationV2(Map<String, List<GroupBean>> userGroupParams){
 		List<Map> result;
-		log.info("Begin to doMultiOperation...");
+		log.info("Begin to doMultiUserGroupOperationV2...");
 		long startMillis = System.currentTimeMillis();
 		FinalGroupBean finalGroup = (FinalGroupBean)userGroupParams.get("finalGroup").get(0);
 		List<GroupBean> assistantGroupList = userGroupParams.get("AssistantGroupList");
@@ -136,11 +134,13 @@ public class UserGroupHelper {
 
 				if(i == 0){
 					acculatedData = userGroupBean.getData(tempUserGroupMap);
+					userGroupBean.close();
 					continue;
 				}
 
 				if(!op.isEmpty()){
 					currentData = userGroupBean.getData(tempUserGroupMap);
+					userGroupBean.close();
 					acculatedData = doDataOperation(op, acculatedData, currentData);
 				}
 				currentData.clear();
@@ -162,13 +162,10 @@ public class UserGroupHelper {
 
 			result = Collections.singletonList(ImmutableMap.of("event",  ImmutableMap.of("RowCount", finalLen)));
 			long endMillis = System.currentTimeMillis();
-			log.info(String.format("MultiOperation total cost %d ms.", endMillis - startMillis));
+			log.info(String.format("MultiUserGroupOperationV2 total cost %d ms.", endMillis - startMillis));
 		}finally {
 			acculatedData.clear();
 			currentData.clear();
-			tempUserGroupMap.forEach((redisInfo, userGroupKeys) ->{
-				deleteUserGroups(redisInfo, userGroupKeys.toArray(new String[userGroupKeys.size()]));
-			});
 			if(finalUserGroupRedisClient != null){
 				if(backup){
 					finalUserGroupRedisClient.rename(finalUserGroupBackupKey, finalUserGroupKey);
@@ -300,18 +297,6 @@ public class UserGroupHelper {
 	private Set<String> DataDifference(Set<String> data1, Set<String> data2){
 		data1.removeAll(data2);
 		return data1;
-	}
-
-	private Long deleteUserGroups(RedisInfo redisInfo, String... userGroupKeys){
-		if(userGroupKeys == null || userGroupKeys.length == 0){
-			log.warn(String.format("The userGroupKeys to delete is empty with %s", redisInfo));
-			return 0L;
-		}
-		RedisClientWrapper redisClient = redisClientCache.getRedisClient(redisInfo);
-		Long result = redisClient.del(userGroupKeys);
-		log.info(String.format("Delete userGroups %s with config: %s", Arrays.toString(userGroupKeys), redisInfo));
-		redisClientCache.releaseRedisClient(redisInfo, redisClient);
-		return result;
 	}
 
 	private boolean backupRedisData(RedisClientWrapper redisClient, String redisKey, String backupKey){

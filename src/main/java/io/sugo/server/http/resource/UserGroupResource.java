@@ -1,17 +1,13 @@
 package io.sugo.server.http.resource;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import io.sugo.common.utils.QueryUtil;
 import io.sugo.common.utils.StringUtil;
 import io.sugo.services.exception.RemoteException;
 import io.sugo.services.usergroup.UserGroupHelper;
 import io.sugo.services.usergroup.model.GroupBean;
-import io.sugo.services.usergroup.model.UserGroupBean;
-import io.sugo.services.usergroup.model.query.UserGroupQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.parquet.Strings;
@@ -92,7 +88,7 @@ public class UserGroupResource {
 		Response.ResponseBuilder resBuilder;
 		try {
 			Map<String, List<GroupBean>> paramMap = parseMultiUserGroupParam(userGroupList);
-			List<Map> result =  userGroupHelper.doMultiOperation(paramMap);
+			List<Map> result =  userGroupHelper.doMultiUserGroupOperationV2(paramMap);
 			resBuilder = Response.ok(result);
 		} catch (Throwable e) {
 			boolean isRmException = e instanceof RemoteException;

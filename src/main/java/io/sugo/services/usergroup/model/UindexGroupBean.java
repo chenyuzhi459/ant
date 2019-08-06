@@ -1,14 +1,19 @@
 package io.sugo.services.usergroup.model;
 
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.services.tag.model.QueryUpdateBean;
+import io.sugo.services.cache.Caches;
+import io.sugo.services.usergroup.UserGroupHelper;
 import io.sugo.services.usergroup.model.query.Query;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +22,9 @@ import java.util.Set;
  * Created by chenyuzhi on 19-8-5.
  */
 public class UindexGroupBean extends UserGroupBean {
+	private static final Logger log = LogManager.getLogger(UserGroupBean.class);
 	private static final String TYPE="uindex";
+	protected final Caches.RedisClientCache redisClientCache;
 	protected  String broker;
 	protected String op;
 	@JsonCreator
@@ -25,13 +32,15 @@ public class UindexGroupBean extends UserGroupBean {
 			@JsonProperty("type") String type,
 			@JsonProperty("broker") String broker,
 			@JsonProperty("query") Query query,
-			@JsonProperty("op") String op
+			@JsonProperty("op") String op,
+			@JacksonInject Caches.RedisClientCache redisClientCache
 
 	) {
 		super(type,query,op);
 		Preconditions.checkNotNull(broker, "broker can not be null.");
 		this.broker = broker;
 		this.op = op;
+		this.redisClientCache = redisClientCache;
 	}
 
 
@@ -46,9 +55,6 @@ public class UindexGroupBean extends UserGroupBean {
 		UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(query.getDataConfig());
 		Set<String> userIds = new HashSet<>();
 		serDeserializer.deserialize(userIds);
-		//加入临时分群map, TODO 后续统一在close处理
-		tempGroups.computeIfAbsent(query.getDataConfig().getRedisInfo(), k -> new HashSet<>())
-				.add(query.getDataConfig().getGroupId());
 		return userIds;
 	}
 
@@ -58,4 +64,11 @@ public class UindexGroupBean extends UserGroupBean {
 		return broker;
 	}
 
+	@Override
+	public void close() {
+		RedisInfo redisInfo = query.getDataConfig().getRedisInfo();
+		String userGroupKeys = query.getDataConfig().getGroupId();
+		redisClientCache.delete(redisInfo, userGroupKeys);
+		log.info(String.format("Delete userGroups %s with config: %s", userGroupKeys, redisInfo));
+	}
 }
