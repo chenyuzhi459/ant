@@ -304,7 +304,7 @@ body参数:  body参数为一个对象数组, 每个对象描述了一个用户�
     query| 是 | obeject | `UserGroupQuery|GroupByQuery`的json对象,具体配置请参考[Sugo-UserGroupQuery查询接口](http://docs.sugo.io/developer/query/query.html#UserGroup)[Sugo-GroupByQuery查询接口](http://docs.sugo.io/developer/query/query.html#GroupBy), 其中type=`tindex`时, query应为GroupBYQuery |
     broker | 否 | string | 表示`tindex/uindex`引擎的broker地址, 在type=`tindex/uindex`时需要配置, 支持以`,`分隔符传入多个broker |
     groupByDim | 否 | string | 当type=`tindex`时需要配置,表示`tindex`GroupByQuery的分组维度,一般是唯一ID |
-    to | 否 | object | 当type=`tindex`时需要配置,表示把tindex的统计结果输出到uindex,格式参考下面的示例, parser参考后面**Tindex-Parser**的说明 |
+    to | 否 | object | 当type=`tindex`时需要配置,表示把tindex的统计结果输出到uindex,格式参考下面的示例, parsers参考后面**Tindex-Parser**的说明 |
     op | 否 | string | 表示对用户分群的操作, 可选值为`or/and/exclude`; 在type = `finalGroup`时不需要设置, 数组中的第一个用户分群也不用设置 |
     append | 否 | boolean | 表示对最终用户分群的操作,false表示进行覆盖操作, true表示进行累加操作 |
  
@@ -437,10 +437,10 @@ Body数据:
 
 参数名 | 是否必须 | 类型 | 描述  | 默认值
 ---- | ----- | --- | --- | ----    
-type | 是 | string | 表示转换器的类型,可选值为`default|fixed`|default
-dimMap| 否 | <key-value> | type=`default`时需要配置,key表示tindex的统计结果变量名,value表示uindex对应的字段名 |
-dimData | 否 | <key-value> | type=`fixed`时需要配置,key表示uindex对应的字段名,value表示uindex字段对应的固定值 |
-u_primaryCol | 否 | string | 当type=`fixed`时需要配置,表示uindex的唯一ID |
+type | 是 | string | 表示转换器的类型,可选值为`default|mapping`|mapping
+name| 是 | string | 表示uindex对应的字段名 |
+mapName | 否 | string | type=`mapping`时需要配置,表示tindex输出的变量名 |
+value | 否 | string | 当type=`fixed`时需要配置,表示一个固定值 |
 
  
     
