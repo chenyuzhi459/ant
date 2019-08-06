@@ -1,16 +1,17 @@
 package io.sugo.services.tag;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.HttpUtil;
+
 import io.sugo.services.tag.model.QueryUpdateBean;
 import io.sugo.services.tag.model.UserGroupUpdateBean;
 import io.sugo.services.tag.model.UpdateBatch;
+import io.sugo.services.usergroup.parser.Parser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.*;
@@ -20,6 +21,7 @@ import java.util.*;
  */
 public class DataUpdateHelper {
 	private static final Logger log = LogManager.getLogger(DataUpdateHelper.class);
+	public static final int DEFAULT_BATCH_SIZE = 100;
 	private final ObjectMapper jsonMapper;
 
 	@Inject
@@ -62,59 +64,42 @@ public class DataUpdateHelper {
 		}
 	}
 
-	public Map<String, Object> updateQueryData(QueryUpdateBean queryUpdateBean) {
-		Map<String, String> dimMap = queryUpdateBean.getDimMap();
+	public Map<String, Object> updateQueryData(List<Map> queryResult, QueryUpdateBean queryUpdateBean, String groupByDim) {
+		int sendRows = 0;
+		Parser parser = queryUpdateBean.getParser();
 		Map<String, Boolean> appendFlags = queryUpdateBean.getAppendFlags();
 		final String datasource = queryUpdateBean.getDataSource();
 
 		log.info(String.format("Begin to update data to datasource[%s] for query...", datasource));
 		long before = System.currentTimeMillis();
-		List<Map> queryResult = getGroupByQueryResult(queryUpdateBean);
+		long startSecs =  before/1000;
 		List<UpdateBatch> updateBatches = new LinkedList<>();
 		for(Map itemMap : queryResult){
 			Map<String, Object> eventData = (Map<String, Object>)itemMap.get("event");
-			Map<String, Object> convertData = new HashMap<>();
-			Iterator<Map.Entry<String, String>> dimMapIter = dimMap.entrySet().iterator();
-			while (dimMapIter.hasNext()){
-				Map.Entry<String, String> entry = dimMapIter.next();
-				String queryDim = entry.getKey();
-				String updateDim = entry.getValue();
-				Object dataItem = eventData.get(queryDim);
-				if(dataItem == null){
-					continue;
-				}
-				convertData.put(updateDim, dataItem);
-			}
-
+			Map<String, Object> convertData = parser.parse(eventData, groupByDim);
 			updateBatches.add(new UpdateBatch(convertData, appendFlags));
+			if(updateBatches.size() % DEFAULT_BATCH_SIZE == 0){
+				HttpUtil.sendData(queryUpdateBean.getHproxy(), datasource, updateBatches);
+				sendRows += updateBatches.size();
+				updateBatches.clear();
+				long currentSecs = System.currentTimeMillis()/1000;
+				if(currentSecs > startSecs){
+					startSecs = currentSecs;
+					log.info(String.format("send data [%s] to datasource[%s] for query.", sendRows, datasource));
+				}
+			}
 		}
 
-		log.info(String.format("Sending data to datasource[%s], size[%s]", datasource, updateBatches.size()));
+
 		Map<String, Object> result = updateBatches.isEmpty() ?
 				ImmutableMap.of("success", 0, "failed", 0, "errors", Collections.emptyList()) :
 				HttpUtil.sendData(queryUpdateBean.getHproxy(), datasource, updateBatches);
+		sendRows += updateBatches.size();
+		updateBatches.clear();
 		long after = System.currentTimeMillis();
-		log.info(String.format("Update data to datasource[%s] for query, total cost %d ms.",
-				queryUpdateBean.getDataSource(),  after - before));
+		log.info(String.format("Update total data[%s] to datasource[%s] for query, total cost %d ms.",
+				sendRows, queryUpdateBean.getDataSource(),  after - before));
 		return result;
 	}
 
-	private List<Map> getGroupByQueryResult(QueryUpdateBean queryUpdateBean) {
-		try {
-			String broker = queryUpdateBean.getBroker();
-			String queryStr = jsonMapper.writeValueAsString(queryUpdateBean.getQuery());
-			log.info(String.format("Begin to request GroupByQueryResult, requestMetada:\n" +
-					">>>>>>>>>>>>>>>>[GroupByQuery]\n " +
-					"broker= %s \n param= %s\n" +
-					"<<<<<<<<<<<<<<<<", broker, queryStr));
-
-			long before = System.currentTimeMillis();
-			List<Map> result = HttpUtil.getQueryResult(broker, queryStr);
-			long after = System.currentTimeMillis();
-			log.info(String.format("GroupByQuery total cost %d ms.", after - before));
-			return result;
-		}catch (Throwable t){
-			throw Throwables.propagate(t);
-		}
-	}
 }

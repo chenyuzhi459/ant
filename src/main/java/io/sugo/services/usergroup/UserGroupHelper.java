@@ -1,22 +1,19 @@
 package io.sugo.services.usergroup;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-//import com.metamx.common.Pair;
-import io.sugo.common.utils.HttpUtil;
+import io.sugo.common.utils.QueryUtil;
 import io.sugo.services.cache.Caches;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.RedisClientWrapper;
 import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.services.usergroup.model.UserGroupBean;
-import io.sugo.services.usergroup.model.UserGroupQuery;
+import io.sugo.services.tag.DataUpdateHelper;
+import io.sugo.services.usergroup.model.*;
+import io.sugo.services.usergroup.model.query.UserGroupQuery;
 import io.sugo.common.guice.annotations.Json;
-import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,42 +23,21 @@ public class UserGroupHelper {
 	private static final Logger log = LogManager.getLogger(UserGroupHelper.class);
 	private final ObjectMapper jsonMapper;
 	private final Caches.RedisClientCache redisClientCache;
+
 	private static final String AND_OPERATION = "and";
 	private static final String OR_OPERATION = "or";
 	private static final String EXCLUDE_OPERATION = "exclude";
 
 	@Inject
-	public UserGroupHelper(@Json ObjectMapper jsonMapper, Caches.RedisClientCache redisClientCache) {
+	public UserGroupHelper(@Json ObjectMapper jsonMapper,
+						   Caches.RedisClientCache redisClientCache,
+						   DataUpdateHelper dataUpdateHelper) {
 		this.jsonMapper = jsonMapper;
 		this.redisClientCache = redisClientCache;
+
 	}
 
-	public List<Map> getUserGroupQueryResult(UserGroupQuery query, String broker) {
-		try {
-			String queryStr = jsonMapper.writeValueAsString(query);
-			log.info(String.format("Begin to request UserGroupQueryResult, requestMetada:\n" +
-					">>>>>>>>>>>>>>>>[UserGroupQuery]\n " +
-					"broker= %s \n param= %s\n" +
-					"<<<<<<<<<<<<<<<<", broker, queryStr));
 
-			long before = System.currentTimeMillis();
-
-			List<Map> queryResult = HttpUtil.getQueryResult(broker, queryStr);
-			Map queryResultMap = queryResult.get(0);
-			//prune queryResultMap
-			queryResultMap.remove("v");
-			queryResultMap.computeIfPresent("event", (key, value)->{
-				Map<String, Object> eventMap = (Map)value;
-				return Maps.filterKeys(eventMap, (key2-> key2.equals("RowCount")));
-			});
-
-			long after = System.currentTimeMillis();
-			log.info(String.format("UserGroupQuery total cost %d ms.", after - before));
-			return queryResult;
-		}catch (Throwable t){
-			throw Throwables.propagate(t);
-		}
-	}
 
 	public List<Map> doUserGroupQueryIncremental(UserGroupQuery query, String broker) {
 		List<Map> result;
@@ -75,7 +51,7 @@ public class UserGroupHelper {
 		String backupKey = generateRedisBackUpKey(redisKey);
 		boolean backup = backupRedisData(redisClient, redisKey, backupKey);
 		try {
-			result = getUserGroupQueryResult(query, broker);
+			result = QueryUtil.getUserGroupQueryResult(broker,query);
 			if(backup){
 				UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(redisIOFactory);
 				UserGroupSerDeserializer backupSerDeserializer = new UserGroupSerDeserializer(redisIOFactory.clone(backupKey));
@@ -108,12 +84,12 @@ public class UserGroupHelper {
 		return result;
 	}
 
-	public List<Map> doMultiUserGroupOperation(Map<String, List<UserGroupBean>> userGroupParams){
+	public List<Map> doMultiUserGroupOperation(Map<String, List<GroupBean>> userGroupParams){
 		List<Map> result;
 		log.info("Begin to doMultiUserGroupOperation...");
 		long startMillis = System.currentTimeMillis();
-		UserGroupBean finalGroup = userGroupParams.get("finalGroup").get(0);
-		List<UserGroupBean> assistantGroupList = userGroupParams.get("AssistantGroupList");
+		FinalGroupBean finalGroup = (FinalGroupBean)userGroupParams.get("finalGroup").get(0);
+		List<GroupBean> assistantGroupList = userGroupParams.get("AssistantGroupList");
 
 		RedisDataIOFetcher finalUserGroupDataConfig = finalGroup.getQuery().getDataConfig();
 		String finalUserGroupKey = finalUserGroupDataConfig.getGroupId();
@@ -131,13 +107,20 @@ public class UserGroupHelper {
 			UserGroupSerDeserializer itemSerDeserializer;
 
 			for(int i = 0; i < assistantGroupList.size(); i++){
-				UserGroupBean userGroupBean = assistantGroupList.get(i);
+				UserGroupBean userGroupBean = (UserGroupBean)assistantGroupList.get(i);
 
 				String op = userGroupBean.getOp();
-				UserGroupQuery query = userGroupBean.getQuery();
+				UserGroupQuery query = (UserGroupQuery)userGroupBean.getQuery();
 				boolean isTempUserGroup =UserGroupBean.INDEX_TYPES.contains(userGroupBean.getType());
 				if(isTempUserGroup){
-					getUserGroupQueryResult(query, userGroupBean.getBroker());
+					//TODO 根据面向对象思想优化代码
+					String broker;
+					if(userGroupBean instanceof UindexGroupBean ){
+						broker = ((UindexGroupBean) userGroupBean).getBroker();
+					}else {
+						broker = ((TindexGroupBean) userGroupBean).getBroker();
+					}
+					QueryUtil.getUserGroupQueryResult(broker,query);
 					tempUserGroupMap.computeIfAbsent(query.getDataConfig().getRedisInfo(), k -> new HashSet<>())
 							.add(query.getDataConfig().getGroupId());
 				}
@@ -189,19 +172,87 @@ public class UserGroupHelper {
 		return result;
 	}
 
+	public List<Map> doMultiOperation(Map<String, List<GroupBean>> userGroupParams){
+		List<Map> result;
+		log.info("Begin to doMultiOperation...");
+		long startMillis = System.currentTimeMillis();
+		FinalGroupBean finalGroup = (FinalGroupBean)userGroupParams.get("finalGroup").get(0);
+		List<GroupBean> assistantGroupList = userGroupParams.get("AssistantGroupList");
+
+		RedisDataIOFetcher finalUserGroupDataConfig = finalGroup.getQuery().getDataConfig();
+		String finalUserGroupKey = finalUserGroupDataConfig.getGroupId();
+		String finalUserGroupBackupKey = generateRedisBackUpKey(finalUserGroupKey);
+		RedisClientWrapper finalUserGroupRedisClient = redisClientCache.getRedisClient(finalUserGroupDataConfig.getRedisInfo());
+		Map<RedisInfo, Set<String>> tempUserGroupMap = new HashMap<>();
+		Set<String> acculatedData = new HashSet<>();
+		Set<String> currentData = new HashSet<>();
+		boolean backup = false;
+		try {
+			if(assistantGroupList== null || assistantGroupList.isEmpty()){
+				return Collections.singletonList(ImmutableMap.of("error", "AssistantGroup array is empty"));
+			}
+
+			for(int i = 0; i < assistantGroupList.size(); i++){
+				UserGroupBean userGroupBean = (UserGroupBean)assistantGroupList.get(i);
+				String op = userGroupBean.getOp();
+
+				if(i == 0){
+					acculatedData = userGroupBean.getData(tempUserGroupMap);
+					continue;
+				}
+
+				if(!op.isEmpty()){
+					currentData = userGroupBean.getData(tempUserGroupMap);
+					acculatedData = doDataOperation(op, acculatedData, currentData);
+				}
+				currentData.clear();
+			}
+
+			if(finalGroup.isAppend()){
+				// do 'append operation'
+				currentData = finalGroup.getData(tempUserGroupMap);
+				acculatedData = doDataOperation(OR_OPERATION, acculatedData, currentData);
+				currentData.clear();
+			}
+			// do 'backup orperation'
+			backup = backupRedisData(finalUserGroupRedisClient, finalUserGroupKey, finalUserGroupBackupKey);
+			UserGroupSerDeserializer finalSerDeserializer = new UserGroupSerDeserializer(finalUserGroupDataConfig);
+			int finalLen = writeDataToRedis(finalSerDeserializer, acculatedData);
+			backup = false;
+			finalUserGroupRedisClient.del(finalUserGroupBackupKey);
+			acculatedData.clear();
+
+			result = Collections.singletonList(ImmutableMap.of("event",  ImmutableMap.of("RowCount", finalLen)));
+			long endMillis = System.currentTimeMillis();
+			log.info(String.format("MultiOperation total cost %d ms.", endMillis - startMillis));
+		}finally {
+			acculatedData.clear();
+			currentData.clear();
+			tempUserGroupMap.forEach((redisInfo, userGroupKeys) ->{
+				deleteUserGroups(redisInfo, userGroupKeys.toArray(new String[userGroupKeys.size()]));
+			});
+			if(finalUserGroupRedisClient != null){
+				if(backup){
+					finalUserGroupRedisClient.rename(finalUserGroupBackupKey, finalUserGroupKey);
+				}
+				redisClientCache.releaseRedisClient(finalUserGroupDataConfig.getRedisInfo(), finalUserGroupRedisClient);
+			}
+		}
+		return result;
+	}
 
 	/**
 	 *检查分群之间是否两两互斥
 	 * 从第一个分群开始逐个与后面直到最后一个比较(比如一次检查5个分群,则总共检查4+3+2+1=10c次)
 	 */
 
-	public List<Map> checkMutex(Map<String, List<UserGroupBean>> userGroupParams){
+	public List<Map> checkMutex(Map<String, List<GroupBean>> userGroupParams){
 		log.info("Begin to checkMutex...");
 		long startMillis = System.currentTimeMillis();
 		List<Map> result;
 		Map<String, Set<String>> intersectGroups = new HashMap<>();
 		Map<String, Set<String>> dataMap = new HashMap<>();
-		List<UserGroupBean> assistantGroupList = userGroupParams.get("AssistantGroupList");
+		List<GroupBean> assistantGroupList = userGroupParams.get("AssistantGroupList");
 
 		Set<String> firstGroupData;
 		Set<String> secondGroupData;
@@ -211,23 +262,29 @@ public class UserGroupHelper {
 			}
 
 			for(int i = 0; i < assistantGroupList.size(); i++){
-				UserGroupBean userGroupBean = assistantGroupList.get(i);
+				UserGroupBean userGroupBean = (UserGroupBean)assistantGroupList.get(i);
 
 				boolean isTempUserGroup = UserGroupBean.INDEX_TYPES.contains(userGroupBean.getType());
 				if(isTempUserGroup){
-					UserGroupQuery query = userGroupBean.getQuery();
-					getUserGroupQueryResult(query, userGroupBean.getBroker());
+					String broker;
+					if(userGroupBean instanceof UindexGroupBean ){
+						broker = ((UindexGroupBean) userGroupBean).getBroker();
+					}else {
+						broker = ((TindexGroupBean) userGroupBean).getBroker();
+					}
+					UserGroupQuery query = (UserGroupQuery)userGroupBean.getQuery();
+					QueryUtil.getUserGroupQueryResult(broker, query);
 				}
 			}
 
 			for(int i = 0; i < assistantGroupList.size(); i++){
-				UserGroupBean userGroup1 = assistantGroupList.get(i);
+				UserGroupBean userGroup1 = (UserGroupBean)assistantGroupList.get(i);
 				RedisDataIOFetcher redisDataFetcher1 = userGroup1.getQuery().getDataConfig();
 				firstGroupData = getDataWithCache(dataMap, redisDataFetcher1);
 
 				//从当前位置的后面开始移动
 				for(int j = i + 1;  j< assistantGroupList.size(); j++){
-					UserGroupBean userGroup2 = assistantGroupList.get(j);
+					UserGroupBean userGroup2 = (UserGroupBean)assistantGroupList.get(j);
 					RedisDataIOFetcher redisDataFetcher2 = userGroup2.getQuery().getDataConfig();
 					secondGroupData = getDataWithCache(dataMap, redisDataFetcher2);
 					//与doMultiUserGroupOperation的And Operation不同, 这里要把分群数据缓存起来,用于后续的比较,避免每次都去redis取

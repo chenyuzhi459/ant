@@ -1,61 +1,64 @@
 package io.sugo.services.usergroup.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
+import io.sugo.common.redis.RedisInfo;
+import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
+import io.sugo.common.utils.QueryUtil;
+import io.sugo.services.tag.model.QueryUpdateBean;
+import io.sugo.services.usergroup.model.query.Query;
+import io.sugo.services.usergroup.model.query.UserGroupQuery;
+
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 
-/**
- * Created by chenyuzhi on 18-9-26.
- */
-public class UserGroupBean {
+
+
+public class UserGroupBean extends GroupBean{
 	public static final Set<String> INDEX_TYPES = new HashSet<>(Arrays.asList("tindex","uindex"));
+	private static final String TYPE="usergroup";
 	public static final String FINAL_GROUP_TYPE = "finalGroup";
-	private  String type;
-	private  String broker;
-	private  UserGroupQuery query;
-	private  String op;        // used for AssistantGroup
-	private  Boolean append;   // used for finalGroup
+//	protected  String type;
+//	protected  String broker;
+//	protected Query query;      //maybe userGroupQuery or groupByQuery
+	protected  String op;        // used for AssistantGroup
+
+
 
 	@JsonCreator
 	public UserGroupBean(
 			@JsonProperty("type") String type,
-			@JsonProperty("broker") String broker,
-			@JsonProperty("query") UserGroupQuery query,
-			@JsonProperty("op") String op,
-			@JsonProperty("append") Boolean append) {
+			@JsonProperty("query") Query query,
+			@JsonProperty("op") String op
 
-		this.type = type;
-		this.broker = broker;
-		this.query = query;
 
-		if(this.type.equals(FINAL_GROUP_TYPE)){
-			this.append = append == null ? false : append;
-		}else {
-			this.op = op == null ? "" : op;
-		}
+	) {
+
+		super(type, query);
+//		this.broker = broker;
+		this.op = op == null ? "" : op;
+
 
 	}
 
 	@JsonProperty
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getType() {
-		return type;
+		return TYPE;
 	}
 
-	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public String getBroker() {
-		return broker;
-	}
+//	@JsonProperty
+//	@JsonInclude(JsonInclude.Include.NON_NULL)
+//	public String getBroker() {
+//		return broker;
+//	}
 
-	@JsonProperty
-	public UserGroupQuery getQuery() {
-		return query;
-	}
+//	@JsonProperty
+//	public Query getQuery() {
+//		return query;
+//	}
 
 	@JsonProperty
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -63,9 +66,13 @@ public class UserGroupBean {
 		return op;
 	}
 
-	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public Boolean isAppend() {
-		return append;
+
+
+	public  Set<String>  getData(Map<RedisInfo, Set<String>> tempGroups){
+		UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(query.getDataConfig());
+		Set<String> userIds = new HashSet<>();
+		serDeserializer.deserialize(userIds);
+		return userIds;
 	}
+
 }

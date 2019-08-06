@@ -1,12 +1,13 @@
-package io.sugo.services.usergroup.model;
+package io.sugo.services.usergroup.model.query;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisDataIOFetcher;
 
 import java.util.List;
 import java.util.Map;
 
-public class UserGroupQuery {
+public class UserGroupQuery implements Query {
 	String queryType = "user_group";
 	String dataSource;
 	Object intervals;
@@ -34,6 +35,7 @@ public class UserGroupQuery {
 			@JsonProperty("having") Map having,
 			@JsonProperty("context") Map<String, Object> context
 	) {
+		Preconditions.checkNotNull(dataConfig, "dataConfig can not be null.");
 		this.dataSource = dataSource;
 		this.intervals = intervals;
 		this.filter = filter;

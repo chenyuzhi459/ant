@@ -4,6 +4,7 @@ import com.google.inject.*;
 import com.google.inject.name.Names;
 import io.sugo.common.utils.Constants;
 import io.sugo.common.utils.HttpUtil;
+import io.sugo.common.utils.QueryUtil;
 import io.sugo.common.utils.StringUtil;
 import io.sugo.common.guice.annotations.LazySingleton;
 import io.sugo.common.guice.AntScopes;
@@ -29,6 +30,7 @@ public class CommonModule implements Module {
 		bindConstants(binder);
 		binder.requestStaticInjection(StringUtil.class);
 		binder.requestStaticInjection(HttpUtil.class);
+		binder.requestStaticInjection(QueryUtil.class);
 	}
 
 
