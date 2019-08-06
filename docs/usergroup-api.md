@@ -437,113 +437,24 @@ Body数据:
     
 
     
-请求示例:
+示例1:
 ```
-type:post
-url:http://192.168.0.225:6061/ant/usergroup/multi/v2
-Body数据:
-[
-  {
-      "type": "tindex",
-      "broker": "192.168.0.225:8082",
-      "query": {
-            "queryType":"lucene_groupBy",
-            "dataSource":"schedule_desc",
-            "granularity":"all",
-            "intervals": "1000/3000",
-            "filter": {
-                "type": "selector",
-                "dimension": "sugo_province",
-                "value": "广东省"
-            },
-            "aggregations": [
-		        {
-		            "name": "sum(age)",
-		            "type": "lucene_doubleSum",
-		            "fieldName": "age"
-        		}
-    		],
-            "dimensions":["distinct_id"],
-            "context":{
-                "timeout": 180000,
-                "useOffheap": true,
-                "groupByStrategy": "v2"
-            }
-      },
-      "groupByDim":"distinct_id",
-      "to":{
-      	"hproxy":"192.168.0.225:8085",
-      	"dataSource":"tag_test2",
-      	"parser":{
-      		"type":"default",
-      		"dimMap":{
-      			"distinct_id":"distinct_id",
-      			"sum(age)":"p_intValue"
-      		}
-      	}
-      	
-      }
-  },
-
-  {
-    "type": "usergroup",
-    "query": {
-      "dataConfig": { 
-            "hostAndPorts": "192.168.0.220:6379",
-            "clusterMode": false,
-            "sentinelMode": false,
-            "groupId": "usergroup_N4pahgU1y"
-      }
-    },
-    "op": "or"
-  },
-  {
-      "type": "uindex",
-      "broker": "192.168.0.223:8082",
-      "query": {
-                "queryType":"user_group",
-                "dataSource":"tag_bank",
-                "granularity":"all",
-                "intervals": "1000/3000",
-                "filter": {
-                    "type": "selector",
-                    "dimension": "ub_risk",
-                    "value": "R4"
-                },
-                "dimension":"distinct_id",
-                "dataConfig": {
-                    "hostAndPorts":"192.168.0.223:6379",  
-                    "clusterMode":false,  
-                    "groupId":"tag_bank_ub_risk"  
-                },
-                "context":{
-                    "timeout": 180000,
-                    "useOffheap": true,
-                    "groupByStrategy": "v2"
-                }
-      },
-      "op": "exclude"
-  },
-  {
-    "type": "finalGroup",
-    "query": {
-      "dataConfig": { 
-            "hostAndPorts":"192.168.0.223:6379",  
-            "clusterMode":false,  
-            "groupId":"test_usergroup_multi"  
-      }
-    },
-    "append": true
-  }
-]
-```
-结果示例:
-```
-[
-    {
-        "event": {
-            "RowCount": 21384
-        }
+{
+    "type":"default",
+    "dimMap":{
+        "distinct_id":"distinct_id",
+        "sum(age)":"p_intValue"
     }
-]
+}
 ```
+示例2:
+```
+{
+    "type":"fixed",
+    "dimData":{
+        "i_intValue":"1",
+        "s_stringValue":"s_stringValue"
+    },
+    "u_primaryCol":"distinct_id"
+}
+```          
