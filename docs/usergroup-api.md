@@ -326,109 +326,115 @@ append | 否 | boolean | 表示对最终用户分群的操作,false表示进行�
 type:post
 url:http://192.168.0.225:6061/ant/usergroup/multi/v2
 Body数据:
-[
-  {
-      "type": "tindex",
-      "broker": "192.168.0.225:8082",
-      "query": {
-            "queryType":"lucene_groupBy",
-            "dataSource":"schedule_desc",
-            "granularity":"all",
-            "intervals": "1000/3000",
-            "filter": {
-                "type": "selector",
-                "dimension": "sugo_province",
-                "value": "广东省"
-            },
-            "aggregations": [
-		        {
-		            "name": "sum(age)",
-		            "type": "lucene_doubleSum",
-		            "fieldName": "age"
-        		}
-    		],
-            "dimensions":["distinct_id"],
-            "context":{
-                "timeout": 180000,
-                "useOffheap": true,
-                "groupByStrategy": "v2"
-            },
-	          "limitSpec": {
-			        "type": "default",
-			        "limit": 3
-			    }
-      },
-      "groupByDim":"distinct_id",
-      "to":{
-      	"hproxy":"192.168.0.225:8085",
-      	"dataSource":"tag_test2",
-      	"parsers":[
-      		{
-	      		"type":"mapping",
-	      		"name":"distinct_id",
-	      		"mapName":"distinct_id"
-      		},
-      		{
-  	      		"type":"mapping",
-	      		"name":"p_intValue",
-	      		"mapName":"sum(age)"
-      		}
-  		]
-      	
-      }
-  },
+{
+	"id":"ssss",
+	"containerKey": "redis-test",
+	"groups":
+	[
+	  {
+	      "type": "tindex",
+	      "broker": "192.168.0.225:8082",
+	      "query": {
+	            "queryType":"lucene_groupBy",
+	            "dataSource":"schedule_desc",
+	            "granularity":"all",
+	            "intervals": "1000/3000",
+	            "filter": {
+	                "type": "selector",
+	                "dimension": "sugo_province",
+	                "value": "广东省"
+	            },
+	            "aggregations": [
+			        {
+			            "name": "sum(age)",
+			            "type": "lucene_doubleSum",
+			            "fieldName": "age"
+	        		}
+	    		],
+	            "dimensions":["distinct_id"],
+	            "context":{
+	                "timeout": 180000,
+	                "useOffheap": true,
+	                "groupByStrategy": "v2"
+	            },
+		          "limitSpec": {
+				        "type": "default",
+				        "limit": 3
+				    }
+	      },
+	      "groupByDim":"distinct_id",
+	      "to":{
+	      	"hproxy":"192.168.0.225:8085",
+	      	"dataSource":"tag_test2",
+	      	"parsers":[
+	      		{
+		      		"type":"mapping",
+		      		"name":"distinct_id",
+		      		"mapName":"distinct_id"
+	      		},
+	      		{
+	  	      		"type":"mapping",
+		      		"name":"p_intValue",
+		      		"mapName":"sum(age)"
+	      		}
+	  		]
+	      	
+	      }
+	  },
+	
+	  {
+	    "type": "usergroup",
+	    "query": {
+	      "dataConfig": { 
+	            "hostAndPorts": "192.168.0.220:6379",
+	            "clusterMode": false,
+	            "sentinelMode": false,
+	            "groupId": "usergroup_N4pahgU1y"
+	      }
+	    },
+	    "op": "or"
+	  },
+	  {
+	      "type": "uindex",
+	      "broker": "192.168.0.223:8082",
+	      "query": {
+	                "queryType":"user_group",
+	                "dataSource":"tag_bank",
+	                "granularity":"all",
+	                "intervals": "1000/3000",
+	                "filter": {
+	                    "type": "selector",
+	                    "dimension": "ub_risk",
+	                    "value": "R4"
+	                },
+	                "dimension":"distinct_id",
+	                "dataConfig": {
+	                    "hostAndPorts":"192.168.0.223:6379",  
+	                    "clusterMode":false,  
+	                    "groupId":"tag_bank_ub_risk"  
+	                },
+	                "context":{
+	                    "timeout": 180000,
+	                    "useOffheap": true,
+	                    "groupByStrategy": "v2"
+	                }
+	      },
+	      "op": "exclude"
+	  },
+	  {
+	    "type": "finalGroup",
+	    "query": {
+	      "dataConfig": { 
+	            "hostAndPorts":"192.168.0.223:6379",  
+	            "clusterMode":false,  
+	            "groupId":"test_usergroup_multi"  
+	      }
+	    },
+	    "append": true
+	  }
+	]
+}
 
-  {
-    "type": "usergroup",
-    "query": {
-      "dataConfig": { 
-            "hostAndPorts": "192.168.0.220:6379",
-            "clusterMode": false,
-            "sentinelMode": false,
-            "groupId": "usergroup_N4pahgU1y"
-      }
-    },
-    "op": "or"
-  },
-  {
-      "type": "uindex",
-      "broker": "192.168.0.223:8082",
-      "query": {
-                "queryType":"user_group",
-                "dataSource":"tag_bank",
-                "granularity":"all",
-                "intervals": "1000/3000",
-                "filter": {
-                    "type": "selector",
-                    "dimension": "ub_risk",
-                    "value": "R4"
-                },
-                "dimension":"distinct_id",
-                "dataConfig": {
-                    "hostAndPorts":"192.168.0.223:6379",  
-                    "clusterMode":false,  
-                    "groupId":"tag_bank_ub_risk"  
-                },
-                "context":{
-                    "timeout": 180000,
-                    "useOffheap": true,
-                    "groupByStrategy": "v2"
-                }
-      },
-      "op": "exclude"
-  },
-  {
-    "type": "finalGroup",
-    "query": {
-      "dataConfig": { 
-            "hostAndPorts":"192.168.0.223:6379",  
-            "clusterMode":false,  
-            "groupId":"test_usergroup_multi"  
-      }
-    },
-    "append": true
-  }
-]
 ```
 结果示例:
 ```
