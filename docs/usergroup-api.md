@@ -311,7 +311,7 @@ groups | 是 | array[object] | 表示对多个用户分群的操作,每个object
 参数名 | 是否必须 | 类型 | 描述  | 默认值   
 ---- | ----- | --- | --- | ----  
 type | 是 | string | 表示用户分群的类型,有四个可选值`tindex/uindex/usergroup/finalGroup`, 其中前两种类型表示从`uindex`引擎生成临时用户分群,在操作完成后会被删除,usergroup表示是redis中的用户分群,不会被删除, finalGroup表示是最终要生成的用户分群|
-query| 是 | obeject | `UserGroupQuery|GroupByQuery`的json对象,具体配置请参考[Sugo-UserGroupQuery查询接口](http://docs.sugo.io/developer/query/query.html#UserGroup),[Sugo-GroupByQuery查询接口](http://docs.sugo.io/developer/query/query.html#GroupBy), 其中type=`tindex`时, query应为GroupBYQuery |
+query| 是 | obeject | `UserGroupQuery/GroupByQuery`的json对象,具体配置请参考[Sugo-UserGroupQuery查询接口](http://docs.sugo.io/developer/query/query.html#UserGroup),[Sugo-GroupByQuery查询接口](http://docs.sugo.io/developer/query/query.html#GroupBy), 其中type=`tindex`时, query应为GroupBYQuery |
 broker | 否 | string | 表示`tindex/uindex`引擎的broker地址, 在type=`tindex/uindex`时需要配置, 支持以`,`分隔符传入多个broker |
 groupByDim | 否 | string | 当type=`tindex`时需要配置,表示GroupByQuery的分组维度,一般是唯一ID |
 to | 否 | object | 当type=`tindex`时需要配置,表示把tindex的统计结果输出到uindex,格式参考下面的示例, parsers参考后面**Tindex-Parser**的说明 |
