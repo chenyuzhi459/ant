@@ -38,7 +38,7 @@ public abstract class GroupBean implements Closeable{
 		return query;
 	}
 
-	public abstract Set<String>  getData(Map<RedisInfo, Set<String>> tempGroups);
+	public abstract Set<String>  getData();
 
 	public void close(){
 

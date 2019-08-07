@@ -54,7 +54,7 @@ public class UserGroupBean extends GroupBean{
 
 
 
-	public  Set<String>  getData(Map<RedisInfo, Set<String>> tempGroups){
+	public  Set<String>  getData(){
 		UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(query.getDataConfig());
 		Set<String> userIds = new HashSet<>();
 		serDeserializer.deserialize(userIds);

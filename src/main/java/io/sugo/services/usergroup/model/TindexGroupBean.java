@@ -57,10 +57,10 @@ public class TindexGroupBean extends UindexGroupBean {
 	}
 
 	@Override
-	public  Set<String>  getData(Map<RedisInfo, Set<String>> tempGroups) {
+	public  Set<String>  getData() {
 		if(query instanceof UserGroupQuery){
 			//兼容旧接口
-			return super.getData(tempGroups);
+			return super.getData();
 		}
 		List<Map> queryResult = QueryUtil.getGroupByQueryResult(getBroker(),(GroupByQuery)query);
 		if(to != null){
@@ -96,6 +96,9 @@ public class TindexGroupBean extends UindexGroupBean {
 
 	@Override
 	public void close() {
-
+		if(query instanceof UserGroupQuery){
+			//兼容旧接口
+			super.close();
+		}
 	}
 }

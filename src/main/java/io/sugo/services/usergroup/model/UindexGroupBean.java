@@ -7,15 +7,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
+import io.sugo.common.utils.QueryUtil;
 import io.sugo.services.cache.Caches;
-import io.sugo.services.usergroup.UserGroupHelper;
 import io.sugo.services.usergroup.model.query.Query;
+import io.sugo.services.usergroup.model.query.UserGroupQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -51,7 +50,8 @@ public class UindexGroupBean extends UserGroupBean {
 	}
 
 	@Override
-	public  Set<String>  getData(Map<RedisInfo, Set<String>> tempGroups) {
+	public  Set<String>  getData() {
+		QueryUtil.getUserGroupQueryResult(broker, (UserGroupQuery) query);
 		UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(query.getDataConfig());
 		Set<String> userIds = new HashSet<>();
 		serDeserializer.deserialize(userIds);

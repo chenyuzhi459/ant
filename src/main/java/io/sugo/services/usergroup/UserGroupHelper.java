@@ -49,7 +49,6 @@ public class UserGroupHelper {
 		String finalUserGroupKey = finalUserGroupDataConfig.getGroupId();
 		String finalUserGroupBackupKey = generateRedisBackUpKey(finalUserGroupKey);
 		RedisClientWrapper finalUserGroupRedisClient = redisClientCache.getRedisClient(finalUserGroupDataConfig.getRedisInfo());
-		Map<RedisInfo, Set<String>> tempUserGroupMap = new HashMap<>();
 		Set<String> acculatedData = new HashSet<>();
 		Set<String> currentData = new HashSet<>();
 		boolean backup = false;
@@ -62,16 +61,13 @@ public class UserGroupHelper {
 				UserGroupBean userGroupBean = (UserGroupBean)assistantGroupList.get(i);
 
 				String op = userGroupBean.getOp();
-				UserGroupQuery query = (UserGroupQuery)userGroupBean.getQuery();
+				currentData = userGroupBean.getData();
+				userGroupBean.close();
 				if(i == 0){
-					acculatedData = userGroupBean.getData(tempUserGroupMap);
-					userGroupBean.close();
-					continue;
+					//第一个的数据集默认全部并入acculatedData
+					op = OR_OPERATION;
 				}
-
 				if(!op.isEmpty()){
-					currentData = userGroupBean.getData(tempUserGroupMap);
-					userGroupBean.close();
 					acculatedData = doDataOperation(op, acculatedData, currentData);
 				}
 				currentData.clear();
@@ -81,7 +77,7 @@ public class UserGroupHelper {
 
 			if(finalGroup.isAppend()){
 				// do 'append operation'
-				finalSerDeserializer.deserialize(currentData);
+				currentData = finalGroup.getData();
 				acculatedData = doDataOperation(OR_OPERATION, acculatedData, currentData);
 				currentData.clear();
 			}
@@ -119,7 +115,6 @@ public class UserGroupHelper {
 		String finalUserGroupKey = finalUserGroupDataConfig.getGroupId();
 		String finalUserGroupBackupKey = generateRedisBackUpKey(finalUserGroupKey);
 		RedisClientWrapper finalUserGroupRedisClient = redisClientCache.getRedisClient(finalUserGroupDataConfig.getRedisInfo());
-		Map<RedisInfo, Set<String>> tempUserGroupMap = new HashMap<>();
 		Set<String> acculatedData = new HashSet<>();
 		Set<String> currentData = new HashSet<>();
 		boolean backup = false;
@@ -131,16 +126,12 @@ public class UserGroupHelper {
 			for(int i = 0; i < assistantGroupList.size(); i++){
 				UserGroupBean userGroupBean = (UserGroupBean)assistantGroupList.get(i);
 				String op = userGroupBean.getOp();
-
+				currentData = userGroupBean.getData();
+				userGroupBean.close();
 				if(i == 0){
-					acculatedData = userGroupBean.getData(tempUserGroupMap);
-					userGroupBean.close();
-					continue;
+					op = OR_OPERATION;
 				}
-
 				if(!op.isEmpty()){
-					currentData = userGroupBean.getData(tempUserGroupMap);
-					userGroupBean.close();
 					acculatedData = doDataOperation(op, acculatedData, currentData);
 				}
 				currentData.clear();
@@ -148,7 +139,7 @@ public class UserGroupHelper {
 
 			if(finalGroup.isAppend()){
 				// do 'append operation'
-				currentData = finalGroup.getData(tempUserGroupMap);
+				currentData = finalGroup.getData();
 				acculatedData = doDataOperation(OR_OPERATION, acculatedData, currentData);
 				currentData.clear();
 			}

@@ -3,12 +3,10 @@ package io.sugo.services.usergroup.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.services.usergroup.model.query.Query;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -42,7 +40,7 @@ public class FinalGroupBean extends GroupBean {
 	}
 
 	@Override
-	public  Set<String>  getData(Map<RedisInfo, Set<String>> tempGroups) {
+	public  Set<String>  getData() {
 		UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(query.getDataConfig());
 		Set<String> userIds = new HashSet<>();
 		serDeserializer.deserialize(userIds);
