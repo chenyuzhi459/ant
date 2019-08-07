@@ -3,14 +3,16 @@ package io.sugo.services.usergroup;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningScheduledExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Inject;
+import io.sugo.common.utils.ExecUtil;
 import io.sugo.common.utils.QueryUtil;
 import io.sugo.services.cache.Caches;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.RedisClientWrapper;
-import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.services.tag.DataUpdateHelper;
 import io.sugo.services.usergroup.model.*;
 import io.sugo.services.usergroup.model.query.UserGroupQuery;
 import io.sugo.common.guice.annotations.Json;
@@ -18,9 +20,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.Executors;
 
 public class UserGroupHelper {
 	private static final Logger log = LogManager.getLogger(UserGroupHelper.class);
+
+	// Use to synchronize start() and stop(). These methods should be synchronized to prevent from being called at the
+	// same time if two different threads are calling them. This might be possible if a druid coordinator gets and drops
+	// leadership repeatedly in quick succession.
+	private final Object lock = new Object();
+
 	private final ObjectMapper jsonMapper;
 	private final Caches.RedisClientCache redisClientCache;
 
@@ -28,15 +37,46 @@ public class UserGroupHelper {
 	private static final String OR_OPERATION = "or";
 	private static final String EXCLUDE_OPERATION = "exclude";
 
+	//producerExec负责从redis定时拉取分群请求入队到阻塞队列
+	private volatile ListeningScheduledExecutorService producerExec = null;
+	private volatile ListenableFuture<?>  producerFuture = null;
+	//consumerExec负责从阻塞队列中出队请求并完成请求操作
+	private volatile ListeningScheduledExecutorService consumerExec = null;
+	private volatile ListenableFuture<?>  consumerFuture = null;
+	private volatile boolean started;
+
 	@Inject
 	public UserGroupHelper(@Json ObjectMapper jsonMapper,
 						   Caches.RedisClientCache redisClientCache) {
+		log.info("create new UserGroupHelper...");
 		this.jsonMapper = jsonMapper;
 		this.redisClientCache = redisClientCache;
 
 	}
 
+	public void start(){
+		synchronized (lock) {
+			if (started) {
+				return;
+			}
+			//生产者暂时采用单线程
+			producerExec = MoreExecutors.listeningDecorator(ExecUtil.scheduledSingleThreaded("UserGroupHelper-Producer-Exec--%d"));
+//			consumerExec = MoreExecutors.listeningDecorator(ExecUtil.multiThreaded(5,"UserGroupHelper-Producer-Exec--%d"));
+			started = true;
 
+		}
+	}
+
+
+	public void stop() {
+		synchronized (lock) {
+			if (!started) {
+				return;
+			}
+
+			started = false;
+		}
+	}
 
 	public List<Map> doMultiUserGroupOperation(Map<String, List<GroupBean>> userGroupParams){
 		List<Map> result;

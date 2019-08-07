@@ -61,6 +61,22 @@ public class Constants {
         public static final String HIVE_COMPUTE_CONN_TIMEOUT_MIN="hive.conn.timeout.min";
     }
 
+    public static class UserGroup{
+        public static final String REDIS_HOST_AND_PORT = "redis.hostAndPorts";
+        public static final String REDIS_CLUSTER_MODE = "redis.clusterMode";
+        public static final String REDIS_SENTINEL_MODE = "sentinelMode";
+        public static final String REDIS_MASTER_NAME = "masterName";
+        public static final String REDIS_PASSWORD = "password";
+
+        public static final String USERGROUP_PRODUCER_THREAD_SIZE="hive.connector.connectURI";
+        public static final String USERGROUP_PRODUCER_="hive.connector.user";
+        public static final String HIVE_CONNECTOR_PASSWORD="hive.connector.password";
+        public static final String HIVE_SQL_EXECUTE_DURATION_SEC ="hive.sql.execute.duration.sec";
+        public static final String HIVE_SQL_RESULT_LIVE_SIZE ="hive.sql.result.live.size";
+        public static final String HIVE_CONN_RETRY_INTERVAL_SEC="hive.conn.retry.interval.second";
+        public static final String HIVE_COMPUTE_CONN_TIMEOUT_MIN="hive.conn.timeout.min";
+    }
+
     //ScanQuery 常量配置
     public static final int SCAN_QUERY_DEFAULT_BATCH_SIZE = 10000;
     public static final int SCAN_QUERY_DEFAULT_LIMIT_SIZE = 2000000;

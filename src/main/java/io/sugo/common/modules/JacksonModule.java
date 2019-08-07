@@ -28,6 +28,7 @@ public class JacksonModule implements Module {
     @Json
     public ObjectMapper jsonMapper(final Injector injector)
     {
+        log.info("create new jsonMapper...");
         ObjectMapper objectMapper = new DefaultObjectMapper();
         setupJackson(injector, objectMapper);
         return objectMapper;

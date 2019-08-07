@@ -1,5 +1,8 @@
 package io.sugo.server.http.resource;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -84,16 +87,16 @@ public class UserGroupResource {
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
 	//此接口除了具有"/multi"的功能外, 还添加了tindex结果输出到uindex的功能
-	public Response handleMultiOperation(List<GroupBean> userGroupList) {
+	public Response handleMultiOperation(OperationItem operationItem) {
 		Response.ResponseBuilder resBuilder;
 		try {
-			Map<String, List<GroupBean>> paramMap = parseMultiUserGroupParam(userGroupList);
+			Map<String, List<GroupBean>> paramMap = parseMultiUserGroupParam(operationItem.getGroups());
 			List<Map> result =  userGroupHelper.doMultiUserGroupOperationV2(paramMap);
 			resBuilder = Response.ok(result);
 		} catch (Throwable e) {
 			boolean isRmException = e instanceof RemoteException;
 			String errMsg = String.format("Resource handle multiUserGroup occurs %s, param:%s",
-					isRmException ? "remote exception" : "error", StringUtil.toJson(userGroupList));
+					isRmException ? "remote exception" : "error", StringUtil.toJson(operationItem));
 			log.error(errMsg, e);
 
 			Object originalInfo = isRmException ? ((RemoteException) e).getRemoteMessage() : e.getMessage();
@@ -102,6 +105,42 @@ public class UserGroupResource {
 
 		return resBuilder.build();
 	}
+
+
+	public static class OperationItem{
+		String id;
+		String containerKey;
+		List<GroupBean> groups;
+
+		@JsonCreator
+		public OperationItem(
+				@JsonProperty("id") String id,
+				@JsonProperty("containerKey") String containerKey,
+				@JsonProperty("groups") List<GroupBean> groups) {
+			this.id = id;
+			this.containerKey = containerKey;
+			this.groups = groups;
+		}
+
+		@JsonProperty
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		public String getId() {
+			return id;
+		}
+
+		@JsonProperty
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		public String getContainerKey() {
+			return containerKey;
+		}
+
+		@JsonProperty
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		public List<GroupBean> getGroups() {
+			return groups;
+		}
+	}
+
 
 
 	public Map<String, List<GroupBean>> parseMultiUserGroupParam(List<GroupBean> userGroupList) throws IOException {
