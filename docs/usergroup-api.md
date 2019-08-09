@@ -302,7 +302,6 @@ body参数:  body参数为一个对象, 每个对象描述了一个用户分群�
 参数名 | 是否必须 | 类型 | 描述  | 默认值
 ---- | ----- | --- | --- | ----    
 id | 是 | string | 表示该次操作的id |
-containerKey | 是 | string | 用于存放执行信息的redisKey,用于后续获取执行历史 |
 groups | 是 | array[object] | 表示对多个用户分群的操作,每个object的格式如表2描述 |
 
 -----
@@ -328,7 +327,6 @@ url:http://192.168.0.225:6061/ant/usergroup/multi/v2
 Body数据:
 {
 	"id":"ssss",
-	"containerKey": "redis-test",
 	"groups":
 	[
 	  {
@@ -366,6 +364,7 @@ Body数据:
 	      "to":{
 	      	"hproxy":"192.168.0.225:8085",
 	      	"dataSource":"tag_test2",
+            "uindexKey": "distinct_id",
 	      	"parsers":[
 	      		{
 		      		"type":"mapping",
