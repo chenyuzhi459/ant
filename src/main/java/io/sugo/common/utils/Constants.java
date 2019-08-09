@@ -37,6 +37,11 @@ public class Constants {
         public static final String HTTP_PORT = "http.port";
         //redis配置
         public static final String REDIS_CONN_TIMEOUT_MIN = "redis.conn.timeout.min";
+        public static final String REDIS_HOST_AND_PORT = "redis.hostAndPorts";
+        public static final String REDIS_CLUSTER_MODE = "redis.clusterMode";
+        public static final String REDIS_SENTINEL_MODE = "redis.sentinelMode";
+        public static final String REDIS_MASTER_NAME = "redis.masterName";
+        public static final String REDIS_PASSWORD = "redis.password";
 
         //path analysis 配置
         public static final String PATH_ANALYSIS_SCAN_QUERY_LIMIT_SIZE = "path.analysis.scan.query.limit.size";
@@ -62,19 +67,13 @@ public class Constants {
     }
 
     public static class UserGroup{
-        public static final String REDIS_HOST_AND_PORT = "redis.hostAndPorts";
-        public static final String REDIS_CLUSTER_MODE = "redis.clusterMode";
-        public static final String REDIS_SENTINEL_MODE = "sentinelMode";
-        public static final String REDIS_MASTER_NAME = "masterName";
-        public static final String REDIS_PASSWORD = "password";
+        public static final String QUERY_QUEUE_REDIS_KEY="usergroup.query.queue.redis.key";
+        public static final String QUERY_RESULT_REDIS_KEY ="usergroup.query.result.redis.key";
 
-        public static final String USERGROUP_PRODUCER_THREAD_SIZE="hive.connector.connectURI";
-        public static final String USERGROUP_PRODUCER_="hive.connector.user";
-        public static final String HIVE_CONNECTOR_PASSWORD="hive.connector.password";
-        public static final String HIVE_SQL_EXECUTE_DURATION_SEC ="hive.sql.execute.duration.sec";
-        public static final String HIVE_SQL_RESULT_LIVE_SIZE ="hive.sql.result.live.size";
-        public static final String HIVE_CONN_RETRY_INTERVAL_SEC="hive.conn.retry.interval.second";
-        public static final String HIVE_COMPUTE_CONN_TIMEOUT_MIN="hive.conn.timeout.min";
+        public static final String PRODUCER_THREAD_SIZE="usergroup.producer.thread.size";
+        public static final String PRODUCER_RUN_INTERVAL="usergroup.producer.run.interval";
+        public static final String CONSUMER_THREAD_SIZE="usergroup.consumer.thread.size";
+        public static final String CONSUMER_RUN_INTERVAL="usergroup.consumer.run.interval";
     }
 
     //ScanQuery 常量配置

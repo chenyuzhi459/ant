@@ -7,7 +7,6 @@ import com.google.inject.Inject;
 import io.sugo.common.utils.StringUtil;
 import io.sugo.services.exception.RemoteException;
 import io.sugo.services.tag.DataUpdateHelper;
-import io.sugo.services.tag.model.QueryUpdateBean;
 import io.sugo.services.tag.model.UserGroupUpdateBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

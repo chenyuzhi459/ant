@@ -65,6 +65,34 @@ public class RedisClientWrapper{
     }
   }
 
+  public String rpop(String key) {
+    if (clusterMode) {
+      return cluster.rpop(key);
+    } else if (sentinelMode) {
+      try (Jedis resource = sentinelPool.getResource()) {
+        return resource.rpop(key);
+      }
+    } else {
+      return jedis.rpop(key);
+    }
+  }
+
+  public Long lpush(String key, String value) {
+    return this.lpush(key,new String[]{value});
+  }
+
+  public Long lpush(String key, String... values) {
+    if (clusterMode) {
+      return cluster.lpush(key,values);
+    } else if (sentinelMode) {
+      try (Jedis resource = sentinelPool.getResource()) {
+        return resource.lpush(key,values);
+      }
+    } else {
+      return jedis.lpush(key,values);
+    }
+  }
+
   public Long llen(String listKey) {
     if (clusterMode) {
       return cluster.llen(listKey);
@@ -89,6 +117,41 @@ public class RedisClientWrapper{
     }
   }
 
+  public Long hset(String key, String field, String val) {
+    if (clusterMode) {
+      return cluster.hset(key,field,val);
+    } else if (sentinelMode) {
+      try (Jedis resource = sentinelPool.getResource()) {
+        return resource.hset(key,field,val);
+      }
+    } else {
+      return jedis.hset(key,field,val);
+    }
+  }
+
+  public String hget(String key, String field ) {
+    if (clusterMode) {
+      return cluster.hget(key,field);
+    } else if (sentinelMode) {
+      try (Jedis resource = sentinelPool.getResource()) {
+        return resource.hget(key,field);
+      }
+    } else {
+      return jedis.hget(key,field);
+    }
+  }
+
+  public Long hdel(String key, String... field ) {
+    if (clusterMode) {
+      return cluster.hdel(key,field);
+    } else if (sentinelMode) {
+      try (Jedis resource = sentinelPool.getResource()) {
+        return resource.hdel(key,field);
+      }
+    } else {
+      return jedis.hdel(key,field);
+    }
+  }
 
   public Long del(String listKey) {
     if (clusterMode) {

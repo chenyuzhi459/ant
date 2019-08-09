@@ -20,6 +20,7 @@ import java.util.Set;
 /**
  * Created by chenyuzhi on 19-8-5.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
 public class UindexGroupBean extends UserGroupBean {
 	private static final Logger log = LogManager.getLogger(UserGroupBean.class);
 	private static final String TYPE="uindex";
@@ -35,7 +36,7 @@ public class UindexGroupBean extends UserGroupBean {
 			@JacksonInject Caches.RedisClientCache redisClientCache
 
 	) {
-		super(type,query,op);
+		super(type,query,op, null);
 		Preconditions.checkNotNull(broker, "broker can not be null.");
 		this.broker = broker;
 		this.op = op;
@@ -44,7 +45,6 @@ public class UindexGroupBean extends UserGroupBean {
 
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getType() {
 		return TYPE;
 	}
@@ -52,20 +52,17 @@ public class UindexGroupBean extends UserGroupBean {
 	@Override
 	public  Set<String>  getData() {
 		QueryUtil.getUserGroupQueryResult(broker, (UserGroupQuery) query);
-		UserGroupSerDeserializer serDeserializer = new UserGroupSerDeserializer(query.getDataConfig());
-		Set<String> userIds = new HashSet<>();
-		serDeserializer.deserialize(userIds);
-		return userIds;
+		return super.getData();
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getBroker() {
 		return broker;
 	}
 
 	@Override
 	public void close() {
+		//删除临时分群
 		RedisInfo redisInfo = query.getDataConfig().getRedisInfo();
 		String userGroupKeys = query.getDataConfig().getGroupId();
 		redisClientCache.delete(redisInfo, userGroupKeys);

@@ -10,36 +10,34 @@ import java.util.Map;
 /**
  * Created by chenyuzhi on 19-8-5.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
 public class MappingParser implements Parser {
 	public static final String TYPE = "mapping";
-	private String dimension;
+	private String name;
 	private String mapName;
 
 	@JsonCreator
 	public MappingParser(
-		@JsonProperty("name") String dimension,
+		@JsonProperty("name") String name,   //uindex 维度名
 		@JsonProperty("mapName") String mapName) {
-		Preconditions.checkNotNull(dimension, "dimension can not be null.");
+		Preconditions.checkNotNull(name, "name can not be null.");
 		Preconditions.checkNotNull(mapName, "mapName can not be null.");
-		this.dimension = dimension;
+		this.name = name;
 		this.mapName = mapName;
 	}
 
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getType() {
 		return TYPE;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public String getDimension() {
-		return dimension;
+	public String getName() {
+		return name;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getMapName() {
 		return mapName;
 	}

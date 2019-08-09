@@ -12,6 +12,7 @@ import java.util.Set;
 /**
  * Created by chenyuzhi on 19-8-5.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
 public class FinalGroupBean extends GroupBean {
 	private static final String TYPE="finalGroup";
 	protected  Boolean append;   // used for finalGroup
@@ -28,13 +29,11 @@ public class FinalGroupBean extends GroupBean {
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getType() {
 		return TYPE;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public Boolean isAppend() {
 		return append;
 	}

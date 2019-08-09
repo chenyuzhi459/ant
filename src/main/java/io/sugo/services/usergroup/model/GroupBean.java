@@ -3,6 +3,8 @@ package io.sugo.services.usergroup.model;
 import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisInfo;
+import io.sugo.services.usergroup.UpdateSpec;
+import io.sugo.services.usergroup.UserGroupHelper;
 import io.sugo.services.usergroup.model.query.Query;
 
 import java.io.Closeable;
@@ -41,6 +43,10 @@ public abstract class GroupBean implements Closeable{
 	public abstract Set<String>  getData();
 
 	public void close(){
+
+	}
+
+	public void updateParsedData(Set<String> distinct_ids, String operationId, UserGroupHelper userGroupHelper){
 
 	}
 }

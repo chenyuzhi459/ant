@@ -34,6 +34,10 @@ public class ExecUtil {
 		return builder.build();
 	}
 
+	public static ScheduledExecutorService scheduledMutilThread(int thread, String nameFormat){
+		return Executors.newScheduledThreadPool(thread, makeThreadFactory(nameFormat, null));
+	}
+
 	public static ExecutorService multiThreaded(int threads,  String nameFormat)
 	{
 		return multiThreaded(threads, nameFormat, null);

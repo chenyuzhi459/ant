@@ -15,6 +15,6 @@ import java.util.Map;
 })
 public interface Parser {
 	public String getType();
-	public String getDimension();
+	public String getName();
 	public Object getParsedVal(Map<String,Object> data);
 }

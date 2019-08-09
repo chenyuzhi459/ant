@@ -8,10 +8,10 @@ import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.HttpUtil;
 
-import io.sugo.services.tag.model.QueryUpdateBean;
+import io.sugo.services.usergroup.UpdateSpec;
 import io.sugo.services.tag.model.UserGroupUpdateBean;
 import io.sugo.services.tag.model.UpdateBatch;
-import io.sugo.services.usergroup.parser.Parser;
+import io.sugo.services.usergroup.UserGroupHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.*;
@@ -64,21 +64,22 @@ public class DataUpdateHelper {
 		}
 	}
 
-	public Map<String, Object> updateQueryData(List<Map> queryResult, QueryUpdateBean queryUpdateBean, String groupByDim) {
+	public static Map<String, Object> updateQueryData(List<Map> queryResult, UpdateSpec updateSpec,
+													  String operationId, UserGroupHelper userGroupHelper)
+	{
 		int sendRows = 0;
-		Map<String, Boolean> appendFlags = queryUpdateBean.getAppendFlags();
-		final String datasource = queryUpdateBean.getDataSource();
+		Map<String, Boolean> appendFlags = updateSpec.getAppendFlags();
+		final String datasource = updateSpec.getDataSource();
 
 		log.info(String.format("Begin to update data to datasource[%s] for query...", datasource));
 		long before = System.currentTimeMillis();
 		long startSecs =  before/1000;
 		List<UpdateBatch> updateBatches = new LinkedList<>();
 		for(Map itemMap : queryResult){
-			Map<String, Object> eventData = (Map<String, Object>)itemMap.get("event");
-			Map<String, Object> convertData = queryUpdateBean.convert(eventData);
-			updateBatches.add(new UpdateBatch(convertData, appendFlags));
+
+			updateBatches.add(new UpdateBatch(itemMap, appendFlags));
 			if(updateBatches.size() % DEFAULT_BATCH_SIZE == 0){
-				HttpUtil.sendData(queryUpdateBean.getHproxy(), datasource, updateBatches);
+				HttpUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
 				sendRows += updateBatches.size();
 				updateBatches.clear();
 				long currentSecs = System.currentTimeMillis()/1000;
@@ -92,13 +93,14 @@ public class DataUpdateHelper {
 
 		Map<String, Object> result = updateBatches.isEmpty() ?
 				ImmutableMap.of("success", 0, "failed", 0, "errors", Collections.emptyList()) :
-				HttpUtil.sendData(queryUpdateBean.getHproxy(), datasource, updateBatches);
+				HttpUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
 		sendRows += updateBatches.size();
 		updateBatches.clear();
 		long after = System.currentTimeMillis();
 		log.info(String.format("Update total data[%s] to datasource[%s] for query, total cost %d ms.",
-				sendRows, queryUpdateBean.getDataSource(),  after - before));
+				sendRows, updateSpec.getDataSource(),  after - before));
 		return result;
 	}
+
 
 }

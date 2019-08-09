@@ -11,6 +11,7 @@ import java.util.Map;
 /**
  * Created by chenyuzhi on 19-8-5.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
 public class GroupByQuery implements Query {
 	String queryType = "lucene_groupBy";
 	String dataSource;
@@ -49,37 +50,31 @@ public class GroupByQuery implements Query {
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getDataSource() {
 		return dataSource;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public Object getIntervals() {
 		return intervals;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public Map getFilter() {
 		return filter;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getGranularity() {
 		return granularity;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public List getDimensions() {
 		return dimensions;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public List getAggregations() {
 		return aggregations;
 	}
@@ -91,19 +86,16 @@ public class GroupByQuery implements Query {
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public Map getHaving() {
 		return having;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public Map getLimitSpec() {
 		return limitSpec;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public Map getContext() {
 		return context;
 	}

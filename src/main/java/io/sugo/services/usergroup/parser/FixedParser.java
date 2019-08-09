@@ -11,37 +11,34 @@ import java.util.Map;
  * Created by chenyuzhi on 19-8-5.
  * 输出一个固定的值
  */
-
+@JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
 public class FixedParser implements Parser{
 	public static final String TYPE = "fixed";
-	private String dimension;
+	private String name;
 	private Object value;
 
 	@JsonCreator
 	public FixedParser(
-			@JsonProperty("name") String name,
+			@JsonProperty("name") String name, //uindex 维度名
 			@JsonProperty("value") Object value) {
-		Preconditions.checkNotNull(name, "dimension can not be null.");
+		Preconditions.checkNotNull(name, "name can not be null.");
 		Preconditions.checkNotNull(value, "value can not be null.");
-		this.dimension = name;
+		this.name = name;
 		this.value = value;
 	}
 
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getType() {
 		return TYPE;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public String getDimension() {
-		return dimension;
+	public String getName() {
+		return name;
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public Object getValue() {
 		return value;
 	}

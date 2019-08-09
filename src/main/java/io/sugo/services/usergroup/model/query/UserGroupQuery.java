@@ -1,5 +1,6 @@
 package io.sugo.services.usergroup.model.query;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisDataIOFetcher;
@@ -7,6 +8,7 @@ import io.sugo.common.redis.RedisDataIOFetcher;
 import java.util.List;
 import java.util.Map;
 
+@JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
 public class UserGroupQuery implements Query {
 	String queryType = "user_group";
 	String dataSource;
