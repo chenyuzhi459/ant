@@ -34,7 +34,7 @@ import static io.sugo.server.http.resource.UserGroupResource.*;
 import static io.sugo.common.utils.UserGroupUtil.*;
 
 public class UserGroupHelper implements AntService {
-	private static final Logger log = LogManager.getLogger("UserGroupHelper");
+	private static final Logger log = LogManager.getLogger(UserGroupHelper.class);
 
 	@Inject
 	private static Configure configure;
@@ -219,8 +219,12 @@ public class UserGroupHelper implements AntService {
 				for(Map.Entry<String,String> entry: allResutls.entrySet()){
 					String id = entry.getKey();
 					String val = entry.getValue();
-					results.add(jsonMapper.readValue(val,OperationResult.class));
-					this.removeOperationResults(RESULT_REDIS_KEY, id);
+					OperationResult operationResult = jsonMapper.readValue(val,OperationResult.class);
+					results.add(operationResult);
+
+					if(OperationStatus.isFinished(operationResult.getStatus())){
+						this.removeOperationResults(RESULT_REDIS_KEY,id);
+					}
 				}
 			}finally {
 				redisClientCache.releaseRedisClient(systemRedisInfo,systemRedisClient);

@@ -87,8 +87,6 @@ public class UserGroupResource {
 	public Response handleMultiOperation(MutliOperationBody body) {
 		Response.ResponseBuilder resBuilder;
 		try {
-//			Map<String, List<GroupBean>> paramMap = parseMultiUserGroupParam(body.getGroups());
-//			List<Map> result =  userGroupHelper.doMultiUserGroupOperationV2(paramMap);
 			OperationResult result = userGroupHelper.addOperation(body);
 
 			resBuilder = Response.ok(ImmutableMap.of("result",result));
@@ -109,11 +107,10 @@ public class UserGroupResource {
 	@Path("/multi/result")
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
-	//此接口除了具有"/multi"的功能外, 还添加了tindex结果输出到uindex的功能
 	public Response handleGetMultiOperationRes(@QueryParam("ids") String ids) {
 		Response.ResponseBuilder resBuilder;
 		try {
-			log.info("ids==>" + ids);
+//			log.info("ids==>" + ids);
 			String[] idArr = ids == null ? new String[0] : ids.split(",");
 
 			resBuilder = Response.ok(ImmutableMap.of("result",userGroupHelper.fetchOperationResultByIds(idArr)));
