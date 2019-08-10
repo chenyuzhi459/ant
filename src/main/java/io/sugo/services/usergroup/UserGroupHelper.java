@@ -9,6 +9,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Inject;
 import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.utils.*;
+import io.sugo.server.http.Configure;
 import io.sugo.services.cache.Caches;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.RedisClientWrapper;
@@ -20,19 +21,27 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import io.sugo.services.usergroup.OperationResult.OperationStatus;
 
+import javax.inject.Named;
+
+import static io.sugo.common.utils.Constants.SYSTEM_PROPS;
+import static io.sugo.common.utils.Constants.Sys.*;
+import static io.sugo.common.utils.Constants.UserGroup.CONSUMER_RUN_INTERVAL;
+import static io.sugo.common.utils.Constants.UserGroup.CONSUMER_THREAD_SIZE;
 import static io.sugo.server.http.resource.UserGroupResource.*;
 import static io.sugo.common.utils.UserGroupUtil.*;
 
 public class UserGroupHelper implements AntService {
-	private static final Logger log = LogManager.getLogger(UserGroupHelper.class);
+	private static final Logger log = LogManager.getLogger("UserGroupHelper");
 
-	public static  String QUEUE_REDIS_KEY = "ant_usergroup_query_queue";
-	public static  String RESULT_REDIS_KEY = "ant_usergroup_query_result";
+	@Inject
+	private static Configure configure;
+	@Inject @Named(Constants.UserGroup.QUERY_QUEUE_REDIS_KEY)
+	public static  String QUEUE_REDIS_KEY;
+	@Inject @Named(Constants.UserGroup.QUERY_RESULT_REDIS_KEY)
+	public static  String RESULT_REDIS_KEY ;
 	// Use to synchronize start() and stop(). These methods should be synchronized to prevent from being called at the
 	// same time if two different threads are calling them. This might be possible if a druid coordinator gets and drops
 	// leadership repeatedly in quick succession.
@@ -41,16 +50,10 @@ public class UserGroupHelper implements AntService {
 	private final ObjectMapper jsonMapper;
 	private final Caches.RedisClientCache redisClientCache;
 
-	private BlockingDeque<MutliOperationBody> queue = new LinkedBlockingDeque<>(100);
-	//producerExec负责从redis定时拉取分群请求入队到阻塞队列
-	private volatile ListeningScheduledExecutorService producerExec = null;
-	private volatile ListenableFuture<?>  producerFuture = null;
-	//consumerExec负责从阻塞队列中出队请求并完成请求操作
 	private volatile ListeningScheduledExecutorService consumerExec = null;
 	private volatile ListenableFuture<?>  consumerFuture = null;
 	private volatile boolean started;
-//	private final RedisInfo systemRedisInfo;
-	private final RedisClientWrapper systemRedisClient;
+	private final RedisInfo systemRedisInfo;
 
 
 	@Inject
@@ -59,8 +62,13 @@ public class UserGroupHelper implements AntService {
 		log.info("create new UserGroupHelper...");
 		this.jsonMapper = jsonMapper;
 		this.redisClientCache = redisClientCache;
-		RedisInfo systemRedisInfo = new RedisInfo("192.168.0.223:6379",false,false, null,null);
-		systemRedisClient = this.redisClientCache.getRedisClient(systemRedisInfo);
+		this.systemRedisInfo =  new RedisInfo(
+				configure.getProperty(SYSTEM_PROPS, REDIS_HOST_AND_PORT),
+				configure.getBoolean(SYSTEM_PROPS, REDIS_CLUSTER_MODE,false),
+				configure.getBoolean(SYSTEM_PROPS, REDIS_SENTINEL_MODE,false),
+				configure.getProperty(SYSTEM_PROPS, REDIS_MASTER_NAME,null),
+				configure.getProperty(SYSTEM_PROPS, REDIS_PASSWORD,null));
+
 	}
 
 	public void start(){
@@ -68,27 +76,22 @@ public class UserGroupHelper implements AntService {
 			if (started) {
 				return;
 			}
-			//生产者暂时采用单线程
-			producerExec = MoreExecutors.listeningDecorator(ExecUtil.scheduledSingleThreaded("UserGroupHelper-Producer-Exec--%d"));
-			//消费者暂时采用多线程
-			consumerExec = MoreExecutors.listeningDecorator(ExecUtil.scheduledMutilThread(5, "UserGroupHelper-Consumer-Exec--%d"));
+			consumerExec = MoreExecutors.listeningDecorator(ExecUtil.scheduledMutilThread(
+					configure.getInt(SYSTEM_PROPS, CONSUMER_THREAD_SIZE, 5),
+					"UserGroup-Consumer-Exec--%d"));
 
-			producerExec.scheduleWithFixedDelay(() ->{
-				try {
-					produce();
-				} catch (Exception e) {
-					log.error("UserGroup producer error.",e);
-				}
-			},0, 10,  TimeUnit.SECONDS);
-
-			consumerExec.scheduleWithFixedDelay(() ->{
+			consumerFuture = consumerExec.scheduleWithFixedDelay(() ->{
 				try {
 					consume();
 				} catch (Exception e) {
 					log.error("UserGroup consumer error.",e);
 				}
-			},0, 10,  TimeUnit.SECONDS);
-			log.info("start  producer and consumer for usergroup...");
+			},
+			0,
+			configure.getInt(SYSTEM_PROPS, CONSUMER_RUN_INTERVAL, 30),
+			TimeUnit.SECONDS);
+
+			log.info("start consumer for usergroup...");
 			started = true;
 
 		}
@@ -100,8 +103,7 @@ public class UserGroupHelper implements AntService {
 				return;
 			}
 
-			producerExec.shutdown();
-			producerExec = null;
+			consumerFuture.cancel(false);
 			consumerExec.shutdown();
 			consumerExec = null;
 			log.info("stop  producer and consumer for usergroup...");
@@ -109,88 +111,122 @@ public class UserGroupHelper implements AntService {
 		}
 	}
 
-	private void produce() throws IOException {
-		String operationBodyStr = systemRedisClient.rpop(QUEUE_REDIS_KEY);
-		log.info("produce===>" + operationBodyStr);
-		if(StringUtil.isEmpty(operationBodyStr)){return;}
+	private void consume() throws Exception{
 
-		MutliOperationBody operation = this.jsonMapper.readValue(operationBodyStr, MutliOperationBody.class);
-		//加入队尾
-		queue.offer(operation);
-		String id = operation.getId();
-		OperationResult operationResult = getOperationResult(RESULT_REDIS_KEY, id);
-		if(operationResult != null){
-			operationResult.setStatus(OperationStatus.PREPARE);
-			this.updateOperationResult(RESULT_REDIS_KEY,operationResult);
-			log.info(String.format("update usergroup mutliOperation[id=%s] status to %s", id, operationResult.getStatus()));
+		RedisClientWrapper systemRedisClient = null;
+		try {
+			//jedis实例非线程安全,所以每个线程从缓存中获取一个实例
+			systemRedisClient = redisClientCache.getRedisClient(systemRedisInfo);
+			String operationBodyStr = null;
+			while(( operationBodyStr = systemRedisClient.rpop(QUEUE_REDIS_KEY)) != null){
+				MutliOperationBody operation = this.jsonMapper.readValue(operationBodyStr, MutliOperationBody.class);
+				if(operation == null){
+					return;
+				}
+
+				String id = operation.getId();
+				log.info(String.format("found operation[id=%s]", id ));
+
+				OperationResult operationResult = getOperationResult(RESULT_REDIS_KEY, id);
+				operationResult.setStartTime(System.currentTimeMillis()).setStatus(OperationStatus.RUNNING);
+				this.updateOperationResult(RESULT_REDIS_KEY, operationResult);
+				log.info(String.format("update usergroup mutliOperation[id=%s] status to %s", id, operationResult.getStatus()));
+				this.doMultiUserGroupOperationV2(operation);
+			}
+
+		} finally {
+			redisClientCache.releaseRedisClient(systemRedisInfo, systemRedisClient);
 		}
 
 	}
 
-	private void consume() throws IOException {
-		//取出队头
-		MutliOperationBody operation = queue.poll();
-		if(operation == null){
-			log.info("there is no operation in queue.");
-			return;
-		}
-		String id = operation.getId();
-		OperationResult operationResult = this.getOperationResult(RESULT_REDIS_KEY, id);
-		operationResult.setStartTime(System.currentTimeMillis()).setStatus(OperationStatus.RUNNING);
-		this.updateOperationResult(RESULT_REDIS_KEY, operationResult);
-		log.info(String.format("update usergroup mutliOperation[id=%s] status to %s", id, operationResult.getStatus()));
-
-		//TODO : 记录进度
-		this.doMultiUserGroupOperationV2(operation, operationResult);
-
-	}
 
 	public OperationResult addOperation(MutliOperationBody operation) throws JsonProcessingException {
-		String operationStr = this.jsonMapper.writeValueAsString(operation);
-		log.info("push ====>  " + operationStr);
-		systemRedisClient.lpush(QUEUE_REDIS_KEY,operationStr);
-		OperationResult operationResult = new OperationResult(operation.getId());
-		operationResult.setRequestTime(System.currentTimeMillis()).setStatus(OperationStatus.ACCEPTED);
-		this.updateOperationResult(RESULT_REDIS_KEY, operationResult);
-		log.info("accept new usergroup mutliOperation, id : " + operation.getId());
-		return operationResult;
+		RedisClientWrapper systemRedisClient = null;
+		try {
+			systemRedisClient = redisClientCache.getRedisClient(systemRedisInfo);
+			String operationStr = this.jsonMapper.writeValueAsString(operation);
+
+			systemRedisClient.lpush(QUEUE_REDIS_KEY,operationStr);
+			OperationResult operationResult = new OperationResult(operation.getId());
+			operationResult.setRequestTime(System.currentTimeMillis()).setStatus(OperationStatus.ACCEPTED);
+			this.updateOperationResult(RESULT_REDIS_KEY, operationResult);
+			log.info("accept new usergroup mutliOperation, id : " + operation.getId());
+			return operationResult;
+		}finally {
+			redisClientCache.releaseRedisClient(systemRedisInfo,systemRedisClient);
+		}
+
 	}
 
 	public void updateOperationResult(String key, OperationResult operationResult)  {
+		RedisClientWrapper systemRedisClient = null;
 		try {
+			systemRedisClient = redisClientCache.getRedisClient(systemRedisInfo);
 			systemRedisClient.hset(key, operationResult.getId(), jsonMapper.writeValueAsString(operationResult));
 		} catch (Exception e) {
 			log.error(String.format("update operationResult[id=%s] failed", operationResult.getId()),e);
+		}finally {
+			redisClientCache.releaseRedisClient(systemRedisInfo, systemRedisClient);
 		}
 	}
 
-
 	public OperationResult getOperationResult(String key, String id) throws IOException {
-		String operationResultStr = this.systemRedisClient.hget(key,id);
-		if(null == operationResultStr){
-			return null;
+		RedisClientWrapper systemRedisClient = null;
+		try {
+			systemRedisClient = redisClientCache.getRedisClient(systemRedisInfo);
+			String operationResultStr = systemRedisClient.hget(key,id);
+			if(null == operationResultStr){
+				return null;
+			}
+			return jsonMapper.readValue(operationResultStr, OperationResult.class);
+		} finally {
+			redisClientCache.releaseRedisClient(systemRedisInfo, systemRedisClient);
 		}
-		return jsonMapper.readValue(operationResultStr, OperationResult.class);
+
 	}
 
 	private void removeOperationResults(String key, String... ids){
-		this.systemRedisClient.hdel(key,ids);
-		log.info(String.format("remove operationResults, ids=%s ", Arrays.toString(ids)));
+		RedisClientWrapper systemRedisClient = null;
+		try {
+			systemRedisClient = redisClientCache.getRedisClient(systemRedisInfo);
+			systemRedisClient.hdel(key, ids);
+			log.info(String.format("remove operationResults, ids=%s ", Arrays.toString(ids)));
+		}finally {
+			redisClientCache.releaseRedisClient(systemRedisInfo, systemRedisClient);
+		}
 	}
 
 	public List<OperationResult> fetchOperationResultByIds(String... ids) throws IOException {
-		List<OperationResult> results = new ArrayList<>(ids.length);
-		for(String id : ids){
-			OperationResult operationResult = this.getOperationResult(RESULT_REDIS_KEY,id);
-			if(operationResult == null){
-				log.warn(String.format("operationResult for id=%s is null, ignore that.", id));
-				continue;
+		List<OperationResult> results = new ArrayList<>();
+		if(ids.length > 0){
+			for(String id : ids){
+				OperationResult operationResult = this.getOperationResult(RESULT_REDIS_KEY,id);
+				if(operationResult == null){
+					log.warn(String.format("operationResult for id=%s is null, ignore that.", id));
+					continue;
+				}
+				results.add(operationResult);
+				if(OperationStatus.isFinished(operationResult.getStatus())){
+					this.removeOperationResults(RESULT_REDIS_KEY,id);
+				}
 			}
-			results.add(operationResult);
-			if(OperationStatus.isFinished(operationResult.getStatus())){
-				this.removeOperationResults(RESULT_REDIS_KEY,id);
+		} else {
+			RedisClientWrapper systemRedisClient = null;
+			try {
+				systemRedisClient = redisClientCache.getRedisClient(systemRedisInfo);
+				Map<String,String> allResutls = systemRedisClient.hgetAll(RESULT_REDIS_KEY);
+				for(Map.Entry<String,String> entry: allResutls.entrySet()){
+					String id = entry.getKey();
+					String val = entry.getValue();
+					results.add(jsonMapper.readValue(val,OperationResult.class));
+					this.removeOperationResults(RESULT_REDIS_KEY, id);
+				}
+			}finally {
+				redisClientCache.releaseRedisClient(systemRedisInfo,systemRedisClient);
 			}
 		}
+
 
 		return results;
 	}
@@ -261,22 +297,18 @@ public class UserGroupHelper implements AntService {
 		return result;
 	}
 
-	public void doMultiUserGroupOperationV2(MutliOperationBody operation, OperationResult operationResult)  {
+	public void doMultiUserGroupOperationV2(MutliOperationBody operation) throws Exception  {
 		Map<String, List<GroupBean>> userGroupParams = UserGroupUtil.parseMultiUserGroupParam(operation.getGroups());
 		String operationId = operation.getId();
-		List<Map> result;
 		log.info("Begin to doMultiUserGroupOperationV2...");
 		long startMillis = System.currentTimeMillis();
 		FinalGroupBean finalGroup = (FinalGroupBean)userGroupParams.get("finalGroup").get(0);
 		List<GroupBean> assistantGroupList = userGroupParams.get("AssistantGroupList");
 
 		RedisDataIOFetcher finalUserGroupDataConfig = finalGroup.getQuery().getDataConfig();
-		String finalUserGroupKey = finalUserGroupDataConfig.getGroupId();
-		String finalUserGroupBackupKey = generateRedisBackUpKey(finalUserGroupKey);
 		RedisClientWrapper finalUserGroupRedisClient = redisClientCache.getRedisClient(finalUserGroupDataConfig.getRedisInfo());
 		Set<String> acculatedData = new HashSet<>();
 		Set<String> currentData = new HashSet<>();
-		boolean backup = false;
 		try {
 			if(assistantGroupList== null || assistantGroupList.isEmpty()){
 				return;
@@ -286,7 +318,7 @@ public class UserGroupHelper implements AntService {
 				UserGroupBean userGroupBean = (UserGroupBean)assistantGroupList.get(i);
 				String op = userGroupBean.getOp();
 				currentData = userGroupBean.getData();
-				userGroupBean.close();
+
 				if(i == 0){
 					op = OR_OPERATION;
 				}
@@ -294,6 +326,7 @@ public class UserGroupHelper implements AntService {
 					acculatedData = UserGroupUtil.doDataOperation(op, acculatedData, currentData);
 				}
 				userGroupBean.updateParsedData(currentData, operationId, this);
+				userGroupBean.close();
 				currentData.clear();
 			}
 
@@ -303,31 +336,26 @@ public class UserGroupHelper implements AntService {
 				acculatedData = UserGroupUtil.doDataOperation(OR_OPERATION, acculatedData, currentData);
 				currentData.clear();
 			}
-			// do 'backup orperation'
-			backup = backupRedisData(finalUserGroupRedisClient, finalUserGroupKey, finalUserGroupBackupKey);
 			UserGroupSerDeserializer finalSerDeserializer = new UserGroupSerDeserializer(finalUserGroupDataConfig);
 			int finalLen = writeDataToRedis(finalSerDeserializer, acculatedData);
-			backup = false;
-			finalUserGroupRedisClient.del(finalUserGroupBackupKey);
 			acculatedData.clear();
 
-			result = Collections.singletonList(ImmutableMap.of("event",  ImmutableMap.of("RowCount", finalLen)));
-			operationResult.setEndTime(System.currentTimeMillis()).setStatus(OperationStatus.SUCCESS);
+			OperationResult operationResult = this.getOperationResult(RESULT_REDIS_KEY, operationId);
+			operationResult.setEndTime(System.currentTimeMillis())
+					.setUseGroupSize(finalLen)
+					.setStatus(OperationStatus.SUCCESS);
 			this.updateOperationResult(RESULT_REDIS_KEY, operationResult);
 			long endMillis = System.currentTimeMillis();
-			log.info(String.format("MultiUserGroupOperationV2 total cost %d ms.", endMillis - startMillis));
+			log.info(String.format("MultiUserGroupOperationV2 success for [id=%s] total cost %d sec.", operationId, (endMillis - startMillis)/1000));
 		}catch (Exception e){
 			log.error(String.format("MultiUserGroupOperationV2 failed for operation[id=%s] failed",operation.getId()), e);
+			OperationResult operationResult = this.getOperationResult(RESULT_REDIS_KEY, operationId);
 			operationResult.setEndTime(System.currentTimeMillis()).setStatus(OperationStatus.FAILED);
 			this.updateOperationResult(RESULT_REDIS_KEY, operationResult);
-		}
-		finally {
+		} finally {
 			acculatedData.clear();
 			currentData.clear();
 			if(finalUserGroupRedisClient != null){
-				if(backup){
-					finalUserGroupRedisClient.rename(finalUserGroupBackupKey, finalUserGroupKey);
-				}
 				redisClientCache.releaseRedisClient(finalUserGroupDataConfig.getRedisInfo(), finalUserGroupRedisClient);
 			}
 
@@ -420,8 +448,6 @@ public class UserGroupHelper implements AntService {
 		serDeserializer.serialize();
 		return serDeserializer.getRowCount();
 	}
-
-
 
 	private boolean backupRedisData(RedisClientWrapper redisClient, String redisKey, String backupKey){
 		if(!redisClient.exists(redisKey)){

@@ -10,6 +10,9 @@
       <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss} %level [%c{1}:%line] - %msg%n" />
     </Console>
 
+    <Console name="UserGroupHelper" target="SYSTEM_OUT">
+      <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss} %t %level [%c{1}:%line] - %msg%n" />
+    </Console>
 
     <RollingRandomAccessFile name="MainFileAppender" fileName="${LOG_DIR}/${LOG_NAME}.log"  filePattern="${LOG_DIR}/${LOG_NAME}_%d{yyyy-MM-dd}.log.gz">
 
@@ -32,7 +35,13 @@
 
     <Root level="info">
       <AppenderRef ref="Console" />
+
       <AppenderRef ref="MainFileAppender" />
     </Root>
+
+    <!--UserGroupHelperda单独定义日志格式, 观察线程输出-->
+    <Logger name="UserGroupHelper" level="info" additivity="false">
+      <AppenderRef  ref="UserGroupHelper" />
+    </Logger>
   </Loggers>
 </Configuration>

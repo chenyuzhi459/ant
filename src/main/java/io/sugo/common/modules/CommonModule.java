@@ -51,6 +51,14 @@ public class CommonModule implements Module {
 				.to(configure.getInt(SYSTEM_PROPS, Sys.PATH_ANALYSIS_SCAN_QUERY_LIMIT_SIZE, Constants.SCAN_QUERY_DEFAULT_LIMIT_SIZE));
 		binder.bindConstant().annotatedWith(Names.named(Sys.PATH_ANALYSIS_SCAN_QUERY_TIMEOUT_MILLIS))
 				.to(configure.getInt(SYSTEM_PROPS, Sys.PATH_ANALYSIS_SCAN_QUERY_TIMEOUT_MILLIS, Constants.SCAN_QUERY_DEFAULT_TIME_OUT_MILLIS));
+
+		//绑定用户分群redis key参数
+		binder.bindConstant().annotatedWith(Names.named(UserGroup.QUERY_QUEUE_REDIS_KEY))
+				.to(configure.getProperty(SYSTEM_PROPS, UserGroup.QUERY_QUEUE_REDIS_KEY, Constants.QUERY_QUEUE_DEFAULT_REDIS_KEY));
+
+		binder.bindConstant().annotatedWith(Names.named(UserGroup.QUERY_RESULT_REDIS_KEY))
+				.to(configure.getProperty(SYSTEM_PROPS, UserGroup.QUERY_RESULT_REDIS_KEY, Constants.QUERY_RESULT_DEFAULT_REDIS_KEY));
+
 	}
 
 }

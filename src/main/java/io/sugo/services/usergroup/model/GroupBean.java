@@ -33,6 +33,9 @@ public abstract class GroupBean implements Closeable{
 		this.query = query;
 	}
 
+
+
+	@JsonProperty
 	public abstract String getType();
 
 	@JsonProperty
@@ -46,7 +49,5 @@ public abstract class GroupBean implements Closeable{
 
 	}
 
-	public void updateParsedData(Set<String> distinct_ids, String operationId, UserGroupHelper userGroupHelper){
-
-	}
+	public void updateParsedData(Set<String> distinct_ids, String operationId, UserGroupHelper userGroupHelper) throws  Exception{}
 }

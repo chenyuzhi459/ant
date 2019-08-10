@@ -70,10 +70,8 @@ public class Constants {
         public static final String QUERY_QUEUE_REDIS_KEY="usergroup.query.queue.redis.key";
         public static final String QUERY_RESULT_REDIS_KEY ="usergroup.query.result.redis.key";
 
-        public static final String PRODUCER_THREAD_SIZE="usergroup.producer.thread.size";
-        public static final String PRODUCER_RUN_INTERVAL="usergroup.producer.run.interval";
         public static final String CONSUMER_THREAD_SIZE="usergroup.consumer.thread.size";
-        public static final String CONSUMER_RUN_INTERVAL="usergroup.consumer.run.interval";
+        public static final String CONSUMER_RUN_INTERVAL="usergroup.consumer.run.interval.sec";
     }
 
     //ScanQuery 常量配置
@@ -83,5 +81,9 @@ public class Constants {
 
     //Http转发 常量配置
     public static final int HTTP_FORWARD_DEFAULT_READ_TIMEOUT_SEC = 30;
+
+    //UserGroup 常量配置
+    public static final String QUERY_QUEUE_DEFAULT_REDIS_KEY = "ant_usergroup_query_queue";
+    public static final String QUERY_RESULT_DEFAULT_REDIS_KEY = "ant_usergroup_query_result";
 
 }

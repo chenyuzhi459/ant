@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.utils.QueryUtil;
 import io.sugo.services.cache.Caches;
 import io.sugo.services.tag.DataUpdateHelper;
@@ -21,7 +22,7 @@ import java.util.*;
  * Created by chenyuzhi on 19-8-5.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
-public class TindexGroupBean extends UserGroupBean {
+public class TindexGroupBean extends UindexGroupBean {
 	private static final String TYPE = "tindex";
 	protected UpdateSpec to;   //用于说明把计算结果发往哪个地方
 	protected  String broker;
@@ -41,7 +42,7 @@ public class TindexGroupBean extends UserGroupBean {
 			@JacksonInject Caches.RedisClientCache redisClientCache
 
 	) {
-		super(type,query, op, to);
+		super(type,broker,query, op, redisClientCache);
 		//兼容旧接口,暂不做检查
 //		Preconditions.checkNotNull(groupByDim, "groupByDim can not be null.");
 		this.broker = broker;
@@ -51,7 +52,6 @@ public class TindexGroupBean extends UserGroupBean {
 	}
 
 	@JsonProperty
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public String getType() {
 		return TYPE;
 	}
@@ -60,15 +60,10 @@ public class TindexGroupBean extends UserGroupBean {
 	public  Set<String>  getData() {
 		if(query instanceof UserGroupQuery){
 			//兼容旧接口
-			QueryUtil.getUserGroupQueryResult(broker, (UserGroupQuery) query);
 			return super.getData();
 		}
 
 		queryResult = QueryUtil.getGroupByQueryResult(getBroker(),(GroupByQuery)query);
-//		if(to != null){
-//			this.dataUpdateHelper.updateQueryData(queryResult, to, groupByDim);
-//		}
-
 		Set<String> userIds = new HashSet<>();
 		for(Map resultMap : queryResult){
 			Map<String, Object> eventData = (Map<String, Object>)resultMap.get("event");
@@ -94,7 +89,7 @@ public class TindexGroupBean extends UserGroupBean {
 		return to;
 	}
 
-	public void updateParsedData(Set<String> distinct_ids, String operationId, UserGroupHelper userGroupHelper){
+	public void updateParsedData(Set<String> distinct_ids, String operationId, UserGroupHelper userGroupHelper) throws  Exception{
 		if(to == null) {return;}
 
 		List<Map> updateRecords = new LinkedList<>();
@@ -118,9 +113,14 @@ public class TindexGroupBean extends UserGroupBean {
 
 	@Override
 	public void close() {
+		if(queryResult != null){
+			queryResult.clear();
+		}
+
+
 		if(query instanceof UserGroupQuery){
-			//兼容旧接口
 			super.close();
 		}
+
 	}
 }

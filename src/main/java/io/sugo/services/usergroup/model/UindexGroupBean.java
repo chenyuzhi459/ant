@@ -22,7 +22,7 @@ import java.util.Set;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
 public class UindexGroupBean extends UserGroupBean {
-	private static final Logger log = LogManager.getLogger(UserGroupBean.class);
+	private static final Logger log = LogManager.getLogger(UindexGroupBean.class);
 	private static final String TYPE="uindex";
 	protected final Caches.RedisClientCache redisClientCache;
 	protected  String broker;
@@ -64,8 +64,8 @@ public class UindexGroupBean extends UserGroupBean {
 	public void close() {
 		//删除临时分群
 		RedisInfo redisInfo = query.getDataConfig().getRedisInfo();
-		String userGroupKeys = query.getDataConfig().getGroupId();
-		redisClientCache.delete(redisInfo, userGroupKeys);
-		log.info(String.format("Delete userGroups %s with config: %s", userGroupKeys, redisInfo));
+		String userGroupKey = query.getDataConfig().getGroupId();
+		redisClientCache.delete(redisInfo, userGroupKey);
+		log.info(String.format("Delete userGroups %s with config: %s", userGroupKey, redisInfo));
 	}
 }

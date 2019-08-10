@@ -3,11 +3,7 @@ package io.sugo.services.usergroup;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.zookeeper.Op;
-import sun.text.resources.cldr.ia.FormatData_ia;
 
-import static io.sugo.services.usergroup.OperationResult.OperationStatus.FAILED;
-import static io.sugo.services.usergroup.OperationResult.OperationStatus.SUCCESS;
 
 /**
  * Created by chenyuzhi on 19-8-8.
@@ -16,8 +12,9 @@ import static io.sugo.services.usergroup.OperationResult.OperationStatus.SUCCESS
 public class OperationResult {
 	private final String id;
 	private OperationStatus status;
-	private Long updatedRows;
-	private Long totalRows;
+	private Integer updatedRows;
+	private Integer totalRows;
+	private Integer useGroupSize;
 	private Long requestTime;
 	private Long startTime;
 	private Long endTime;
@@ -30,8 +27,9 @@ public class OperationResult {
 	public OperationResult(
 			@JsonProperty("id") String id,
 			@JsonProperty("status") OperationStatus status,
-			@JsonProperty("updatedRows") Long updatedRows,
-			@JsonProperty("totalRows") Long totalRows,
+			@JsonProperty("updatedRows") Integer updatedRows,
+			@JsonProperty("totalRows") Integer totalRows,
+			@JsonProperty("useGroupSize") Integer useGroupSize,
 			@JsonProperty("requestTime") Long requestTime,
 			@JsonProperty("startTime") Long startTime,
 			@JsonProperty("endTime") Long endTime) {
@@ -39,6 +37,7 @@ public class OperationResult {
 		this.status = status;
 		this.updatedRows = updatedRows;
 		this.totalRows = totalRows;
+		this.useGroupSize = useGroupSize;
 		this.requestTime = requestTime;
 		this.startTime = startTime;
 		this.endTime = endTime;
@@ -55,12 +54,12 @@ public class OperationResult {
 	}
 
 	@JsonProperty
-	public Long getUpdatedRows() {
+	public Integer getUpdatedRows() {
 		return updatedRows;
 	}
 
 	@JsonProperty
-	public Long getTotalRows() {
+	public Integer getTotalRows() {
 		return totalRows;
 	}
 
@@ -79,17 +78,27 @@ public class OperationResult {
 		return endTime;
 	}
 
+	@JsonProperty
+	public Integer getUseGroupSize() {
+		return useGroupSize;
+	}
+
+	public OperationResult setUseGroupSize(Integer useGroupSize) {
+		this.useGroupSize = useGroupSize;
+		return this;
+	}
+
 	public OperationResult setStatus(OperationStatus status) {
 		this.status = status;
 		return this;
 	}
 
-	public OperationResult setUpdatedRows(Long updatedRows) {
+	public OperationResult setUpdatedRows(Integer updatedRows) {
 		this.updatedRows = updatedRows;
 		return this;
 	}
 
-	public OperationResult setTotalRows(Long totalRows) {
+	public OperationResult setTotalRows(Integer totalRows) {
 		this.totalRows = totalRows;
 		return this;
 	}

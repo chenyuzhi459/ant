@@ -8,13 +8,18 @@ import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.HttpUtil;
 
+import io.sugo.services.usergroup.OperationResult;
 import io.sugo.services.usergroup.UpdateSpec;
 import io.sugo.services.tag.model.UserGroupUpdateBean;
 import io.sugo.services.tag.model.UpdateBatch;
 import io.sugo.services.usergroup.UserGroupHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
 import java.util.*;
+
+import static io.sugo.services.usergroup.UserGroupHelper.RESULT_REDIS_KEY;
 
 /**
  * Created by chenyuzhi on 18-9-25.
@@ -64,24 +69,34 @@ public class DataUpdateHelper {
 		}
 	}
 
-	public static Map<String, Object> updateQueryData(List<Map> queryResult, UpdateSpec updateSpec,
-													  String operationId, UserGroupHelper userGroupHelper)
-	{
+	public static Map<String, Integer> updateQueryData(List<Map> updateRecords, UpdateSpec updateSpec,
+													  String operationId, UserGroupHelper userGroupHelper) throws IOException {
+		Map<String,Integer> res = new HashMap<>(2);
 		int sendRows = 0;
 		Map<String, Boolean> appendFlags = updateSpec.getAppendFlags();
 		final String datasource = updateSpec.getDataSource();
 
 		log.info(String.format("Begin to update data to datasource[%s] for query...", datasource));
+		OperationResult operationResult = userGroupHelper.getOperationResult(RESULT_REDIS_KEY, operationId);
+		operationResult.setTotalRows(updateRecords.size()).setUpdatedRows(0);
+		userGroupHelper.updateOperationResult(RESULT_REDIS_KEY, operationResult);
+		if(updateRecords.isEmpty()){return res;}
+
 		long before = System.currentTimeMillis();
 		long startSecs =  before/1000;
 		List<UpdateBatch> updateBatches = new LinkedList<>();
-		for(Map itemMap : queryResult){
+		for(Map itemMap : updateRecords){
 
 			updateBatches.add(new UpdateBatch(itemMap, appendFlags));
 			if(updateBatches.size() % DEFAULT_BATCH_SIZE == 0){
-				HttpUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
-				sendRows += updateBatches.size();
+				Map<String, Object> sendRes = HttpUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
+				//sendRes -format:
+				//ImmutableMap.of("success", 0, "failed", 0, "errors", Collections.emptyList())
+				sendRows += (Integer) sendRes.get("success");
 				updateBatches.clear();
+				operationResult.setUpdatedRows(sendRows);
+				userGroupHelper.updateOperationResult(RESULT_REDIS_KEY, operationResult);
+
 				long currentSecs = System.currentTimeMillis()/1000;
 				if(currentSecs > startSecs){
 					startSecs = currentSecs;
@@ -91,15 +106,19 @@ public class DataUpdateHelper {
 		}
 
 
-		Map<String, Object> result = updateBatches.isEmpty() ?
-				ImmutableMap.of("success", 0, "failed", 0, "errors", Collections.emptyList()) :
-				HttpUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
-		sendRows += updateBatches.size();
-		updateBatches.clear();
+		if(!updateBatches.isEmpty()){
+			Map<String, Object> sendRes =
+					HttpUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
+			sendRows += (Integer) sendRes.get("success");
+			updateBatches.clear();
+			operationResult.setUpdatedRows(sendRows);
+			userGroupHelper.updateOperationResult(RESULT_REDIS_KEY, operationResult);
+		}
+
 		long after = System.currentTimeMillis();
 		log.info(String.format("Update total data[%s] to datasource[%s] for query, total cost %d ms.",
 				sendRows, updateSpec.getDataSource(),  after - before));
-		return result;
+		return res;
 	}
 
 

@@ -56,7 +56,7 @@ public class UserGroupBean extends GroupBean{
 		return userIds;
 	}
 
-	public void updateParsedData(Set<String> distinct_ids, String operationId, UserGroupHelper userGroupHelper){
+	public void updateParsedData(Set<String> distinct_ids, String operationId, UserGroupHelper userGroupHelper) throws  Exception{
 		if(to == null) {return;}
 
 		List<Map> updateRecords = new LinkedList<>();

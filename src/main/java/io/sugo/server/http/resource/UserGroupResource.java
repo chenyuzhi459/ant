@@ -113,19 +113,12 @@ public class UserGroupResource {
 	public Response handleGetMultiOperationRes(@QueryParam("ids") String ids) {
 		Response.ResponseBuilder resBuilder;
 		try {
-//			Map<String, List<GroupBean>> paramMap = parseMultiUserGroupParam(body.getGroups());
-//			List<Map> result =  userGroupHelper.doMultiUserGroupOperationV2(paramMap);
-			log.info("ids===>" + ids);
-			String[] idArr = ids.split(",");
+			log.info("ids==>" + ids);
+			String[] idArr = ids == null ? new String[0] : ids.split(",");
 
 			resBuilder = Response.ok(ImmutableMap.of("result",userGroupHelper.fetchOperationResultByIds(idArr)));
 		} catch (Throwable e) {
-//			boolean isRmException = e instanceof RemoteException;
-//			String errMsg = String.format("Resource handle multiUserGroup occurs %s, param:%s",
-//					isRmException ? "remote exception" : "error", StringUtil.toJson(body));
 			log.error(e.getMessage(), e);
-
-//			Object originalInfo = isRmException ? ((RemoteException) e).getRemoteMessage() : e.getMessage();
 			resBuilder = Response.serverError().entity(Collections.singletonList(ImmutableMap.of("error", e.getMessage())));
 		}
 

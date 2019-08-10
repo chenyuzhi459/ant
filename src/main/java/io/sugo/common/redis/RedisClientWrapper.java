@@ -11,6 +11,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -138,6 +139,18 @@ public class RedisClientWrapper{
       }
     } else {
       return jedis.hget(key,field);
+    }
+  }
+
+  public Map<String,String> hgetAll(String key ) {
+    if (clusterMode) {
+      return cluster.hgetAll(key);
+    } else if (sentinelMode) {
+      try (Jedis resource = sentinelPool.getResource()) {
+        return resource.hgetAll(key);
+      }
+    } else {
+      return jedis.hgetAll(key);
     }
   }
 
