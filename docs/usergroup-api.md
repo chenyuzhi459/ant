@@ -437,13 +437,48 @@ Body数据:
 ```
 结果示例:
 ```
-[
-    {
-        "event": {
-            "RowCount": 21384
-        }
+{
+    "result": {
+        "id": "ssss",
+        "status": "ACCEPTED",
+        "requestTime": 1565421336822
     }
-]
+}
+```
+
+##  获取多个用户分群操作请求的状态
+- `/ant/usergroup/multi/result`  
+**基本信息**   
+接口说明:获取多个用户分群操作请求的状态  
+请求方式:GET  
+请求地址:`/ant/usergroup/multi/result`  
+响应类型:application/json  
+数据类型:无     
+url请求参数:   
+
+    参数名 | 是否必须 | 类型 | 描述  | 默认值
+    ---- | ----- | --- | --- | ----    
+    ids | 否 | string | 表示要查询结果的请求ID, 以`,`分隔,当不传id时, 默认返回所有结果| 
+
+请求示例:
+```
+type:get
+url:http://192.168.0.225:6061/ant/usergroup/multi/result?ids=ssss
+```
+结果示例:
+```
+{
+    "result": [
+        {
+            "id": "ssss",
+            "status": "RUNNING",
+            "updatedRows": 0,
+            "totalRows": 21379,
+            "requestTime": 1565421742637,
+            "startTime": 1565421753229
+        }
+    ]
+}
 ```
 
 ##  Tindex-Parser
@@ -452,7 +487,7 @@ Body数据:
 
 参数名 | 是否必须 | 类型 | 描述  | 默认值
 ---- | ----- | --- | --- | ----    
-type | 是 | string | 表示转换器的类型,可选值为`default|mapping`|mapping
+type | 是 | string | 表示转换器的类型,可选值为`default/mapping`|mapping
 name| 是 | string | 表示uindex对应的字段名 |
 mapName | 否 | string | type=`mapping`时需要配置,表示tindex输出的变量名 |
 value | 否 | string | 当type=`fixed`时需要配置,表示一个固定值 |
