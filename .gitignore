@@ -7,3 +7,4 @@ src/main/java/io/sugo/http/test/*
 src/main/java/io/sugo/zk
 src/main/java/test
 src/main/java/io/sugo/Test.java
+${sys:log.path}/
