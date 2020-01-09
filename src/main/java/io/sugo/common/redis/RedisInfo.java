@@ -1,5 +1,6 @@
 package io.sugo.common.redis;
 
+import com.google.common.base.Preconditions;
 import redis.clients.jedis.HostAndPort;
 
 import java.util.HashSet;
@@ -30,6 +31,7 @@ public class RedisInfo {
     this.password = password;
     nodes = parseHostAndPorts(hostAndPorts);
     clientStr = String.format("%s-%s-%s-%s-%s", hostAndPorts, clusterMode, sentinelMode, masterName, password);
+    Preconditions.checkArgument(nodes != null && nodes.size() > 0, "Error, param[hostAndPorts] is null or empty for redis client " + clientStr);
   }
 
   private Set<HostAndPort> parseHostAndPorts(String hostAndPorts) {
