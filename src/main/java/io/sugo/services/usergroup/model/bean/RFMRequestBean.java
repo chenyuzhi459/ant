@@ -22,7 +22,7 @@ public class RFMRequestBean {
             @JsonProperty("dimensions") RFMDimensions dimensions,
             @JsonProperty("params")RFMParams params)
     {
-        Preconditions.checkArgument(dataSet == null || dataSet.isEmpty(), "dataSet can not be null or empty.");
+        Preconditions.checkArgument(dataSet != null && !dataSet.isEmpty(), "dataSet can not be null or empty.");
         Preconditions.checkNotNull(dimensions, "dimensions can not be null.");
         Preconditions.checkNotNull(params, "params can not be null.");
         this.dataSet = dataSet;

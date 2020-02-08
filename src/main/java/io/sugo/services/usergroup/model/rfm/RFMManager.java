@@ -1,9 +1,13 @@
 package io.sugo.services.usergroup.model.rfm;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.metamx.common.logger.Logger;
+import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.utils.RFMUtil;
 import io.sugo.services.usergroup.bean.rfm.DataBean;
 import io.sugo.services.usergroup.bean.rfm.TindexDataBean;
@@ -17,10 +21,10 @@ import java.util.stream.Collectors;
 public class RFMManager {
 
     private static final Logger log = new Logger(RFMManager.class);
-
+    private ObjectMapper jsonMapper;
     @Inject
-    public RFMManager() {
-
+    public RFMManager(@Json ObjectMapper mapper) {
+        jsonMapper = mapper;
     }
 
     public QuantileModel getDefaultQuantileModel2(RFMRequestBean requestBean) {
@@ -36,9 +40,15 @@ public class RFMManager {
         int r = requestBean.getParams().getR();
         int f = requestBean.getParams().getR();
         int m = requestBean.getParams().getR();
-        List<RFMModel> rfmModelList = RFMUtil.getTindexData(RFMUtil.rewriteTindexQuery(requestBean.getDimensions(), tindexDataBean), tindexDataBean.getBroker());
+        List<RFMModel> rfmModelList = RFMUtil.getTindexData(
+            RFMUtil.rewriteTindexQuery(requestBean.getDimensions(), tindexDataBean),
+            tindexDataBean.getBroker(),
+            jsonMapper);
         if(uindexDataBean != null){
-            List<String> uindexData = RFMUtil.getUindexData(uindexDataBean.getQuery(), uindexDataBean.getBroker());
+            List<String> uindexData = RFMUtil.getUindexData(
+                uindexDataBean.getQuery(),
+                uindexDataBean.getBroker(),
+                jsonMapper);
             rfmModelList = rfmModelList.stream().filter(data -> uindexData.contains(data.getUserId())).collect(Collectors.toList());
         }
         int dataSize = rfmModelList.size();
@@ -119,13 +129,16 @@ public class RFMManager {
     public static class DruidResult {
         RFMModel event;
 
+        @JsonCreator
+        public DruidResult(
+            @JsonProperty("event") RFMModel event) {
+            this.event = event;
+        }
+
         public RFMModel getEvent() {
             return event;
         }
 
-        public void setEvent(RFMModel event) {
-            this.event = event;
-        }
     }
 
     public static class DruidError {

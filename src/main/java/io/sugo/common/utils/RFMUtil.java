@@ -14,6 +14,7 @@ import io.sugo.services.usergroup.model.rfm.RFMModel;
 import io.sugo.services.usergroup.query.GroupByQuery;
 import io.sugo.services.usergroup.query.Query;
 import io.sugo.services.usergroup.query.ScanQuery;
+import org.apache.logging.log4j.core.util.Throwables;
 import redis.clients.jedis.ScanResult;
 
 import java.io.IOException;
@@ -22,7 +23,6 @@ import java.util.List;
 
 public class RFMUtil {
     private static final Logger log = new Logger(RFMUtil.class);
-    private static final ObjectMapper jsonMapper = new ObjectMapper();
 
 
     public static Query rewriteTindexQuery(RFMDimensions rfmDimensions, TindexDataBean tindexDataBean) {
@@ -41,6 +41,7 @@ public class RFMUtil {
         Aggregation recency = new Aggregation();
         recency.setName("lastTime");
         recency.setType("lucene_dateMax");
+        recency.setFieldName(rfmDimensions.getBuyTimeKey());
         aggregations.add(recency);
 
         Aggregation frequency = new Aggregation();
@@ -51,22 +52,25 @@ public class RFMUtil {
         Aggregation monetary = new Aggregation();
         monetary.setName("monetary");
         monetary.setType("lucene_doubleSum");
+        monetary.setFieldName(rfmDimensions.getBuyAmountKey());
         aggregations.add(monetary);
         groupByQuery.setAggregations(aggregations);
         return query;
     }
 
-    public static List<RFMModel> getTindexData(Query query, String broker){
+    public static List<RFMModel> getTindexData(Query query, String broker, ObjectMapper jsonMapper){
         Preconditions.checkState(query instanceof  GroupByQuery, "only support groupBy query for tinexDataBean");
         String resultStr = "";
         String queryStr = null;
         long startQueryTime = System.currentTimeMillis();
+        String url = String.format("http://%s/druid/v2",broker);
         try {
             queryStr = jsonMapper.writeValueAsString(query);
-            log.info("Begin to fetch RFM data from url: [%s], params: [%s].", broker, queryStr);
-            resultStr = HttpClinetUtil.post(broker, queryStr).body().string();
+            log.info("Begin to fetch RFM data from url: [%s], params: [%s].", url, queryStr);
+            resultStr = HttpClinetUtil.post(url, queryStr).body().string();
         } catch (Exception e) {
-            log.error("Query druid '%s' with parameter '%s' failed: ", broker, queryStr);
+            log.error(e,"Query druid '%s' with parameter '%s' failed: errMsg : %s", url, queryStr, e.getMessage());
+            Throwables.rethrow(e);
         }
 
         final List<RFMModel> rfmModelList = new ArrayList<>();
@@ -79,32 +83,28 @@ public class RFMUtil {
 
             log.info("Fetch %d RFM data from druid %s in %d ms.", druidResults.size(), broker, System.currentTimeMillis() - startQueryTime);
         } catch (IOException e) {
-            log.warn("Deserialize druid result to type [" + RFMManager.DruidResult.class.getName() +
+            log.error(e, "Deserialize druid result to type [" + RFMManager.DruidResult.class.getName() +
                     "] list failed, details:" + e.getMessage());
+            Throwables.rethrow(e);
 
-            try {
-                RFMManager.DruidError errorResult = jsonMapper.readValue(resultStr, RFMManager.DruidError.class);
-                log.error("Fetch RFM data from druid failed: %s", errorResult.getError());
-            } catch (IOException e1) {
-                log.warn("Deserialize druid error result to type [" + RFMManager.DruidError.class.getName() +
-                        "] failed, details:" + e.getMessage());
-            }
         }
 
         return rfmModelList;
     }
 
-    public static List<String> getUindexData(Query query, String broker){
+    public static List<String> getUindexData(Query query, String broker,  ObjectMapper jsonMapper){
         Preconditions.checkState(query instanceof ScanQuery, "only support scan query for uinexDataBean");
         String resultStr = "";
         String queryStr = null;
         long startQueryTime = System.currentTimeMillis();
+        String url = String.format("http://%s/druid/v2",broker);
         try {
             queryStr = jsonMapper.writeValueAsString(query);
-            log.info("Begin to fetch RFM data from url: [%s], params: [%s].", broker, queryStr);
-            resultStr = HttpClinetUtil.post(broker, queryStr).body().string();
+            log.info("Begin to fetch RFM data from url: [%s], params: [%s].", url, queryStr);
+            resultStr = HttpClinetUtil.post(url, queryStr).body().string();
         } catch (Exception e) {
-            log.error("Query uindex '%s' with parameter '%s' failed: ", broker, queryStr);
+            log.error(e,"Query uindex '%s' with parameter '%s' failed: ", url, queryStr);
+            Throwables.rethrow(e);
         }
 
         final List<String> userList = new ArrayList<>();
@@ -123,16 +123,10 @@ public class RFMUtil {
 
             log.info("Fetch %d RFM data from uindex %s in %d ms.", scamResults.size(), broker, System.currentTimeMillis() - startQueryTime);
         } catch (IOException e) {
-            log.warn("Deserialize uindex result to type [" + RFMManager.DruidResult.class.getName() +
+            log.error(e,"Deserialize uindex result to type [" + ScanQueryResult.class.getName() +
                     "] list failed, details:" + e.getMessage());
+            Throwables.rethrow(e);
 
-            try {
-                RFMManager.DruidError errorResult = jsonMapper.readValue(resultStr, RFMManager.DruidError.class);
-                log.error("Fetch RFM data from uindex failed: %s", errorResult.getError());
-            } catch (IOException e1) {
-                log.warn("Deserialize uindex error result to type [" + RFMManager.DruidError.class.getName() +
-                        "] failed, details:" + e.getMessage());
-            }
         }
 
         return userList;

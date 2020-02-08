@@ -78,6 +78,7 @@ public class JettyServerModule extends JerseyServletModule {
 			resources.add(HiveClientResource.class);
 			resources.add(TagResource.class);
 			resources.add(DgraphResource.class);
+			resources.add(RFMResource.class);
 			ResourceConfig resourceConfig = new DefaultResourceConfig(resources);
 			resourceConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
 			return resourceConfig;

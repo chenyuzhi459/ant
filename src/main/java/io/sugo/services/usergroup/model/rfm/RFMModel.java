@@ -1,5 +1,11 @@
 package io.sugo.services.usergroup.model.rfm;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -7,17 +13,33 @@ import java.util.Date;
  */
 public class RFMModel {
 
-    private static final Calendar calendar = Calendar.getInstance();
-
     public static final int R = 0;
     public static final int F = 1;
     public static final int M = 2;
 
     private String userId;
 
-    private int recency;
+    private int recency;  //由lastTime计算而来
+
     private int frequency;
     private double monetary;
+
+    @JsonCreator
+    public RFMModel(
+        @JsonProperty("userId")String userId,
+        @JsonProperty("lastTime")Date lastTime,
+        @JsonProperty("frequency")Integer frequency,
+        @JsonProperty("monetary")Double monetary)
+    {
+        Preconditions.checkArgument(
+            userId != null && lastTime != null && frequency != null && monetary != null,
+            "there is null value for rfmData:[userId=%s, lastTime=%s, frequency=%s, monetary=%s]",
+            userId, lastTime, frequency, monetary);
+        this.userId = userId;
+        this.lastTime = lastTime;
+        this.frequency = frequency;
+        this.monetary = monetary;
+    }
 
     /**
      * Last purchase time
@@ -42,13 +64,7 @@ public class RFMModel {
 
     public int getRecency() {
         if (recency == 0) {
-            calendar.setTime(lastTime);
-            int dayBefore = calendar.get(Calendar.DAY_OF_YEAR);
-
-            calendar.setTime(new Date());
-            int dayNow = calendar.get(Calendar.DAY_OF_YEAR);
-
-            recency = dayNow - dayBefore;
+            recency = Days.daysBetween(new DateTime(lastTime), DateTime.now()).getDays();
         }
         return recency;
     }

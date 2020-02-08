@@ -2,8 +2,10 @@ package io.sugo.services.usergroup.query;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
+import io.sugo.common.redis.RedisDataIOFetcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +13,8 @@ import java.util.Map;
 
 import static io.sugo.services.pathanalysis.dto.PathAnalysisDto.SCAN_QUERY_TIMOUT_MILLIS;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class ScanQuery {
+@JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
+public class ScanQuery implements Query{
     String queryType = "lucene_scan";
     String dataSource;
     String resultFormat = "compactedList";
@@ -54,75 +56,78 @@ public class ScanQuery {
         this.context = context;
     }
 
+    @JsonProperty
     public String getQueryType() {
         return queryType;
     }
 
-    public void setQueryType(String queryType) {
-        this.queryType = queryType;
-    }
-
+    @JsonProperty
     public String getDataSource() {
         return dataSource;
     }
 
-    public void setDataSource(String dataSource) {
-        this.dataSource = dataSource;
-    }
-
+    @JsonProperty
     public String getResultFormat() {
         return resultFormat;
     }
 
-    public void setResultFormat(String resultFormat) {
-        this.resultFormat = resultFormat;
-    }
-
+    @JsonProperty
     public int getBatchSize() {
         return batchSize;
     }
 
-    public void setBatchSize(int batchSize) {
-        this.batchSize = batchSize;
-    }
-
+    @JsonProperty
     public int getLimit() {
         return limit;
     }
 
-    public void setLimit(int limit) {
-        this.limit = limit;
-    }
-
+    @JsonProperty
     public List<String> getColumns() {
         return columns;
     }
 
-    public void setColumns(List<String> columns) {
-        this.columns = columns;
-    }
-
+    @JsonProperty
     public Object getIntervals() {
         return intervals;
     }
 
-    public void setIntervals(Object intervals) {
-        this.intervals = intervals;
-    }
-
+    @JsonProperty
     public Object getFilter() {
         return filter;
     }
 
-    public void setFilter(Object filter) {
-        this.filter = filter;
-    }
-
+    @JsonProperty
     public Map<String, Object> getContext() {
         return context;
     }
 
-    public void setContext(Map<String, Object> context) {
-        this.context = context;
+    public ScanQuery setDataSource(String dataSource) {
+        this.dataSource = dataSource;
+        return this;
+    }
+
+    public ScanQuery setFilter(Object filter) {
+        this.filter = filter;
+        return this;
+    }
+
+    public ScanQuery setIntervals(Object intervals) {
+        this.intervals = intervals;
+        return this;
+    }
+
+    public ScanQuery setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+        return this;
+    }
+
+    public ScanQuery setLimit(int limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    @Override
+    public RedisDataIOFetcher getDataConfig() {
+        throw new UnsupportedOperationException("Not support to getDataConfig for scan query");
     }
 }

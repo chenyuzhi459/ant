@@ -12,20 +12,20 @@ public class RFMDimensions {
     //购买时间维度
     private String buyTimeKey;
     //购买金额维度
-    private String buyTimeAmount;
+    private String buyAmountKey;
 
     @JsonCreator
     public RFMDimensions(
             @JsonProperty("userIdKey") String userIdKey,
             @JsonProperty("buyTimeKey") String buyTimeKey,
-            @JsonProperty("buyTimeAmount") String buyTimeAmount)
+            @JsonProperty("buyAmountKey") String buyAmountKey)
     {
         Preconditions.checkNotNull(userIdKey, "userIdKey can not be null.");
         Preconditions.checkNotNull(buyTimeKey, "buyTimeKey can not be null.");
-        Preconditions.checkNotNull(buyTimeAmount, "buyTimeAmount can not be null.");
+        Preconditions.checkNotNull(buyAmountKey, "buyTimebuyAmountKeyAmount can not be null.");
         this.userIdKey = userIdKey;
         this.buyTimeKey = buyTimeKey;
-        this.buyTimeAmount = buyTimeAmount;
+        this.buyAmountKey = buyAmountKey;
     }
 
     public String getUserIdKey() {
@@ -36,7 +36,7 @@ public class RFMDimensions {
         return buyTimeKey;
     }
 
-    public String getBuyTimeAmount() {
-        return buyTimeAmount;
+    public String getBuyAmountKey() {
+        return buyAmountKey;
     }
 }
