@@ -24,7 +24,7 @@ public class RFMRequestBean {
             @JsonProperty("dataSet") List<DataBean> dataSet,
             @JsonProperty("dimensions") RFMDimensions dimensions,
             @JsonProperty("params") RFMParams params,
-            @JsonProperty("params") Object redisConfig,
+            @JsonProperty("redisConfig") Object redisConfig,
             @JsonProperty("requestId")  String requestId,
             @JsonProperty("callbackUrl") String callbackUrl)
     {

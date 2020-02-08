@@ -32,11 +32,11 @@ public class RFMGroup {
     @JsonProperty
     private List<String> userIdList = Collections.emptyList();
 
-    @JsonProperty("R")
+//    @JsonProperty("R")
     private double[] rRange;
-    @JsonProperty("F")
+//    @JsonProperty("F")
     private double[] fRange;
-    @JsonProperty("M")
+//    @JsonProperty("M")
     private double[] mRange;
 
     /**
