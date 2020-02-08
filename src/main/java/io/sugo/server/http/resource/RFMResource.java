@@ -5,8 +5,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
+import io.sugo.services.usergroup.bean.rfm.CustomRFMParams;
+import io.sugo.services.usergroup.bean.rfm.DefaultRFMParams;
+import io.sugo.services.usergroup.bean.rfm.RFMParams;
 import io.sugo.services.usergroup.model.bean.CustomizedRFMDto;
-import io.sugo.services.usergroup.model.bean.RFMRequestBean;
+import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
 import io.sugo.services.usergroup.model.rfm.QuantileModel;
 import io.sugo.services.usergroup.model.rfm.RFMManager;
 
@@ -31,9 +34,18 @@ public class RFMResource {
     @Path("/default")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response getDefaultQuantileModel(final RFMRequestBean param) {
+    public Response getDefaultQuantileModel(final RFMRequestBean requestBean) {
         try {
-            QuantileModel quantileModel = rfmManager.getDefaultQuantileModel2(param);
+            RFMParams params = requestBean.getParams();
+            QuantileModel quantileModel = null;
+            if (params instanceof DefaultRFMParams){
+                DefaultRFMParams defaultRFMParams = (DefaultRFMParams)params;
+                quantileModel = rfmManager.getDefaultQuantileModel(requestBean, defaultRFMParams.getR(), defaultRFMParams.getF(), defaultRFMParams.getM());
+            }else {
+                CustomRFMParams customRFMParams = (CustomRFMParams)params;
+                quantileModel =  rfmManager.getCustomizedQuantileModel(requestBean, customRFMParams.getR(), customRFMParams.getF(), customRFMParams.getM());
+            }
+
             return Response.ok(quantileModel).build();
         } catch (Throwable e) {
             return Response.serverError().entity(ImmutableMap.of("error", e.getMessage())).build();

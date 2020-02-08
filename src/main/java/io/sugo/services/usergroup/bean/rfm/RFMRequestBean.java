@@ -1,4 +1,4 @@
-package io.sugo.services.usergroup.model.bean;
+package io.sugo.services.usergroup.bean.rfm;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;

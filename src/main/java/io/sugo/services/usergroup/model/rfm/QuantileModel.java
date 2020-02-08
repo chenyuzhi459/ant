@@ -72,6 +72,15 @@ public class QuantileModel {
         return new QuantileModel(r, f, m);
     }
 
+    public static QuantileModel emptyModel(double[] rq, double[] fq, double[] mq) {
+        QuantileModel model = new QuantileModel(0, 0, 0);
+        model.setRq(rq);
+        model.setFq(fq);
+        model.setMq(mq);
+
+        return model;
+    }
+
     private void initLabels(int r, int f, int m) {
         rLabels = new String[r];
         fLabels = new String[f];
