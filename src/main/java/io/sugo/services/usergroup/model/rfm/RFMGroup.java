@@ -39,8 +39,18 @@ public class RFMGroup {
     @JsonProperty("M")
     private double[] mRange;
 
+    /**
+     * 根据rRange,fRange,mRange生成的唯一ID
+     */
+    @JsonProperty("groupId")
+    private String groupId;
+
     public String getName() {
         return name;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     public void setName(String name) {

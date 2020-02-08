@@ -1,11 +1,12 @@
 package io.sugo.common.utils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.metamx.common.logger.Logger;
-import io.sugo.services.usergroup.bean.rfm.DataBean;
 import io.sugo.services.usergroup.bean.rfm.RFMDimensions;
 import io.sugo.services.usergroup.bean.rfm.TindexDataBean;
 import io.sugo.services.usergroup.model.bean.ScanQueryResult;
@@ -15,7 +16,6 @@ import io.sugo.services.usergroup.query.GroupByQuery;
 import io.sugo.services.usergroup.query.Query;
 import io.sugo.services.usergroup.query.ScanQuery;
 import org.apache.logging.log4j.core.util.Throwables;
-import redis.clients.jedis.ScanResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,15 +75,15 @@ public class RFMUtil {
 
         final List<RFMModel> rfmModelList = new ArrayList<>();
         try {
-            JavaType javaType = jsonMapper.getTypeFactory().constructParametrizedType(List.class, ArrayList.class, RFMManager.DruidResult.class);
-            List<RFMManager.DruidResult> druidResults = jsonMapper.readValue(resultStr, javaType);
+            JavaType javaType = jsonMapper.getTypeFactory().constructParametrizedType(List.class, ArrayList.class, DruidResult.class);
+            List<DruidResult> druidResults = jsonMapper.readValue(resultStr, javaType);
             druidResults.forEach(druidResult -> {
                 rfmModelList.add(druidResult.getEvent());
             });
 
             log.info("Fetch %d RFM data from druid %s in %d ms.", druidResults.size(), broker, System.currentTimeMillis() - startQueryTime);
         } catch (IOException e) {
-            log.error(e, "Deserialize druid result to type [" + RFMManager.DruidResult.class.getName() +
+            log.error(e, "Deserialize druid result to type [" + DruidResult.class.getName() +
                     "] list failed, details:" + e.getMessage());
             Throwables.rethrow(e);
 
@@ -198,4 +198,18 @@ public class RFMUtil {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class DruidResult {
+        RFMModel event;
+
+        @JsonCreator
+        public DruidResult(
+                @JsonProperty("event") RFMModel event) {
+            this.event = event;
+        }
+
+        public RFMModel getEvent() {
+            return event;
+        }
+    }
 }

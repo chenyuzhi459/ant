@@ -21,7 +21,7 @@ public abstract class AbstractQuantileCalculator {
         this.rfmModelList = rfmModelList;
     }
 
-    public QuantileModel calculate() {
+    public QuantileModel calculate(String requestId) {
 
         initModel();
 
@@ -47,7 +47,7 @@ public abstract class AbstractQuantileCalculator {
             userIdList.add(rfmModel.getUserId());
         });
 
-        quantileModel.buildGroups(groupUserIdsMap, rfmModelList.size());
+        quantileModel.buildGroups(groupUserIdsMap, rfmModelList.size(), requestId);
 
         log.info("Calculate quantile model successfully! %s", quantileModel);
 

@@ -72,15 +72,6 @@ public class QuantileModel {
         return new QuantileModel(r, f, m);
     }
 
-    public static QuantileModel emptyModel(double[] rq, double[] fq, double[] mq) {
-        QuantileModel model = new QuantileModel(0, 0, 0);
-        model.setRq(rq);
-        model.setFq(fq);
-        model.setMq(mq);
-
-        return model;
-    }
-
     private void initLabels(int r, int f, int m) {
         rLabels = new String[r];
         fLabels = new String[f];
@@ -135,7 +126,7 @@ public class QuantileModel {
         return mLabels[mLabels.length - 1];
     }
 
-    public void buildGroups(Map<String, List<String>> groupUserIdsMap, int totalUsers) {
+    public void buildGroups(Map<String, List<String>> groupUserIdsMap, int totalUsers, String requestId) {
         groups = new ArrayList<>();
         groupMap.entrySet().iterator().forEachRemaining((entry) -> {
             RFMGroup group = new RFMGroup();
@@ -148,9 +139,30 @@ public class QuantileModel {
             group.setrRange(getrRanges(group.getRGroupIndex()));
             group.setfRange(getfRanges(group.getFGroupIndex()));
             group.setmRange(getmRanges(group.getMGroupIndex()));
+            group.setGroupId(buildGroupId(requestId, group));
 
             groups.add(group);
         });
+    }
+
+    private String buildGroupId(String prefix, RFMGroup group){
+        StringBuilder idBuilder = new StringBuilder(prefix).append("%");
+        double[] rRange = group.getrRange();
+        double[] fRange = group.getfRange();
+        double[] mRange = group.getmRange();
+
+        //范围数组的大小应小于2，大小等于1时，该值为最后一个分组，属于[value, 正无穷大]
+        idBuilder.append(String.format("R[%s-%s]", rRange[0],
+                rRange.length == 1 ? "infinity" : rRange[1] ));
+
+        idBuilder.append(String.format("F[%s-%s]", fRange[0],
+                fRange.length == 1 ? "infinity" : fRange[1] ));
+
+        idBuilder.append(String.format("M[%s-%s]", mRange[0],
+                mRange.length == 1 ? "infinity" : mRange[1] ));
+
+        return idBuilder.toString();
+
     }
 
     public double[] getrRanges(int groupIndex) {

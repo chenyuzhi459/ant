@@ -69,7 +69,7 @@ public class RFMManager {
         }
 
         DefaultQuantileCalculator calculator = new DefaultQuantileCalculator(rfmModelList, r, f, m);
-        QuantileModel quantileModel = calculator.calculate();
+        QuantileModel quantileModel = calculator.calculate(requestBean.getRequestId());
 
         return quantileModel;
     }
@@ -124,33 +124,5 @@ public class RFMManager {
 //        return quantileModel;
 //    }
 
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class DruidResult {
-        RFMModel event;
-
-        @JsonCreator
-        public DruidResult(
-            @JsonProperty("event") RFMModel event) {
-            this.event = event;
-        }
-
-        public RFMModel getEvent() {
-            return event;
-        }
-
-    }
-
-    public static class DruidError {
-        String error;
-
-        public String getError() {
-            return error;
-        }
-
-        public void setError(String error) {
-            this.error = error;
-        }
-    }
 
 }

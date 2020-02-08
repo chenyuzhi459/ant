@@ -6,17 +6,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.services.usergroup.model.bean.CustomizedRFMDto;
-import io.sugo.services.usergroup.model.bean.DefaultRFMDto;
 import io.sugo.services.usergroup.model.bean.RFMRequestBean;
 import io.sugo.services.usergroup.model.rfm.QuantileModel;
 import io.sugo.services.usergroup.model.rfm.RFMManager;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.Base64;
 
 @Path("/ant/model/rfm")
 public class RFMResource {
@@ -91,18 +87,6 @@ public class RFMResource {
 //        }
 //    }
 
-    private void check(DefaultRFMDto rfmDto) {
-        Preconditions.checkNotNull(rfmDto.getDatasource(), "Data source can not be null.");
-        if (rfmDto.getR() <= 0 || rfmDto.getR() > 4) {
-            throw new IllegalArgumentException("'R' must be greater than 0 and less than 5.");
-        }
-        if (rfmDto.getF() <= 0 || rfmDto.getF() > 4) {
-            throw new IllegalArgumentException("'F' must be greater than 0 and less than 5.");
-        }
-        if (rfmDto.getM() <= 0 || rfmDto.getM() > 4) {
-            throw new IllegalArgumentException("'M' must be greater than 0 and less than 5.");
-        }
-    }
 
     private void check(CustomizedRFMDto rfmDto) {
         Preconditions.checkNotNull(rfmDto.getDatasource(), "Data source can not be null.");
