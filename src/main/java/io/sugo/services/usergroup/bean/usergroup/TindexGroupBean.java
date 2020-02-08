@@ -1,20 +1,18 @@
-package io.sugo.services.usergroup.model;
+package io.sugo.services.usergroup.bean.usergroup;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.utils.QueryUtil;
 import io.sugo.services.cache.Caches;
 import io.sugo.services.tag.DataUpdateHelper;
 import io.sugo.services.usergroup.UpdateSpec;
 import io.sugo.services.usergroup.UserGroupHelper;
-import io.sugo.services.usergroup.model.query.GroupByQuery;
-import io.sugo.services.usergroup.model.query.Query;
-import io.sugo.services.usergroup.model.query.UserGroupQuery;
+import io.sugo.services.usergroup.query.GroupByQuery;
+import io.sugo.services.usergroup.query.Query;
+import io.sugo.services.usergroup.query.UserGroupQuery;
 import io.sugo.services.usergroup.parser.Parser;
-import org.omg.CORBA.OBJ_ADAPTER;
 
 import java.util.*;
 

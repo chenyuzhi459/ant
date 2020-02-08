@@ -6,7 +6,7 @@ import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.common.utils.HttpUtil;
+import io.sugo.common.utils.HttpClinetUtil;
 
 import io.sugo.services.usergroup.OperationResult;
 import io.sugo.services.usergroup.UpdateSpec;
@@ -59,7 +59,7 @@ public class DataUpdateHelper {
 			log.info(String.format("Sending data to datasource[%s], size[%s]", datasource, updateBatches.size()));
 			Map<String, Object> result = updateBatches.isEmpty() ?
 					ImmutableMap.of("success", 0, "failed", 0, "errors", Collections.emptyList()) :
-					HttpUtil.sendData(userGroupUpdateBean.getHproxy(), datasource, updateBatches);
+					HttpClinetUtil.sendData(userGroupUpdateBean.getHproxy(), datasource, updateBatches);
 			long after = System.currentTimeMillis();
 			log.info(String.format("Update data to datasource[%s] for userGroup[%s] total cost %d ms.",
 					userGroupUpdateBean.getDataSource(), userGroupDataConfig.getGroupId(), after - before));
@@ -89,7 +89,7 @@ public class DataUpdateHelper {
 
 			updateBatches.add(new UpdateBatch(itemMap, appendFlags));
 			if(updateBatches.size() % DEFAULT_BATCH_SIZE == 0){
-				Map<String, Object> sendRes = HttpUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
+				Map<String, Object> sendRes = HttpClinetUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
 				//sendRes -format:
 				//ImmutableMap.of("success", 0, "failed", 0, "errors", Collections.emptyList())
 				sendRows += (Integer) sendRes.get("success");
@@ -108,7 +108,7 @@ public class DataUpdateHelper {
 
 		if(!updateBatches.isEmpty()){
 			Map<String, Object> sendRes =
-					HttpUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
+					HttpClinetUtil.sendData(updateSpec.getHproxy(), datasource, updateBatches);
 			sendRows += (Integer) sendRes.get("success");
 			updateBatches.clear();
 			operationResult.setUpdatedRows(sendRows);

@@ -1,9 +1,8 @@
-package io.sugo.services.usergroup.model.query;
+package io.sugo.services.usergroup.query;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.sugo.common.redis.RedisDataIOFetcher;
-import io.sugo.services.usergroup.model.query.Query;
 
 import java.util.List;
 import java.util.Map;
@@ -47,6 +46,11 @@ public class GroupByQuery implements Query {
 		this.having = having;
 		this.context = context;
 		this.limitSpec = limitSpec;
+	}
+
+	@JsonProperty("queryType")
+	public String getQueryType() {
+		return queryType;
 	}
 
 	@JsonProperty
@@ -105,5 +109,11 @@ public class GroupByQuery implements Query {
 		throw new UnsupportedOperationException("Not support to getDataConfig for groupBy query");
 	}
 
+	public void setDimensions(List dimensions) {
+		this.dimensions = dimensions;
+	}
 
+	public void setAggregations(List aggregations) {
+		this.aggregations = aggregations;
+	}
 }

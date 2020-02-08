@@ -3,7 +3,7 @@ package io.sugo.services.pathanalysis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import io.sugo.common.utils.HttpUtil;
+import io.sugo.common.utils.HttpClinetUtil;
 import io.sugo.server.http.AntServer;
 import io.sugo.services.pathanalysis.model.AccessPath;
 import io.sugo.services.pathanalysis.model.AccessTree;
@@ -38,7 +38,7 @@ public class PathAnalyzer {
 
         int depth = reversed ? PathAnalysisConstant.TREE_DEPTH_REVERSE : PathAnalysisConstant.TREE_DEPTH_NORMAL;
 
-        List<Map> queryResult = HttpUtil.getQueryResult(broker, queryStr);
+        List<Map> queryResult = HttpClinetUtil.getQueryResult(broker, queryStr);
         Iterator<Map> iterator = queryResult.iterator();
 
         while (iterator.hasNext()) {

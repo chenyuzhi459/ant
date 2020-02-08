@@ -6,9 +6,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import io.sugo.server.http.Configure;
+import io.sugo.services.usergroup.query.ScanQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,7 +32,7 @@ public class PathAnalysisDto {
     private static int SCAN_QUERY_LIMIT_SIZE;
 
     @Inject @Named(Sys.PATH_ANALYSIS_SCAN_QUERY_TIMEOUT_MILLIS)
-    private static int SCAN_QUERY_TIMOUT_MILLIS;
+    public static int SCAN_QUERY_TIMOUT_MILLIS;
 
 
     @JsonProperty
@@ -244,7 +243,7 @@ public class PathAnalysisDto {
         query.getColumns().add(this.getDimension().getDate());
 
         // Set intervals
-        query.getIntervals().add(this.startDate + "/" + this.endDate);
+        query.setIntervals(this.startDate + "/" + this.endDate);
 
         String queryStr = "";
         try {
@@ -257,94 +256,7 @@ public class PathAnalysisDto {
         return queryStr;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    private static class ScanQuery {
-        String queryType = "lucene_scan";
-        String dataSource;
-        String resultFormat = "compactedList";
-        int batchSize;
-        int limit;
-        List<String> columns = new ArrayList<>();
-        List<String> intervals = new ArrayList<>();
-        Object filter;
-        Map<String, Object> context = Maps.newHashMap();
 
-        public ScanQuery() {
-            context.put("timeout", SCAN_QUERY_TIMOUT_MILLIS);
-        }
-
-        public String getQueryType() {
-            return queryType;
-        }
-
-        public void setQueryType(String queryType) {
-            this.queryType = queryType;
-        }
-
-        public String getDataSource() {
-            return dataSource;
-        }
-
-        public void setDataSource(String dataSource) {
-            this.dataSource = dataSource;
-        }
-
-        public String getResultFormat() {
-            return resultFormat;
-        }
-
-        public void setResultFormat(String resultFormat) {
-            this.resultFormat = resultFormat;
-        }
-
-        public int getBatchSize() {
-            return batchSize;
-        }
-
-        public void setBatchSize(int batchSize) {
-            this.batchSize = batchSize;
-        }
-
-        public int getLimit() {
-            return limit;
-        }
-
-        public void setLimit(int limit) {
-            this.limit = limit;
-        }
-
-        public List<String> getColumns() {
-            return columns;
-        }
-
-        public void setColumns(List<String> columns) {
-            this.columns = columns;
-        }
-
-        public List<String> getIntervals() {
-            return intervals;
-        }
-
-        public void setIntervals(List<String> intervals) {
-            this.intervals = intervals;
-        }
-
-        public Object getFilter() {
-            return filter;
-        }
-
-        public void setFilter(Object filter) {
-            this.filter = filter;
-        }
-
-        public Map<String, Object> getContext() {
-            return context;
-        }
-
-        public void setContext(Map<String, Object> context) {
-            this.context = context;
-        }
-    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class FilterDimension {

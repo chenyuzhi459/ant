@@ -1,4 +1,4 @@
-package io.sugo.services.usergroup.model;
+package io.sugo.services.usergroup.bean.usergroup;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -6,15 +6,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisInfo;
-import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.QueryUtil;
 import io.sugo.services.cache.Caches;
-import io.sugo.services.usergroup.model.query.Query;
-import io.sugo.services.usergroup.model.query.UserGroupQuery;
+import io.sugo.services.usergroup.query.Query;
+import io.sugo.services.usergroup.query.UserGroupQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**

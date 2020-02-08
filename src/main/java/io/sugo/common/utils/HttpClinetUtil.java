@@ -22,8 +22,8 @@ import static io.sugo.common.utils.Constants.*;
 /**
  * Created by chenyuzhi on 18-9-29.
  */
-public class HttpUtil {
-	private static final Logger log = LogManager.getLogger(HttpUtil.class);
+public class HttpClinetUtil {
+	private static final Logger log = LogManager.getLogger(HttpClinetUtil.class);
 
 	@Inject @Named(Sys.HTTP_FORWARD_CONN_READ_TIMEOUT_SEC)
 	private static int connReadTimeout;
@@ -86,7 +86,7 @@ public class HttpUtil {
 			try {
 				updateStr = jsonMapper.writeValueAsString(updateBatches);
 
-				try (Response response = HttpUtil.post(url, updateStr)){
+				try (Response response = HttpClinetUtil.post(url, updateStr)){
 					if(response.code() == 200){
 						String resultStr = response.body().string();
 						Map<String, Object> result = jsonMapper.readValue(resultStr, Map.class);

@@ -1,4 +1,4 @@
-package io.sugo.services.usergroup.model.query;
+package io.sugo.services.usergroup.query;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

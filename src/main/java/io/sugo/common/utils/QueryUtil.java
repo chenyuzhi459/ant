@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import io.sugo.services.usergroup.model.query.GroupByQuery;
-import io.sugo.services.usergroup.model.query.UserGroupQuery;
+import io.sugo.services.usergroup.query.GroupByQuery;
+import io.sugo.services.usergroup.query.UserGroupQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +29,7 @@ public class QueryUtil {
 					"<<<<<<<<<<<<<<<<", broker, queryStr));
 
 			long before = System.currentTimeMillis();
-			List<Map> result = HttpUtil.getQueryResult(broker, queryStr);
+			List<Map> result = HttpClinetUtil.getQueryResult(broker, queryStr);
 			long after = System.currentTimeMillis();
 			log.info(String.format("GroupByQuery total cost %d ms.", after - before));
 			return result;
@@ -48,7 +48,7 @@ public class QueryUtil {
 
 			long before = System.currentTimeMillis();
 
-			List<Map> queryResult = HttpUtil.getQueryResult(broker, queryStr);
+			List<Map> queryResult = HttpClinetUtil.getQueryResult(broker, queryStr);
 			Map queryResultMap = queryResult.get(0);
 			//prune queryResultMap
 			queryResultMap.remove("v");

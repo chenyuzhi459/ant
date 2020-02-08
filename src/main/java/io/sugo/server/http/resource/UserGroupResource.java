@@ -3,7 +3,6 @@ package io.sugo.server.http.resource;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.common.utils.ParamChecker;
@@ -12,7 +11,7 @@ import io.sugo.common.utils.UserGroupUtil;
 import io.sugo.services.exception.RemoteException;
 import io.sugo.services.usergroup.UserGroupHelper;
 import io.sugo.services.usergroup.OperationResult;
-import io.sugo.services.usergroup.model.GroupBean;
+import io.sugo.services.usergroup.bean.usergroup.GroupBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

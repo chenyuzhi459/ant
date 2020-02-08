@@ -14,8 +14,8 @@ import io.sugo.services.cache.Caches;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.RedisClientWrapper;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.services.usergroup.model.*;
-import io.sugo.services.usergroup.model.query.UserGroupQuery;
+import io.sugo.services.usergroup.bean.usergroup.*;
+import io.sugo.services.usergroup.query.UserGroupQuery;
 import io.sugo.common.guice.annotations.Json;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -393,7 +393,7 @@ public class UserGroupHelper implements AntService {
 				boolean isTempUserGroup = UserGroupBean.INDEX_TYPES.contains(userGroupBean.getType());
 				if(isTempUserGroup){
 					String broker;
-					if(userGroupBean instanceof UindexGroupBean ){
+					if(userGroupBean instanceof UindexGroupBean){
 						broker = ((UindexGroupBean) userGroupBean).getBroker();
 					}else {
 						broker = ((TindexGroupBean) userGroupBean).getBroker();

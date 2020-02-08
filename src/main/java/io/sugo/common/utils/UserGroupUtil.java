@@ -3,10 +3,9 @@ package io.sugo.common.utils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import io.sugo.services.usergroup.model.GroupBean;
+import io.sugo.services.usergroup.bean.usergroup.GroupBean;
 import org.apache.parquet.Strings;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

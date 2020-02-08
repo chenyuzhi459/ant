@@ -3,7 +3,7 @@ package io.sugo.common.modules;
 import com.google.inject.*;
 import com.google.inject.name.Names;
 import io.sugo.common.utils.Constants;
-import io.sugo.common.utils.HttpUtil;
+import io.sugo.common.utils.HttpClinetUtil;
 import io.sugo.common.utils.QueryUtil;
 import io.sugo.common.utils.StringUtil;
 import io.sugo.common.guice.annotations.LazySingleton;
@@ -29,7 +29,7 @@ public class CommonModule implements Module {
 		binder.bind(Configure.class).toInstance(configure);
 		bindConstants(binder);
 		binder.requestStaticInjection(StringUtil.class);
-		binder.requestStaticInjection(HttpUtil.class);
+		binder.requestStaticInjection(HttpClinetUtil.class);
 		binder.requestStaticInjection(QueryUtil.class);
 	}
 
