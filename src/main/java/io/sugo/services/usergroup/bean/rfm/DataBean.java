@@ -2,8 +2,6 @@ package io.sugo.services.usergroup.bean.rfm;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import io.sugo.services.usergroup.query.Query;
 
