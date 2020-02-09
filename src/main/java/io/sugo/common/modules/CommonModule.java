@@ -56,6 +56,10 @@ public class CommonModule implements Module {
 		binder.bindConstant().annotatedWith(Names.named(UserGroup.QUERY_QUEUE_REDIS_KEY))
 				.to(configure.getProperty(SYSTEM_PROPS, UserGroup.QUERY_QUEUE_REDIS_KEY, Constants.QUERY_QUEUE_DEFAULT_REDIS_KEY));
 
+		//绑定营销模型redis key参数
+		binder.bindConstant().annotatedWith(Names.named(UserGroup.MODEL_QUEUE_REDIS_KEY))
+				.to(configure.getProperty(SYSTEM_PROPS, UserGroup.MODEL_QUEUE_REDIS_KEY, Constants.MODEL_QUEUE_DEFAULT_REDIS_KEY));
+
 		binder.bindConstant().annotatedWith(Names.named(UserGroup.QUERY_RESULT_REDIS_KEY))
 				.to(configure.getProperty(SYSTEM_PROPS, UserGroup.QUERY_RESULT_REDIS_KEY, Constants.QUERY_RESULT_DEFAULT_REDIS_KEY));
 

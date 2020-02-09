@@ -444,13 +444,7 @@ public class UserGroupHelper implements AntService {
 	}
 
 	private int writeDataToRedis(UserGroupSerDeserializer serDeserializer, Set<String> dataSet){
-		for(String data: dataSet){
-			if(data != null){
-				serDeserializer.add(data);
-			}
-		}
-		serDeserializer.serialize();
-		return serDeserializer.getRowCount();
+		return UserGroupUtil.writeDataToRedis(serDeserializer, dataSet);
 	}
 
 	private boolean backupRedisData(RedisClientWrapper redisClient, String redisKey, String backupKey){

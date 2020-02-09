@@ -37,6 +37,10 @@ public class RedisDataIOFetcher implements DataIOFetcher {
     cache = redisClientCache;
   }
 
+  public void setGroupId(String groupId) {
+    this.groupId = groupId;
+  }
+
   @JsonProperty("groupId")
   public String getGroupId() {
     return groupId;

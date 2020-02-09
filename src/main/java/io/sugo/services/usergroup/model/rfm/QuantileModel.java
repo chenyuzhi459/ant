@@ -135,6 +135,10 @@ public class QuantileModel {
         return mLabels[mLabels.length - 1];
     }
 
+    public List<RFMGroup> getGroups() {
+        return groups;
+    }
+
     public void buildGroups(Map<String, List<String>> groupUserIdsMap, int totalUsers, String requestId) {
         groups = new ArrayList<>();
         groupMap.entrySet().iterator().forEachRemaining((entry) -> {

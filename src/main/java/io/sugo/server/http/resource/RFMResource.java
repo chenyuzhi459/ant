@@ -8,8 +8,8 @@ import io.sugo.common.guice.annotations.Json;
 import io.sugo.services.usergroup.bean.rfm.CustomRFMParams;
 import io.sugo.services.usergroup.bean.rfm.DefaultRFMParams;
 import io.sugo.services.usergroup.bean.rfm.RFMParams;
-import io.sugo.services.usergroup.model.bean.CustomizedRFMDto;
 import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
+import io.sugo.services.usergroup.model.ModelManager;
 import io.sugo.services.usergroup.model.rfm.QuantileModel;
 import io.sugo.services.usergroup.model.rfm.RFMManager;
 
@@ -20,35 +20,38 @@ import javax.ws.rs.core.Response;
 @Path("/ant/model/rfm")
 public class RFMResource {
 
-    private final RFMManager rfmManager;
-
-    private final ObjectMapper jsonMapper;
+    private final ModelManager modelManager;
 
     @Inject
-    public RFMResource(@Json ObjectMapper jsonMapper, RFMManager rfmManager) {
-        this.jsonMapper = jsonMapper;
-        this.rfmManager = rfmManager;
+    public RFMResource(ModelManager modelManager) {
+        this.modelManager = modelManager;
     }
 
     @POST
-    @Path("/default")
+//    @Path("/default")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getDefaultQuantileModel(final RFMRequestBean requestBean) {
         try {
-            RFMParams params = requestBean.getParams();
-            QuantileModel quantileModel = null;
-            if (params instanceof DefaultRFMParams){
-                DefaultRFMParams defaultRFMParams = (DefaultRFMParams)params;
-                quantileModel = rfmManager.getDefaultQuantileModel(requestBean, defaultRFMParams.getR(), defaultRFMParams.getF(), defaultRFMParams.getM());
-            }else {
-                CustomRFMParams customRFMParams = (CustomRFMParams)params;
-                quantileModel =  rfmManager.getCustomizedQuantileModel(requestBean, customRFMParams.getR(), customRFMParams.getF(), customRFMParams.getM());
-            }
+            modelManager.addToRedisQueue(requestBean);
 
-            return Response.ok(quantileModel).build();
+            return Response.ok(ImmutableMap.of("requestId", requestBean.getRequestId(),
+                    "status", "success")).build();
         } catch (Throwable e) {
-            return Response.serverError().entity(ImmutableMap.of("error", e.getMessage())).build();
+            return Response.serverError().entity(ImmutableMap.of("ok","success","msg", e.getMessage())).build();
+        }
+    }
+
+    @GET
+    @Path("/result/{id}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response slice(@PathParam("id") final String id) {
+        try {
+
+            return Response.ok(modelManager.fetchResult(id)).build();
+        } catch (Throwable e) {
+            return Response.serverError().entity(e.getMessage()).build();
         }
     }
 //
@@ -100,17 +103,5 @@ public class RFMResource {
 //    }
 
 
-    private void check(CustomizedRFMDto rfmDto) {
-        Preconditions.checkNotNull(rfmDto.getDatasource(), "Data source can not be null.");
-        if (rfmDto.getRq().length <= 0 || rfmDto.getRq().length > 3) {
-            throw new IllegalArgumentException("'RQ' must be at least contains one element and at most 3 elements.");
-        }
-        if (rfmDto.getFq().length <= 0 || rfmDto.getFq().length > 3) {
-            throw new IllegalArgumentException("'FQ' must be at least contains one element and at most 3 elements.");
-        }
-        if (rfmDto.getMq().length <= 0 || rfmDto.getMq().length > 3) {
-            throw new IllegalArgumentException("'MQ' must be at least contains one element and at most 3 elements.");
-        }
-    }
 
 }

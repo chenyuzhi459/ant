@@ -3,6 +3,7 @@ package io.sugo.common.utils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.services.usergroup.bean.usergroup.GroupBean;
 import org.apache.parquet.Strings;
 
@@ -74,5 +75,16 @@ public class UserGroupUtil {
 	public static Set<String> DataDifference(Set<String> data1, Set<String> data2){
 		data1.removeAll(data2);
 		return data1;
+	}
+
+	//把分群ID写入Redis
+	public static int writeDataToRedis(UserGroupSerDeserializer serDeserializer, Set<String> dataSet){
+		for(String data: dataSet){
+			if(data != null){
+				serDeserializer.add(data);
+			}
+		}
+		serDeserializer.serialize();
+		return serDeserializer.getRowCount();
 	}
 }

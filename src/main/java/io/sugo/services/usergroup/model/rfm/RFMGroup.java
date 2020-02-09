@@ -29,7 +29,7 @@ public class RFMGroup {
     /**
      * The user id list that belong to this group
      */
-    @JsonProperty
+//    @JsonProperty
     private List<String> userIdList = Collections.emptyList();
 
     @JsonProperty("R")
@@ -51,6 +51,10 @@ public class RFMGroup {
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    public String getGroupId() {
+        return groupId;
     }
 
     public void setName(String name) {

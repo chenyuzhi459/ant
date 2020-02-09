@@ -67,8 +67,12 @@ public class Constants {
     }
 
     public static class UserGroup{
+        //用户分群队列
         public static final String QUERY_QUEUE_REDIS_KEY="usergroup.query.queue.redis.key";
         public static final String QUERY_RESULT_REDIS_KEY ="usergroup.query.result.redis.key";
+
+        //营销模型队列
+        public static final String MODEL_QUEUE_REDIS_KEY="usergroup.query.queue.redis.key";
 
         public static final String CONSUMER_THREAD_SIZE="usergroup.consumer.thread.size";
         public static final String CONSUMER_RUN_INTERVAL="usergroup.consumer.run.interval.sec";
@@ -85,5 +89,8 @@ public class Constants {
     //UserGroup 常量配置
     public static final String QUERY_QUEUE_DEFAULT_REDIS_KEY = "ant_usergroup_query_queue";
     public static final String QUERY_RESULT_DEFAULT_REDIS_KEY = "ant_usergroup_query_result";
+
+    //营销模型 常量配置
+    public static final String MODEL_QUEUE_DEFAULT_REDIS_KEY = "ant_model_query_queue";
 
 }
