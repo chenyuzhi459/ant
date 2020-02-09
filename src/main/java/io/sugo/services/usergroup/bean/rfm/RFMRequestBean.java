@@ -40,26 +40,32 @@ public class RFMRequestBean {
         this.redisConfig = redisConfig;
     }
 
+    @JsonProperty
     public List<DataBean> getDataSet() {
         return dataSet;
     }
 
+    @JsonProperty
     public RFMDimensions getDimensions() {
         return dimensions;
     }
 
+    @JsonProperty
     public RFMParams getParams() {
         return params;
     }
 
+    @JsonProperty
     public String getRequestId() {
         return requestId;
     }
 
+    @JsonProperty
     public String getCallbackUrl() {
         return callbackUrl;
     }
 
+    @JsonProperty
     public RedisDataIOFetcher getRedisConfig() {
         return redisConfig;
     }

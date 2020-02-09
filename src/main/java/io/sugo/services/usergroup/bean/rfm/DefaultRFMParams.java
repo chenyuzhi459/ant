@@ -22,17 +22,14 @@ public class DefaultRFMParams implements RFMParams<Integer> {
         this.m = M;
     }
 
-    @JsonProperty
     public Integer getR() {
         return r;
     }
 
-    @JsonProperty
     public Integer getF() {
         return f;
     }
 
-    @JsonProperty
     public Integer getM() {
         return m;
     }

@@ -32,9 +32,4 @@ public class TindexDataBean extends DataBean{
     public String getType() {
         return TYPE;
     }
-
-    @Override
-    public void getData() {
-
-    }
 }

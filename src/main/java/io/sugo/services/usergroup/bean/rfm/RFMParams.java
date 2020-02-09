@@ -10,7 +10,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(name = "custom", value = CustomRFMParams.class)
 })
 public interface RFMParams<T> {
+    @JsonProperty("R")
     public T getR();
+    @JsonProperty("F")
     public T getF();
+    @JsonProperty("M")
     public T getM();
 }

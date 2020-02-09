@@ -72,7 +72,7 @@ public class Constants {
         public static final String QUERY_RESULT_REDIS_KEY ="usergroup.query.result.redis.key";
 
         //营销模型队列
-        public static final String MODEL_QUEUE_REDIS_KEY="usergroup.query.queue.redis.key";
+        public static final String MODEL_QUEUE_REDIS_KEY="model.query.queue.redis.key";
 
         public static final String CONSUMER_THREAD_SIZE="usergroup.consumer.thread.size";
         public static final String CONSUMER_RUN_INTERVAL="usergroup.consumer.run.interval.sec";

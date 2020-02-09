@@ -20,11 +20,4 @@ public class UindexDataBean extends DataBean{
     public String getType() {
         return TYPE;
     }
-
-    @Override
-    public void getData() {
-
-    }
-
-
 }

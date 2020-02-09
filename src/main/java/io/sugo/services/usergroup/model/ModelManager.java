@@ -13,10 +13,7 @@ import io.sugo.common.redis.RedisClientWrapper;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.common.utils.CapacityMap;
-import io.sugo.common.utils.Constants;
-import io.sugo.common.utils.ExecUtil;
-import io.sugo.common.utils.UserGroupUtil;
+import io.sugo.common.utils.*;
 import io.sugo.server.http.Configure;
 import io.sugo.server.http.resource.UserGroupResource;
 import io.sugo.services.cache.Caches;
@@ -44,7 +41,7 @@ import static io.sugo.common.utils.Constants.Sys.*;
 import static io.sugo.common.utils.Constants.UserGroup.CONSUMER_RUN_INTERVAL;
 import static io.sugo.common.utils.Constants.UserGroup.CONSUMER_THREAD_SIZE;
 
-public class ModelManager {
+public class ModelManager implements AntService {
     private static final Logger log = LogManager.getLogger(ModelManager.class);
 
     @Inject
@@ -100,7 +97,7 @@ public class ModelManager {
                         }
                     },
                     0,
-                    configure.getInt(SYSTEM_PROPS, CONSUMER_RUN_INTERVAL, 30),
+                    configure.getInt(SYSTEM_PROPS, CONSUMER_RUN_INTERVAL, 5),
                     TimeUnit.SECONDS);
 
             log.info("start consumer for ModelManager...");
@@ -178,7 +175,7 @@ public class ModelManager {
                 UserGroupUtil.writeDataToRedis(userGroupSerDeserializer, ImmutableSet.copyOf(userId));
                 //释放内存
                 userId.clear();
-                log.info("write data to usergroup[%s] finished.", group.getGroupId());
+                log.info(String.format("write data to usergroup: %s finished.", group.getGroupId()));
 
             }
         }
@@ -190,7 +187,7 @@ public class ModelManager {
             systemRedisClient = redisClientCache.getRedisClient(systemRedisInfo);
             String requestStr = this.jsonMapper.writeValueAsString(requestBean);
             systemRedisClient.lpush(QUEUE_REDIS_KEY,requestStr);
-            log.info("add model request to queue success, id = %s", requestBean.getRequestId());
+            log.info(String.format("add model request to queue success, id = %s", requestBean.getRequestId()));
         } finally {
             redisClientCache.releaseRedisClient(systemRedisInfo,systemRedisClient);
         }

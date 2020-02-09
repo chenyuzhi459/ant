@@ -12,6 +12,8 @@ import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
 import io.sugo.services.usergroup.model.ModelManager;
 import io.sugo.services.usergroup.model.rfm.QuantileModel;
 import io.sugo.services.usergroup.model.rfm.RFMManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -19,7 +21,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/ant/model/rfm")
 public class RFMResource {
-
+    private static final Logger log = LogManager.getLogger(RFMResource.class);
     private final ModelManager modelManager;
 
     @Inject
@@ -38,7 +40,8 @@ public class RFMResource {
             return Response.ok(ImmutableMap.of("requestId", requestBean.getRequestId(),
                     "status", "success")).build();
         } catch (Throwable e) {
-            return Response.serverError().entity(ImmutableMap.of("ok","success","msg", e.getMessage())).build();
+            log.error("add model request to queue error", e);
+            return Response.serverError().entity(ImmutableMap.of("status","error","msg", e.getMessage())).build();
         }
     }
 

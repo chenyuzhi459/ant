@@ -28,14 +28,17 @@ public class RFMDimensions {
         this.buyAmountKey = buyAmountKey;
     }
 
+    @JsonProperty
     public String getUserIdKey() {
         return userIdKey;
     }
 
+    @JsonProperty
     public String getBuyTimeKey() {
         return buyTimeKey;
     }
 
+    @JsonProperty
     public String getBuyAmountKey() {
         return buyAmountKey;
     }

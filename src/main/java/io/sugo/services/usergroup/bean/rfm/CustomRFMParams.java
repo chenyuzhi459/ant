@@ -25,17 +25,14 @@ public class CustomRFMParams implements RFMParams<List<Double>>{
         this.mq = mq;
     }
 
-    @JsonProperty
     public List<Double> getR() {
         return rq;
     }
 
-    @JsonProperty
     public List<Double> getF() {
         return fq;
     }
 
-    @JsonProperty
     public List<Double> getM() {
         return mq;
     }

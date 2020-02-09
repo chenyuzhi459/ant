@@ -37,8 +37,7 @@ public abstract class DataBean {
         return broker;
     }
 
+    @JsonProperty
     public abstract String getType();
-
-    public abstract void getData();
 
 }
