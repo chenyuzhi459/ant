@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.metamx.common.logger.Logger;
+import io.sugo.services.usergroup.bean.rfm.DataBean;
 import io.sugo.services.usergroup.bean.rfm.RFMDimensions;
-import io.sugo.services.usergroup.bean.rfm.TindexDataBean;
 import io.sugo.services.usergroup.bean.rfm.ScanQueryResult;
 import io.sugo.services.usergroup.model.rfm.RFMModel;
 import io.sugo.services.usergroup.query.GroupByQuery;
@@ -24,7 +24,7 @@ public class RFMUtil {
     private static final Logger log = new Logger(RFMUtil.class);
 
 
-    public static Query rewriteTindexQuery(RFMDimensions rfmDimensions, TindexDataBean tindexDataBean) {
+    public static Query rewriteTindexQuery(RFMDimensions rfmDimensions, DataBean tindexDataBean) {
         Query query = tindexDataBean.getQuery();
         Preconditions.checkState(query instanceof GroupByQuery, "wtf! not found groupBy query for tindex.");
         GroupByQuery groupByQuery = (GroupByQuery) query;

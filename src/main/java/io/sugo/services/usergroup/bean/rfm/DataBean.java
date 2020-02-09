@@ -7,17 +7,16 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import io.sugo.services.usergroup.query.Query;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl= TindexDataBean.class)
-@JsonSubTypes(value = {
-        @JsonSubTypes.Type(name = "uindex", value = UindexDataBean.class),
-        @JsonSubTypes.Type(name = "tindex", value = TindexDataBean.class)
-})
-public abstract class DataBean {
+public class DataBean {
     protected Query query;      //maybe scanQuery or groupByQuery for rfm
     protected String broker;
+    public  String type;
+    public static final String TINDEX_TYPE = "tindex";
+    public static final String UINDEX_TYPE = "uindex";
 
     @JsonCreator
     public DataBean(
+            @JsonProperty("type") String type,
             @JsonProperty("broker") String broker,
             @JsonProperty("query") Query query)
     {
@@ -25,6 +24,7 @@ public abstract class DataBean {
         Preconditions.checkNotNull(broker, "broker can not be null.");
         this.query = query;
         this.broker = broker;
+        this.type = type;
     }
 
     @JsonProperty
@@ -38,6 +38,8 @@ public abstract class DataBean {
     }
 
     @JsonProperty
-    public abstract String getType();
+    public String getType(){
+        return type;
+    }
 
 }

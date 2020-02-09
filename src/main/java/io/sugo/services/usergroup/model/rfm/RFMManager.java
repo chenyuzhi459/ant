@@ -7,8 +7,6 @@ import com.metamx.common.logger.Logger;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.utils.RFMUtil;
 import io.sugo.services.usergroup.bean.rfm.DataBean;
-import io.sugo.services.usergroup.bean.rfm.TindexDataBean;
-import io.sugo.services.usergroup.bean.rfm.UindexDataBean;
 import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,9 +88,9 @@ public class RFMManager {
     private List<RFMModel> fetchModelData(RFMRequestBean requestBean){
         List<DataBean> dataSet = requestBean.getDataSet();
         Preconditions.checkState(dataSet.size() <=2, "dataSet size can not beyond 2" );
-        TindexDataBean tindexDataBean = (TindexDataBean) dataSet.stream().filter(d -> d.getType().equals(TindexDataBean.TYPE))
+        DataBean tindexDataBean =  dataSet.stream().filter(d -> d.getType().equals(DataBean.TINDEX_TYPE))
                 .findFirst().orElse(null);
-        UindexDataBean uindexDataBean = (UindexDataBean) dataSet.stream().filter(d -> d.getType().equals(UindexDataBean.TYPE))
+        DataBean uindexDataBean =  dataSet.stream().filter(d -> d.getType().equals(DataBean.UINDEX_TYPE))
                 .findFirst().orElse(null);
         Preconditions.checkNotNull(tindexDataBean, "can not found TindexDataBean from dataSet" );
 

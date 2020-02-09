@@ -1,9 +1,7 @@
 package io.sugo.services.usergroup.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -15,11 +13,7 @@ import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.*;
 import io.sugo.server.http.Configure;
-import io.sugo.server.http.resource.UserGroupResource;
 import io.sugo.services.cache.Caches;
-import io.sugo.services.hive.SQLManager;
-import io.sugo.services.usergroup.OperationResult;
-import io.sugo.services.usergroup.UserGroupHelper;
 import io.sugo.services.usergroup.bean.rfm.CustomRFMParams;
 import io.sugo.services.usergroup.bean.rfm.DefaultRFMParams;
 import io.sugo.services.usergroup.bean.rfm.RFMParams;
@@ -139,6 +133,10 @@ public class ModelManager implements AntService {
 
                 Object result = handleRequest(requestBean);
                 log.info("finish request, id:  " + id);
+                String callBackUrl = requestBean.getCallbackUrl();
+                if(callBackUrl != null){
+                    HttpClinetUtil.post(callBackUrl, this.jsonMapper.writeValueAsString(result));
+                }
                 RESULT_MAP.put(id, result);
 //                this.doMultiUserGroupOperationV2(requestBean);
             }

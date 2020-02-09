@@ -1,17 +1,9 @@
 package io.sugo.server.http.resource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
-import io.sugo.common.guice.annotations.Json;
-import io.sugo.services.usergroup.bean.rfm.CustomRFMParams;
-import io.sugo.services.usergroup.bean.rfm.DefaultRFMParams;
-import io.sugo.services.usergroup.bean.rfm.RFMParams;
 import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
 import io.sugo.services.usergroup.model.ModelManager;
-import io.sugo.services.usergroup.model.rfm.QuantileModel;
-import io.sugo.services.usergroup.model.rfm.RFMManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,7 +11,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/ant/model/rfm")
+@Path("/ant/model")
 public class RFMResource {
     private static final Logger log = LogManager.getLogger(RFMResource.class);
     private final ModelManager modelManager;
@@ -30,7 +22,7 @@ public class RFMResource {
     }
 
     @POST
-//    @Path("/default")
+    @Path("/rfm")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getDefaultQuantileModel(final RFMRequestBean requestBean) {
@@ -75,30 +67,6 @@ public class RFMResource {
 //            String queryStr = rfmDto.buildQuery();
 //            QuantileModel quantileModel = rfmManager.getDefaultQuantileModel(queryStr,
 //                    rfmDto.getR(), rfmDto.getF(), rfmDto.getM());
-//            return Response.ok(quantileModel).header("Access-Control-Allow-Origin", "*").build();
-//        } catch (Throwable e) {
-//            return Response.serverError().entity(e.getMessage()).header("Access-Control-Allow-Origin", "*").build();
-//        }
-//    }
-//
-//    @GET
-//    @Path("/slice/customized/{param}")
-//    @Produces({MediaType.APPLICATION_JSON})
-//    @Consumes({MediaType.APPLICATION_JSON})
-//    public Response sliceCustomized(@PathParam("param") final String param) {
-//        String newParam = new String(Base64.getDecoder().decode(param));
-//        CustomizedRFMDto rfmDto = null;
-//        try {
-//            rfmDto = jsonMapper.readValue(newParam, CustomizedRFMDto.class);
-//        } catch (IOException ignore) {
-//        }
-//
-//        check(rfmDto);
-//        try {
-//            String queryStr = rfmDto.buildQuery();
-//            QuantileModel quantileModel = rfmManager.getCustomizedQuantileModel(queryStr,
-//                    rfmDto.getRq(), rfmDto.getFq(), rfmDto.getMq());
-//
 //            return Response.ok(quantileModel).header("Access-Control-Allow-Origin", "*").build();
 //        } catch (Throwable e) {
 //            return Response.serverError().entity(e.getMessage()).header("Access-Control-Allow-Origin", "*").build();
