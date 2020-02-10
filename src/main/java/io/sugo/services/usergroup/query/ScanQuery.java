@@ -45,7 +45,6 @@ public class ScanQuery implements Query{
             @JsonProperty("intervals") Object intervals,
             @JsonProperty("filter") Object filter,
             @JsonProperty("context") Map<String, Object> context) {
-        this.queryType = queryType;
         this.dataSource = dataSource;
         this.resultFormat = resultFormat == null ? "compactedList" : resultFormat;
         this.batchSize = batchSize;

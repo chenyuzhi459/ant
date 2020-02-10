@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.sugo.common.redis.RedisDataIOFetcher;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ public class GroupByQuery implements Query {
 	Map filter;
 	String granularity;
 	List dimensions;
-	List aggregations;
+	Collection aggregations;
 	List postAggregations;
 	Map having;
 	Map limitSpec;
@@ -30,7 +31,7 @@ public class GroupByQuery implements Query {
 			@JsonProperty("filter") Map filter,
 			@JsonProperty("granularity") String granularity,
 			@JsonProperty("dimensions") List dimensions,
-			@JsonProperty("aggregations") List aggregations,
+			@JsonProperty("aggregations") Collection aggregations,
 			@JsonProperty("postAggregations") List postAggregations,
 			@JsonProperty("having") Map having,
 			@JsonProperty("limitSpec") Map limitSpec,
@@ -79,7 +80,7 @@ public class GroupByQuery implements Query {
 	}
 
 	@JsonProperty
-	public List getAggregations() {
+	public Collection getAggregations() {
 		return aggregations;
 	}
 
@@ -113,7 +114,7 @@ public class GroupByQuery implements Query {
 		this.dimensions = dimensions;
 	}
 
-	public void setAggregations(List aggregations) {
+	public void setAggregations(Collection aggregations) {
 		this.aggregations = aggregations;
 	}
 }

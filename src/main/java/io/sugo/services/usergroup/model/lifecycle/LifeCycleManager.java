@@ -74,9 +74,9 @@ public class LifeCycleManager {
         if(tindexBehaviorDataBean == null){
             String timeDimension = dimensions.getBuyTimeKey();
             //构造Tindex订单数据的 aggregator
-            List<RFMUtil.Aggregation> aggs = sortedStage.stream()
+            Set<RFMUtil.Aggregation> aggs = sortedStage.stream()
                     .map(s -> s.buildStageAggregation(timeDimension))
-                    .distinct().collect(Collectors.toList());
+                    .distinct().collect(Collectors.toSet());
             aggs.add(stagesSpec.buildHistoryAggregator(timeDimension));
 
             Query q = tindexTradeDatabean.getQuery();
@@ -103,7 +103,7 @@ public class LifeCycleManager {
             //处理tindexTradeDatabean
             String buyTimeKey = dimensions.getBuyTimeKey();
             //构造Tindex订单数据的 aggregator
-            List<RFMUtil.Aggregation> tradeAggs = new ArrayList<>();
+            Set<RFMUtil.Aggregation> tradeAggs = new HashSet<>();
             tradeAggs.add(stagesSpec.buildHistoryAggregator(buyTimeKey));
 
             Query tradeQuery = tindexTradeDatabean.getQuery();
@@ -124,13 +124,13 @@ public class LifeCycleManager {
             //处理tindexBehaviorDataBean
             String behaviorTimeKey = dimensions.getBehaviorTimeKey();
             //构造Tinde行为数据的 aggregator
-            List<RFMUtil.Aggregation> behaviorAggs = sortedStage.stream()
+            Set<RFMUtil.Aggregation> behaviorAggs = sortedStage.stream()
                     .map(s -> s.buildStageAggregation(behaviorTimeKey))
-                    .distinct().collect(Collectors.toList());
+                    .collect(Collectors.toSet());
             Query behaviorQuery = tindexBehaviorDataBean.getQuery();
             Preconditions.checkState(behaviorQuery instanceof GroupByQuery);
             GroupByQuery behaviorGroupByQuery = (GroupByQuery) behaviorQuery;
-            behaviorGroupByQuery.setAggregations(tradeAggs);
+            behaviorGroupByQuery.setAggregations(behaviorAggs);
             rewriteGroupByDimensions(behaviorGroupByQuery);
             List<Map<String, Object>> tindexBehaviorData =  RFMUtil.getTindexData(behaviorGroupByQuery,
                     tindexBehaviorDataBean.getBroker(),
@@ -275,7 +275,7 @@ public class LifeCycleManager {
         PathAnalysisDto.BetweenField betweenField = new PathAnalysisDto.BetweenField();
         betweenField.setDimension(registerTimeKey);
         betweenField.setLower(registerTimeStart);
-        betweenField.setLower(registerTimeEnd);
+        betweenField.setUpper(registerTimeEnd);
         fieldTypes.add(betweenField);
         return andFilter;
     }

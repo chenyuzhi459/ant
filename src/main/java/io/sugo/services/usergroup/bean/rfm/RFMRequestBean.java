@@ -37,7 +37,7 @@ public class RFMRequestBean {
         this.redisConfig = redisConfig;
     }
 
-    @JsonProperty
+    @JsonProperty("datasets")
     public List<DataBean> getDataSet() {
         return dataSet;
     }

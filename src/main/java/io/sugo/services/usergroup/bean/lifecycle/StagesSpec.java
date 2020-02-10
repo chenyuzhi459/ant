@@ -42,7 +42,7 @@ public class StagesSpec {
         PathAnalysisDto.BetweenField betweenField = new PathAnalysisDto.BetweenField();
         betweenField.setDimension(dimension);
         betweenField.setLower(historyStart);
-        betweenField.setLower(historyEnd);
+        betweenField.setUpper(historyEnd);
         fieldTypes.add(betweenField);
 
         return new FilterAggregation(countAgg, andFilter);

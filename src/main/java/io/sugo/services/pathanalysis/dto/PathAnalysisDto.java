@@ -312,6 +312,7 @@ public class PathAnalysisDto {
             super.type = type;
         }
 
+        @JsonProperty
         public List<FieldType> getFields() {
             return fields;
         }

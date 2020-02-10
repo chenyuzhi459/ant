@@ -23,9 +23,9 @@ public class LifeCycleDimensions {
             @JsonProperty("buyTimeKey") String buyTimeKey,
             @JsonProperty("behaviorTimeKey") String behaviorTimeKey)
     {
-        Preconditions.checkNotNull(userIdKey, "userIdKey can not be null.");
+//        Preconditions.checkNotNull(userIdKey, "userIdKey can not be null.");
         Preconditions.checkNotNull(buyTimeKey, "buyTimeKey can not be null.");
-        Preconditions.checkNotNull(behaviorTimeKey, "buyTimebuyAmountKeyAmount can not be null.");
+        Preconditions.checkNotNull(registerTimeKey, "registerTimeKey can not be null.");
         this.userIdKey = userIdKey;
         this.registerTimeKey = registerTimeKey;
         this.buyTimeKey = buyTimeKey;

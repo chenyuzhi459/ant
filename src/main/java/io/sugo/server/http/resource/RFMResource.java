@@ -51,7 +51,8 @@ public class RFMResource {
             List<LifeCycleManager.StageResult> result =  lifeCycleManager.handle(requestBean);
 
             return Response.ok(ImmutableMap.of("requestId", requestBean.getRequestId(),
-                    "status", "success")).build();
+                    "status", "success",
+                "result", result)).build();
         } catch (Throwable e) {
             log.error("add model request to queue error", e);
             return Response.serverError().entity(ImmutableMap.of("status","error","msg", e.getMessage())).build();
