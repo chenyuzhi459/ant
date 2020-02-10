@@ -3,9 +3,11 @@ package io.sugo.common.utils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.metamx.common.logger.Logger;
 import io.sugo.services.usergroup.bean.rfm.DataBean;
 import io.sugo.services.usergroup.bean.rfm.RFMDimensions;
@@ -17,8 +19,11 @@ import io.sugo.services.usergroup.query.ScanQuery;
 import org.apache.logging.log4j.core.util.Throwables;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class RFMUtil {
     private static final Logger log = new Logger(RFMUtil.class);
@@ -57,7 +62,7 @@ public class RFMUtil {
         return query;
     }
 
-    public static List<RFMModel> getTindexData(Query query, String broker, ObjectMapper jsonMapper){
+    public static <T> List<T>  getTindexData(Query query, String broker, ObjectMapper jsonMapper, TypeReference<List<DruidResult<T>>> type){
         Preconditions.checkState(query instanceof  GroupByQuery, "only support groupBy query for tinexDataBean");
         String resultStr = "";
         String queryStr = null;
@@ -71,11 +76,10 @@ public class RFMUtil {
             log.error(e,"Query druid '%s' with parameter '%s' failed: errMsg : %s", url, queryStr, e.getMessage());
             Throwables.rethrow(e);
         }
-
-        final List<RFMModel> rfmModelList = new ArrayList<>();
+        final List<T> rfmModelList = new ArrayList<>();
         try {
             JavaType javaType = jsonMapper.getTypeFactory().constructParametrizedType(List.class, ArrayList.class, DruidResult.class);
-            List<DruidResult> druidResults = jsonMapper.readValue(resultStr, javaType);
+            List<DruidResult<T>> druidResults = jsonMapper.readValue(resultStr, type);
             druidResults.forEach(druidResult -> {
                 rfmModelList.add(druidResult.getEvent());
             });
@@ -131,10 +135,11 @@ public class RFMUtil {
         return userList;
     }
 
-    private static class Dimension {
+    public static class Dimension {
+        public static final String USER_ID = "userId";
         String type = "default";
         String dimension;
-        String outputName = "userId";
+        String outputName = USER_ID;
 
         @JsonProperty
         public String getType() {
@@ -164,7 +169,7 @@ public class RFMUtil {
         }
     }
 
-    private static class Aggregation {
+    public static class Aggregation {
         String name;
         String type;
         String fieldName = "";
@@ -195,20 +200,36 @@ public class RFMUtil {
         public void setFieldName(String fieldName) {
             this.fieldName = fieldName;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Aggregation)) return false;
+            Aggregation that = (Aggregation) o;
+            return Objects.equals(getName(), that.getName()) &&
+                    Objects.equals(getType(), that.getType()) &&
+                    Objects.equals(getFieldName(), that.getFieldName());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getName(), getType(), getFieldName());
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class DruidResult {
-        RFMModel event;
+    public static class DruidResult<T> {
+        T event;
 
         @JsonCreator
         public DruidResult(
-                @JsonProperty("event") RFMModel event) {
+                @JsonProperty("event") T event) {
             this.event = event;
         }
 
-        public RFMModel getEvent() {
+        public T getEvent() {
             return event;
         }
     }
+
 }

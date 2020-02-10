@@ -9,9 +9,9 @@ import com.google.common.base.Preconditions;
 public class LifeCycleDimensions {
     //用户Id维度
     private String userIdKey;
-    //购买时间维度
+    //购买时间维度--计算订单成交行为
     private String buyTimeKey;
-    //行为时间维度
+    //行为时间维度--计算交互行为
     private String behaviorTimeKey;
     //注册时间维度
     private String registerTimeKey;

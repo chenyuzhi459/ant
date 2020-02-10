@@ -1,5 +1,6 @@
 package io.sugo.services.usergroup.model.rfm;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
@@ -97,7 +98,8 @@ public class RFMManager {
         List<RFMModel> rfmModelList = RFMUtil.getTindexData(
                 RFMUtil.rewriteTindexQuery(requestBean.getDimensions(), tindexDataBean),
                 tindexDataBean.getBroker(),
-                jsonMapper);
+                jsonMapper,
+                new TypeReference<List<RFMUtil.DruidResult<RFMModel>>>() {});
         if(uindexDataBean != null){
             List<String> uindexData = RFMUtil.getUindexData(
                     uindexDataBean.getQuery(),

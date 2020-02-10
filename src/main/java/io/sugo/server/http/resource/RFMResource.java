@@ -2,23 +2,28 @@ package io.sugo.server.http.resource;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import io.sugo.services.usergroup.bean.lifecycle.LifeCycleRequestBean;
 import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
 import io.sugo.services.usergroup.model.ModelManager;
+import io.sugo.services.usergroup.model.lifecycle.LifeCycleManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Path("/ant/model")
 public class RFMResource {
     private static final Logger log = LogManager.getLogger(RFMResource.class);
     private final ModelManager modelManager;
+    private final LifeCycleManager lifeCycleManager;
 
     @Inject
-    public RFMResource(ModelManager modelManager) {
+    public RFMResource(ModelManager modelManager, LifeCycleManager lifeCycleManager) {
         this.modelManager = modelManager;
+        this.lifeCycleManager =  lifeCycleManager;
     }
 
     @POST
@@ -28,6 +33,22 @@ public class RFMResource {
     public Response getDefaultQuantileModel(final RFMRequestBean requestBean) {
         try {
             modelManager.addToRedisQueue(requestBean);
+
+            return Response.ok(ImmutableMap.of("requestId", requestBean.getRequestId(),
+                    "status", "success")).build();
+        } catch (Throwable e) {
+            log.error("add model request to queue error", e);
+            return Response.serverError().entity(ImmutableMap.of("status","error","msg", e.getMessage())).build();
+        }
+    }
+
+    @POST
+    @Path("/lifeCycle")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response handlLifeCycle(final LifeCycleRequestBean requestBean) {
+        try {
+            List<LifeCycleManager.StageResult> result =  lifeCycleManager.handle(requestBean);
 
             return Response.ok(ImmutableMap.of("requestId", requestBean.getRequestId(),
                     "status", "success")).build();

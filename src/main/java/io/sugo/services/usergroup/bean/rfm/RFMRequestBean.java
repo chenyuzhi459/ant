@@ -5,9 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisDataIOFetcher;
-import io.sugo.services.usergroup.bean.rfm.DataBean;
-import io.sugo.services.usergroup.bean.rfm.RFMDimensions;
-import io.sugo.services.usergroup.bean.rfm.RFMParams;
 
 import java.util.List;
 
@@ -22,7 +19,7 @@ public class RFMRequestBean {
 
     @JsonCreator
     public RFMRequestBean(
-            @JsonProperty("dataSet") List<DataBean> dataSet,
+            @JsonProperty("datasets") List<DataBean> dataSet,
             @JsonProperty("dimensions") RFMDimensions dimensions,
             @JsonProperty("params") RFMParams params,
             @JsonProperty("redisConfig") RedisDataIOFetcher redisConfig,

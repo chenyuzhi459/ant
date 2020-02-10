@@ -16,6 +16,8 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import static io.sugo.common.utils.Constants.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -200,13 +202,13 @@ public class PathAnalysisDto {
         // Set filters
         if (this.filters != null) {
             if (filters instanceof List) { // Compatible with previous versions
-                Filter filter = new Filter();
-                query.setFilter(filter);
+                AndFilter andFilter = new AndFilter();
+                query.setFilter(andFilter);
                 if (this.pages != null && !this.pages.isEmpty()) {
                     InField inField = new InField();
                     inField.setDimension(this.getDimension().getPageName());
                     inField.setValues(this.pages);
-                    filter.getFields().add(inField);
+                    andFilter.getFields().add(inField);
                 }
 
                 try {
@@ -226,7 +228,7 @@ public class PathAnalysisDto {
                         }
                     });
                     if (dimFilters.size() > 0) {
-                        filter.getFields().addAll(buildFilterFields(dimFilters));
+                        andFilter.getFields().addAll(buildFilterFields(dimFilters));
                     }
                 } catch (Exception e) {
                     log.error(String.format("Deserialize path analysis filters %s failed: %s", filters.toString(), e.getMessage()));
@@ -302,19 +304,12 @@ public class PathAnalysisDto {
         }
     }
 
-    private static class Filter {
+    public static class AndFilter extends FieldType {
         String type = "and";
         List<FieldType> fields = new ArrayList<>();
 
-        public Filter() {
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
+        public AndFilter() {
+            super.type = type;
         }
 
         public List<FieldType> getFields() {
@@ -324,11 +319,26 @@ public class PathAnalysisDto {
         public void setFields(List<FieldType> fields) {
             this.fields = fields;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof AndFilter)) return false;
+            AndFilter andFilter = (AndFilter) o;
+            return Objects.equals(type, andFilter.type) &&
+                    Objects.equals(fields, andFilter.fields);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(type, fields);
+        }
     }
 
     private static class Field extends FieldType {
         String dimension;
 
+        @JsonProperty
         public String getDimension() {
             return dimension;
         }
@@ -338,9 +348,10 @@ public class PathAnalysisDto {
         }
     }
 
-    private static class FieldType {
+    public static class FieldType {
         String type;
 
+        @JsonProperty
         public String getType() {
             return type;
         }
@@ -349,6 +360,38 @@ public class PathAnalysisDto {
             this.type = type;
         }
     }
+
+    private static class LuceneField extends FieldType {
+        public LuceneField() {
+            super.type = "lucene";
+        }
+
+        String query;
+
+        @JsonProperty
+        public String getQuery() {
+            return query;
+        }
+
+        public void setQuery(String query) {
+            this.query = query;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof LuceneField)) return false;
+            LuceneField that = (LuceneField) o;
+            return Objects.equals(type, that.type) &&
+                    Objects.equals(query, that.query);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(type, query);
+        }
+    }
+
 
     private static class EqualField extends Field {
         public EqualField() {
@@ -380,6 +423,42 @@ public class PathAnalysisDto {
 
         public void setField(EqualField field) {
             this.field = field;
+        }
+    }
+
+    public static class NotNullField extends FieldType {
+        public NotNullField() {
+            super.type = "not";
+            field = new LuceneField();
+        }
+
+        LuceneField field;
+
+        @JsonProperty
+        public LuceneField getField() {
+            return field;
+        }
+
+        public void setField(LuceneField field) {
+            this.field = field;
+        }
+
+        public void setDimension(String dimension){
+            this.field.setQuery(String.format("(*:* NOT %s:*)", dimension));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof NotNullField)) return false;
+            NotNullField that = (NotNullField) o;
+            return Objects.equals(type, that.type) &&
+                    Objects.equals(field, that.field);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(type, field);
         }
     }
 
@@ -464,10 +543,11 @@ public class PathAnalysisDto {
         }
     }
 
-    private static class BetweenField extends BoundField {
+    public static class BetweenField extends BoundField {
         Object lower;
         Object upper;
 
+        @JsonProperty
         public Object getLower() {
             return lower;
         }
@@ -476,12 +556,29 @@ public class PathAnalysisDto {
             this.lower = lower;
         }
 
+        @JsonProperty
         public Object getUpper() {
             return upper;
         }
 
         public void setUpper(Object upper) {
             this.upper = upper;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof BetweenField)) return false;
+            BetweenField that = (BetweenField) o;
+            return Objects.equals(type, that.type) &&
+                    Objects.equals(dimension, that.dimension) &&
+                    Objects.equals(lower, that.lower) &&
+                    Objects.equals(upper, that.upper);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(type, dimension, lower, upper);
         }
     }
 
@@ -506,7 +603,7 @@ public class PathAnalysisDto {
         }
     }
 
-    private static class BoundField extends Field {
+    public static class BoundField extends Field {
         public BoundField() {
             super.type = "bound";
         }
