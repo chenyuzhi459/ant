@@ -62,7 +62,7 @@ public class LifeCycleRequestBean implements ModelRequest {
         return callbackUrl;
     }
 
-    @JsonProperty
+    @JsonProperty("type")
     public String getType() {
         return TYPE;
     }

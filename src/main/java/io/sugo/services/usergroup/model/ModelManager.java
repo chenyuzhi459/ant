@@ -1,37 +1,26 @@
 package io.sugo.services.usergroup.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Inject;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisClientWrapper;
-import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.RedisInfo;
-import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.*;
 import io.sugo.server.http.Configure;
 import io.sugo.services.cache.Caches;
 import io.sugo.services.usergroup.bean.ModelRequest;
 import io.sugo.services.usergroup.bean.lifecycle.LifeCycleRequestBean;
-import io.sugo.services.usergroup.bean.rfm.CustomRFMParams;
-import io.sugo.services.usergroup.bean.rfm.DefaultRFMParams;
-import io.sugo.services.usergroup.bean.rfm.RFMParams;
 import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
 import io.sugo.services.usergroup.model.lifecycle.LifeCycleManager;
-import io.sugo.services.usergroup.model.rfm.QuantileModel;
-import io.sugo.services.usergroup.model.rfm.RFMGroup;
 import io.sugo.services.usergroup.model.rfm.RFMManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.mortbay.component.LifeCycle;
 
 import javax.inject.Named;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static io.sugo.common.utils.Constants.SYSTEM_PROPS;
@@ -137,7 +126,7 @@ public class ModelManager implements AntService {
                 String id = requestBean.getRequestId();
                 log.info(String.format("found model request, id: %s", id ));
 
-                Object result = handleRequest2(requestBean);
+                Object result = handleRequest(requestBean);
                 log.info("finish request, id:  " + id);
                 RESULT_MAP.put(id, result);
                 String callBackUrl = requestBean.getCallbackUrl();
@@ -154,7 +143,7 @@ public class ModelManager implements AntService {
 
     }
 
-    private Object handleRequest2(ModelRequest request){
+    private Object handleRequest(ModelRequest request){
         if(request instanceof RFMRequestBean){
             return rfmManager.handle((RFMRequestBean)request);
         }else if(request instanceof LifeCycleRequestBean){
