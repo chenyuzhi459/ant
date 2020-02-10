@@ -4,14 +4,17 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.sugo.common.redis.RedisDataIOFetcher;
+import io.sugo.services.usergroup.bean.ModelRequest;
 
 @JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
-public class LifeCycleRequestBean {
+public class LifeCycleRequestBean implements ModelRequest {
+    public static final String TYPE = "lifeCycle";
     private String requestId;
     private DataSpec dataSpec;
     private LifeCycleDimensions dimensions;
     private StagesSpec stagesSpec;
     private RedisDataIOFetcher redisConfig;
+    private String callbackUrl;
 
     @JsonCreator
     public LifeCycleRequestBean(
@@ -19,12 +22,14 @@ public class LifeCycleRequestBean {
             @JsonProperty("dataSpec") DataSpec dataSpec,
             @JsonProperty("dimensions") LifeCycleDimensions dimensions,
             @JsonProperty("stagesSpec") StagesSpec stagesSpec,
-            @JsonProperty("redisConfig") RedisDataIOFetcher redisConfig) {
+            @JsonProperty("redisConfig") RedisDataIOFetcher redisConfig,
+            @JsonProperty("callbackUrl") String callbackUrl) {
         this.requestId = requestId;
         this.dataSpec = dataSpec;
         this.dimensions = dimensions;
         this.stagesSpec = stagesSpec;
         this.redisConfig = redisConfig;
+        this.callbackUrl = callbackUrl;
     }
 
     @JsonProperty
@@ -47,7 +52,18 @@ public class LifeCycleRequestBean {
         return stagesSpec;
     }
 
+    @JsonProperty
     public RedisDataIOFetcher getRedisConfig() {
         return redisConfig;
+    }
+
+    @JsonProperty
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
+
+    @JsonProperty
+    public String getType() {
+        return TYPE;
     }
 }

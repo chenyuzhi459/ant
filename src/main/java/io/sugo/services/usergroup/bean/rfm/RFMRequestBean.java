@@ -5,11 +5,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisDataIOFetcher;
+import io.sugo.services.usergroup.bean.ModelRequest;
 
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
-public class RFMRequestBean {
+public class RFMRequestBean implements ModelRequest {
+    public static final String TYPE = "rfm";
     private List<DataBean> dataSet;
     private RFMDimensions dimensions;
     private RFMParams params;
@@ -65,5 +67,10 @@ public class RFMRequestBean {
     @JsonProperty
     public RedisDataIOFetcher getRedisConfig() {
         return redisConfig;
+    }
+
+    @JsonProperty
+    public String getType() {
+        return TYPE;
     }
 }

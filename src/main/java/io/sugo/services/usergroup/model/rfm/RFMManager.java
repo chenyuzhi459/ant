@@ -3,12 +3,16 @@ package io.sugo.services.usergroup.model.rfm;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.metamx.common.logger.Logger;
 import io.sugo.common.guice.annotations.Json;
+import io.sugo.common.redis.RedisDataIOFetcher;
+import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.RFMUtil;
-import io.sugo.services.usergroup.bean.rfm.DataBean;
-import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
+import io.sugo.common.utils.UserGroupUtil;
+import io.sugo.services.usergroup.bean.rfm.*;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +25,21 @@ public class RFMManager {
     @Inject
     public RFMManager(@Json ObjectMapper mapper) {
         jsonMapper = mapper;
+    }
+
+    public QuantileModel handle(RFMRequestBean requestBean){
+        RFMParams params = requestBean.getParams();
+        QuantileModel quantileModel = null;
+        if (params instanceof DefaultRFMParams){
+            DefaultRFMParams defaultRFMParams = (DefaultRFMParams)params;
+            quantileModel = this.getDefaultQuantileModel(requestBean, defaultRFMParams.getR(), defaultRFMParams.getF(), defaultRFMParams.getM());
+        }else {
+            CustomRFMParams customRFMParams = (CustomRFMParams)params;
+            quantileModel =  this.getCustomizedQuantileModel(requestBean, customRFMParams.getR(), customRFMParams.getF(), customRFMParams.getM());
+        }
+        splitRFMToUserGroup(requestBean, quantileModel);
+
+        return quantileModel;
     }
 
     public QuantileModel getDefaultQuantileModel(RFMRequestBean requestBean, int r, int f, int m) {
@@ -108,5 +127,22 @@ public class RFMManager {
             rfmModelList = rfmModelList.stream().filter(data -> uindexData.contains(data.getUserId())).collect(Collectors.toList());
         }
         return rfmModelList;
+    }
+
+    private void splitRFMToUserGroup(RFMRequestBean requestBean, QuantileModel quantileModel){
+        RedisDataIOFetcher redisConfig = requestBean.getRedisConfig();
+        UserGroupSerDeserializer userGroupSerDeserializer = new UserGroupSerDeserializer(redisConfig);
+        List<String> userId = null;
+        synchronized (redisConfig){
+            for(RFMGroup group : quantileModel.getGroups()){
+                redisConfig.setGroupId(group.getGroupId());
+                userId = group.getUserIdList();
+                UserGroupUtil.writeDataToRedis(userGroupSerDeserializer, ImmutableSet.copyOf(userId));
+                //释放内存
+                userId.clear();
+                log.info(String.format("write data to usergroup: %s finished.", group.getGroupId()));
+
+            }
+        }
     }
 }

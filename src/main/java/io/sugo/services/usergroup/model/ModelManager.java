@@ -14,15 +14,19 @@ import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.*;
 import io.sugo.server.http.Configure;
 import io.sugo.services.cache.Caches;
+import io.sugo.services.usergroup.bean.ModelRequest;
+import io.sugo.services.usergroup.bean.lifecycle.LifeCycleRequestBean;
 import io.sugo.services.usergroup.bean.rfm.CustomRFMParams;
 import io.sugo.services.usergroup.bean.rfm.DefaultRFMParams;
 import io.sugo.services.usergroup.bean.rfm.RFMParams;
 import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
+import io.sugo.services.usergroup.model.lifecycle.LifeCycleManager;
 import io.sugo.services.usergroup.model.rfm.QuantileModel;
 import io.sugo.services.usergroup.model.rfm.RFMGroup;
 import io.sugo.services.usergroup.model.rfm.RFMManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.mortbay.component.LifeCycle;
 
 import javax.inject.Named;
 import java.util.List;
@@ -55,12 +59,14 @@ public class ModelManager implements AntService {
     private final ObjectMapper jsonMapper;
     private final Caches.RedisClientCache redisClientCache;
     private RFMManager rfmManager;
+    private LifeCycleManager lifeCycleManager;
     public static Map<String, Object> RESULT_MAP = new CapacityMap<>(1);
 
     @Inject
     public ModelManager(@Json ObjectMapper jsonMapper,
                         Caches.RedisClientCache redisClientCache,
-                        RFMManager rfmManager) {
+                        RFMManager rfmManager,
+                        LifeCycleManager lifeCycleManager) {
         log.info("create new ModelManager...");
         this.jsonMapper = jsonMapper;
         this.redisClientCache = redisClientCache;
@@ -71,7 +77,7 @@ public class ModelManager implements AntService {
                 configure.getProperty(SYSTEM_PROPS, REDIS_MASTER_NAME,null),
                 configure.getProperty(SYSTEM_PROPS, REDIS_PASSWORD,null));
         this.rfmManager = rfmManager;
-
+        this.lifeCycleManager = lifeCycleManager;
     }
 
     public void start(){
@@ -123,7 +129,7 @@ public class ModelManager implements AntService {
             systemRedisClient = redisClientCache.getRedisClient(systemRedisInfo);
             String requestBodyStr = null;
             while(( requestBodyStr = systemRedisClient.rpop(QUEUE_REDIS_KEY)) != null){
-                RFMRequestBean requestBean = this.jsonMapper.readValue(requestBodyStr, RFMRequestBean.class);
+                ModelRequest requestBean = this.jsonMapper.readValue(requestBodyStr, ModelRequest.class);
                 if(requestBean == null){
                     return;
                 }
@@ -131,7 +137,7 @@ public class ModelManager implements AntService {
                 String id = requestBean.getRequestId();
                 log.info(String.format("found model request, id: %s", id ));
 
-                Object result = handleRequest(requestBean);
+                Object result = handleRequest2(requestBean);
                 log.info("finish request, id:  " + id);
                 RESULT_MAP.put(id, result);
                 String callBackUrl = requestBean.getCallbackUrl();
@@ -148,39 +154,19 @@ public class ModelManager implements AntService {
 
     }
 
-    private QuantileModel handleRequest(RFMRequestBean requestBean){
-        RFMParams params = requestBean.getParams();
-        QuantileModel quantileModel = null;
-        if (params instanceof DefaultRFMParams){
-            DefaultRFMParams defaultRFMParams = (DefaultRFMParams)params;
-            quantileModel = rfmManager.getDefaultQuantileModel(requestBean, defaultRFMParams.getR(), defaultRFMParams.getF(), defaultRFMParams.getM());
+    private Object handleRequest2(ModelRequest request){
+        if(request instanceof RFMRequestBean){
+            return rfmManager.handle((RFMRequestBean)request);
+        }else if(request instanceof LifeCycleRequestBean){
+            return lifeCycleManager.handle((LifeCycleRequestBean)request);
         }else {
-            CustomRFMParams customRFMParams = (CustomRFMParams)params;
-            quantileModel =  rfmManager.getCustomizedQuantileModel(requestBean, customRFMParams.getR(), customRFMParams.getF(), customRFMParams.getM());
-        }
-        splitRFMToUserGroup(requestBean, quantileModel);
-
-        return quantileModel;
-    }
-
-    private void splitRFMToUserGroup(RFMRequestBean requestBean, QuantileModel quantileModel){
-        RedisDataIOFetcher redisConfig = requestBean.getRedisConfig();
-        UserGroupSerDeserializer userGroupSerDeserializer = new UserGroupSerDeserializer(redisConfig);
-        List<String> userId = null;
-        synchronized (redisConfig){
-            for(RFMGroup group : quantileModel.getGroups()){
-                redisConfig.setGroupId(group.getGroupId());
-                userId = group.getUserIdList();
-                UserGroupUtil.writeDataToRedis(userGroupSerDeserializer, ImmutableSet.copyOf(userId));
-                //释放内存
-                userId.clear();
-                log.info(String.format("write data to usergroup: %s finished.", group.getGroupId()));
-
-            }
+            throw new UnsupportedOperationException();
         }
     }
 
-    public void addToRedisQueue(RFMRequestBean requestBean) throws Exception {
+
+
+    public void addToRedisQueue(ModelRequest requestBean) throws Exception {
         RedisClientWrapper systemRedisClient = null;
         try {
             systemRedisClient = redisClientCache.getRedisClient(systemRedisInfo);
