@@ -1,9 +1,9 @@
 package io.sugo.services.usergroup.model.lifecycle;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.metamx.common.logger.Logger;
 import io.sugo.common.guice.annotations.Json;
@@ -49,10 +49,10 @@ public class LifeCycleManager {
      * @param requestBean
      */
     public List<StageResult> handle(LifeCycleRequestBean requestBean){
-        DataSetSpec datasets = requestBean.getDatasets();
+        DataSpec dataSpec = requestBean.getDataSpec();
         LifeCycleDimensions dimensions = requestBean.getDimensions();
-        StagesSpec stagesSpec = requestBean.getStages();
-        DataBean uindexDataBean = datasets.getUindexDataBean();
+        StagesSpec stagesSpec = requestBean.getStagesSpec();
+        DataBean uindexDataBean = dataSpec.getUindexDataBean();
         ScanQuery uindexScanQuery = (ScanQuery)uindexDataBean.getQuery();
         List<String> uindexAllUser = RFMUtil.getUindexData(uindexScanQuery, uindexDataBean.getBroker(), jsonMapper);
 
@@ -61,9 +61,9 @@ public class LifeCycleManager {
         List<Stage> sortedStage = stages.subList(1, stages.size());
         Preconditions.checkState(sortedStage.size() == 4);
         //交易数据
-        DataBean tindexTradeDatabean = datasets.getTradeDataBean();
+        DataBean tindexTradeDatabean = dataSpec.getTradeDataBean();
         //行为数据
-        DataBean tindexBehaviorDataBean = datasets.getBehaviorDataBean();
+        DataBean tindexBehaviorDataBean = dataSpec.getBehaviorDataBean();
         List<StageResult> results = new ArrayList<>();
 
         //计算一个周期内注册用户
@@ -173,14 +173,17 @@ public class LifeCycleManager {
             this.userCount = userCount;
         }
 
+        @JsonProperty
         public Integer getStageId() {
             return stageId;
         }
 
+        @JsonProperty
         public String getGroupId() {
             return groupId;
         }
 
+        @JsonProperty
         public Integer getUserCount() {
             return userCount;
         }

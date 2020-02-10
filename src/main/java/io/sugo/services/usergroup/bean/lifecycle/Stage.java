@@ -21,8 +21,8 @@ public class Stage {
     public Stage(
             @JsonProperty("stageId") Integer stageId,
             @JsonProperty("name") String name,
-            @JsonProperty("historyRange") RangeInfo historyRange,
-            @JsonProperty("stageRange") RangeInfo stageRange,
+            @JsonProperty("historyAccRange") RangeInfo historyRange,
+            @JsonProperty("stageAccRange") RangeInfo stageRange,
             @JsonProperty("intervalStart") String intervalStart,
             @JsonProperty("intervalEnd") String intervalEnd) {
         this.stageId = stageId;
@@ -68,12 +68,12 @@ public class Stage {
         return stageId;
     }
 
-    @JsonProperty
+    @JsonProperty("historyAccRange")
     public RangeInfo getHistoryRange() {
         return historyRange;
     }
 
-    @JsonProperty
+    @JsonProperty("stageAccRange")
     public RangeInfo getStageRange() {
         return stageRange;
     }

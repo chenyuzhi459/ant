@@ -8,22 +8,22 @@ import io.sugo.common.redis.RedisDataIOFetcher;
 @JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
 public class LifeCycleRequestBean {
     private String requestId;
-    private DataSetSpec datasets;
+    private DataSpec dataSpec;
     private LifeCycleDimensions dimensions;
-    private StagesSpec stages;
+    private StagesSpec stagesSpec;
     private RedisDataIOFetcher redisConfig;
 
     @JsonCreator
     public LifeCycleRequestBean(
             @JsonProperty("requestId") String requestId,
-            @JsonProperty("datasets")  DataSetSpec datasets,
+            @JsonProperty("dataSpec") DataSpec dataSpec,
             @JsonProperty("dimensions") LifeCycleDimensions dimensions,
-            @JsonProperty("stages") StagesSpec stages,
+            @JsonProperty("stagesSpec") StagesSpec stagesSpec,
             @JsonProperty("redisConfig") RedisDataIOFetcher redisConfig) {
         this.requestId = requestId;
-        this.datasets = datasets;
+        this.dataSpec = dataSpec;
         this.dimensions = dimensions;
-        this.stages = stages;
+        this.stagesSpec = stagesSpec;
         this.redisConfig = redisConfig;
     }
 
@@ -33,8 +33,8 @@ public class LifeCycleRequestBean {
     }
 
     @JsonProperty
-    public DataSetSpec getDatasets() {
-        return datasets;
+    public DataSpec getDataSpec() {
+        return dataSpec;
     }
 
     @JsonProperty
@@ -43,8 +43,8 @@ public class LifeCycleRequestBean {
     }
 
     @JsonProperty
-    public StagesSpec getStages() {
-        return stages;
+    public StagesSpec getStagesSpec() {
+        return stagesSpec;
     }
 
     public RedisDataIOFetcher getRedisConfig() {

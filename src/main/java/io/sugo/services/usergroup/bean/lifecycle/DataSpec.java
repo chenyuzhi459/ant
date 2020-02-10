@@ -6,13 +6,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.sugo.services.usergroup.bean.rfm.DataBean;
 
 @JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
-public class DataSetSpec {
+public class DataSpec {
     private DataBean uindexDataBean;
     private DataBean tradeDataBean;
     private DataBean behaviorDataBean;
 
     @JsonCreator
-    public DataSetSpec(
+    public DataSpec(
             @JsonProperty("uindexData") DataBean uindexDataBean,
             @JsonProperty("tradeData") DataBean tradeDataBean,
             @JsonProperty("behaviorData") DataBean behaviorDataBean) {
