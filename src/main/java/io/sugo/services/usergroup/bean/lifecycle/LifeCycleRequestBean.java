@@ -19,7 +19,7 @@ public class LifeCycleRequestBean implements ModelRequest {
     @JsonCreator
     public LifeCycleRequestBean(
             @JsonProperty("requestId") String requestId,
-            @JsonProperty("dataSpec") DataSpec dataSpec,
+            @JsonProperty("datasets") DataSpec dataSpec,
             @JsonProperty("dimensions") LifeCycleDimensions dimensions,
             @JsonProperty("stagesSpec") StagesSpec stagesSpec,
             @JsonProperty("redisConfig") RedisDataIOFetcher redisConfig,

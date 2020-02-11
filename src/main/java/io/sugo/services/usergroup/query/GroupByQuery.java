@@ -117,4 +117,8 @@ public class GroupByQuery implements Query {
 	public void setAggregations(Collection aggregations) {
 		this.aggregations = aggregations;
 	}
+
+	public void setLimitSpec(Map limitSpec) {
+		this.limitSpec = limitSpec;
+	}
 }

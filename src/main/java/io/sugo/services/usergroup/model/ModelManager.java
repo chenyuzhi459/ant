@@ -1,5 +1,6 @@
 package io.sugo.services.usergroup.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
@@ -127,11 +128,12 @@ public class ModelManager implements AntService {
                 log.info(String.format("found model request, id: %s", id ));
 
                 Object result = handleRequest(requestBean);
+                ModelResult modelResult = new ModelResult(id, result);
                 log.info("finish request, id:  " + id);
                 RESULT_MAP.put(id, result);
                 String callBackUrl = requestBean.getCallbackUrl();
                 if(callBackUrl != null){
-                    HttpClinetUtil.post(callBackUrl, this.jsonMapper.writeValueAsString(result));
+                    HttpClinetUtil.post(callBackUrl, this.jsonMapper.writeValueAsString(modelResult));
                     log.info("finished callback for request, id: " + id);
                 }
 //                this.doMultiUserGroupOperationV2(requestBean);
@@ -169,5 +171,25 @@ public class ModelManager implements AntService {
 
     public Object fetchResult(String requstId){
         return RESULT_MAP.get(requstId);
+    }
+
+    private class ModelResult{
+        private String requestId;
+        private Object data;
+
+        public ModelResult(String requestId, Object data) {
+            this.requestId = requestId;
+            this.data = data;
+        }
+
+        @JsonProperty
+        public String getRequestId() {
+            return requestId;
+        }
+
+        @JsonProperty
+        public Object getData() {
+            return data;
+        }
     }
 }
