@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static io.sugo.common.utils.RFMUtil.Dimension.USER_ID;
 import static io.sugo.services.usergroup.bean.lifecycle.StagesSpec.HISTORY_AGG_OUTPUT_NAME;
+import static io.sugo.services.usergroup.model.rfm.QuantileModel.PERCENT_FORMAT;
 
 public class LifeCycleManager {
     private static final Logger log = new Logger(LifeCycleManager.class);
@@ -71,6 +72,7 @@ public class LifeCycleManager {
                 buildRegisterFilter(stage1.getIntervalStart(), stage1.getIntervalEnd(), dimensions.getRegisterTimeKey());
         uindexScanQuery.setFilter(registerFilter);
         List<String> uindexRegisterUser = RFMUtil.getUindexData(uindexScanQuery, uindexDataBean.getBroker(), jsonMapper);
+        Long totalUserCount = 0L;
         if(tindexBehaviorDataBean == null){
             String timeDimension = dimensions.getBuyTimeKey();
             //构造Tindex订单数据的 aggregator
@@ -92,12 +94,16 @@ public class LifeCycleManager {
 
             //处理stage1
             Set<String> firstStageUsers = handleFirstStage(stage1, uindexRegisterUser, tindexTradeData);
+            //尽快释放uindexRegisterUser内存
+            uindexRegisterUser.clear();
             results.add(writeStageDataToUserGroup(stage1, requestBean, firstStageUsers));
+            totalUserCount += firstStageUsers.size();
 
             Set<String> stageUsers;
             for(Stage stage: sortedStage){
                 stageUsers = handleCommonStage(stage, uindexAllUser,timeDimension, tindexTradeData);
                 results.add(writeStageDataToUserGroup(stage, requestBean, stageUsers));
+                totalUserCount += stageUsers.size();
             }
         } else {
             //处理tindexTradeDatabean
@@ -119,7 +125,10 @@ public class LifeCycleManager {
 
             //处理stage1
             Set<String> firstStageUsers = handleFirstStage(stage1, uindexRegisterUser, tindexTradeData);
+            //尽快释放uindexRegisterUser内存
+            uindexRegisterUser.clear();
             results.add(writeStageDataToUserGroup(stage1, requestBean, firstStageUsers));
+            totalUserCount += firstStageUsers.size();
 
             //处理tindexBehaviorDataBean
             String behaviorTimeKey = dimensions.getBehaviorTimeKey();
@@ -142,9 +151,14 @@ public class LifeCycleManager {
             for(Stage stage: sortedStage){
                 stageUsers = handleCommonStage2(stage, uindexAllUser,behaviorTimeKey, tindexTradeData, tindexBehaviorData);
                 results.add(writeStageDataToUserGroup(stage, requestBean, stageUsers));
+                totalUserCount += stageUsers.size();
             }
 
         }
+        for(StageResult stageResult : results){
+            stageResult.setUserPercent(Double.valueOf(PERCENT_FORMAT.format(stageResult.getUserCount() * 100.0d / totalUserCount)) + "%");
+        }
+
         return results;
 
     }
@@ -166,6 +180,7 @@ public class LifeCycleManager {
         private Integer stageId;
         private String groupId;
         private Integer userCount;
+        private String userPercent;
 
         public StageResult(Integer stageId, String groupId, Integer userCount) {
             this.stageId = stageId;
@@ -188,6 +203,14 @@ public class LifeCycleManager {
             return userCount;
         }
 
+        @JsonProperty
+        public String getUserPercent() {
+            return userPercent;
+        }
+
+        public void setUserPercent(String userPercent) {
+            this.userPercent = userPercent;
+        }
     }
 
     private Set<String> handleFirstStage(Stage stage, List<String> uindexUser, List<Map<String, Object>> tindexTradeData){

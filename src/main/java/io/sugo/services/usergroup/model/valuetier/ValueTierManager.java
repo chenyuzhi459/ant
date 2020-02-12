@@ -27,6 +27,8 @@ import io.sugo.services.usergroup.query.Query;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.sugo.services.usergroup.model.rfm.QuantileModel.PERCENT_FORMAT;
+
 public class ValueTierManager {
     private static final Logger log = new Logger(ValueTierManager.class);
     private static final String AGGREGATOR_OUTPUT_NAME = "totalAmount";
@@ -65,12 +67,16 @@ public class ValueTierManager {
         List<ValueTierResult> filterResult = tindexData.stream()
                 .filter(r -> uindexUser.contains(r.getUserId())).collect(Collectors.toList());
         Map<Integer, Set<String>> groupData = this.doQuantile(filterResult, quantilePoins, valueTiers);
+        Integer totalUser = groupData.values().stream().map(Set::size).reduce((a, b) -> a + b).orElse(0);
         List<LifeCycleManager.StageResult> results = new ArrayList<>();
         groupData.forEach((k, v) ->{
             ValueTier valueTier = valueTiers.stream().filter(s -> k.equals(s.getId())).findFirst().orElse(null);
             results.add(this.writeValueTierDataToUserGroup(valueTier, requestBean, v));
         });
 
+        for(LifeCycleManager.StageResult stageResult : results){
+            stageResult.setUserPercent(Double.valueOf(PERCENT_FORMAT.format(stageResult.getUserCount() * 100.0d / totalUser)) + "%");
+        }
         return results;
     }
 
