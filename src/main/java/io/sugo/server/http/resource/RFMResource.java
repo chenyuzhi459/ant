@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import io.sugo.services.usergroup.bean.lifecycle.LifeCycleRequestBean;
 import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
+import io.sugo.services.usergroup.bean.valuetier.ValueTierRequestBean;
 import io.sugo.services.usergroup.model.ModelManager;
 import io.sugo.services.usergroup.model.lifecycle.LifeCycleManager;
+import io.sugo.services.usergroup.model.valuetier.ValueTierManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,12 +20,12 @@ import java.util.List;
 public class RFMResource {
     private static final Logger log = LogManager.getLogger(RFMResource.class);
     private final ModelManager modelManager;
-    private final LifeCycleManager lifeCycleManager;
+    private final ValueTierManager valueTierManager;
 
     @Inject
-    public RFMResource(ModelManager modelManager, LifeCycleManager lifeCycleManager) {
+    public RFMResource(ModelManager modelManager, ValueTierManager valueTierManager) {
         this.modelManager = modelManager;
-        this.lifeCycleManager =  lifeCycleManager;
+        this.valueTierManager = valueTierManager;
     }
 
     @POST
@@ -53,6 +55,24 @@ public class RFMResource {
             modelManager.addToRedisQueue(requestBean);
             return Response.ok(ImmutableMap.of("requestId", requestBean.getRequestId(),
                     "status", "success")).build();
+        } catch (Throwable e) {
+            log.error("add model request to queue error", e);
+            return Response.serverError().entity(ImmutableMap.of("status","error","msg", e.getMessage())).build();
+        }
+    }
+
+    @POST
+    @Path("/valueTier")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response handValueTier(final ValueTierRequestBean requestBean) {
+        try {
+            List<LifeCycleManager.StageResult> result =  valueTierManager.handle(requestBean);
+
+//            modelManager.addToRedisQueue(requestBean);
+            return Response.ok(ImmutableMap.of("requestId", requestBean.getRequestId(),
+                    "status", "success",
+                    "result", result)).build();
         } catch (Throwable e) {
             log.error("add model request to queue error", e);
             return Response.serverError().entity(ImmutableMap.of("status","error","msg", e.getMessage())).build();

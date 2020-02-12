@@ -11,7 +11,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.metamx.common.logger.Logger;
 import io.sugo.common.guice.annotations.Json;
+import io.sugo.common.redis.RedisDataIOFetcher;
+import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.common.utils.RFMUtil;
+import io.sugo.common.utils.UserGroupUtil;
 import io.sugo.services.pathanalysis.dto.PathAnalysisDto;
 import io.sugo.services.usergroup.bean.lifecycle.FilterAggregation;
 import io.sugo.services.usergroup.bean.rfm.DataBean;
@@ -25,7 +28,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ValueTierManager {
-    private static final Logger log = new Logger(LifeCycleManager.class);
+    private static final Logger log = new Logger(ValueTierManager.class);
     private static final String AGGREGATOR_OUTPUT_NAME = "totalAmount";
     private ObjectMapper jsonMapper;
     @Inject
@@ -33,7 +36,7 @@ public class ValueTierManager {
         jsonMapper = mapper;
     }
 
-    private void handle(ValueTierRequestBean requestBean){
+    public List<LifeCycleManager.StageResult>  handle(ValueTierRequestBean requestBean){
         List<DataBean> datasets = requestBean.getDatasets();
         DataBean uindexDataBean = datasets.stream().filter(s -> s.getType().equals(DataBean.UINDEX_TYPE))
                 .findFirst().orElse(null);
@@ -42,9 +45,9 @@ public class ValueTierManager {
         List<ValueTier> valueTiers = requestBean.getParams();
         List<Double> percents = valueTiers.stream().map(ValueTier::getPercent).collect(Collectors.toList());
         Preconditions.checkState(percents.size() > 0);
-        List<Double> quantilePoins = new ArrayList<>(percents.size() - 1);
 
-        //将[0.5,0.3,0.2]转化为[0.5,0.8];
+        //将[0.5,0.3,0.2]转化为[0.5,0.8,1.0];
+        List<Double> quantilePoins = new ArrayList<>(percents.size() - 1);
         quantilePoins.add(percents.get(0));
         for(int i = 1; i <= quantilePoins.size(); i++){
             quantilePoins.add(quantilePoins.get(i - 1) + percents.get(i));
@@ -59,6 +62,55 @@ public class ValueTierManager {
                 new TypeReference<List<RFMUtil.DruidResult <ValueTierResult>>>() {
                 });
 
+        List<ValueTierResult> filterResult = tindexData.stream()
+                .filter(r -> uindexUser.contains(r.getUserId())).collect(Collectors.toList());
+        Map<Integer, Set<String>> groupData = this.doQuantile(filterResult, quantilePoins, valueTiers);
+        List<LifeCycleManager.StageResult> results = new ArrayList<>();
+        groupData.forEach((k, v) ->{
+            ValueTier valueTier = valueTiers.stream().filter(s -> k.equals(s.getId())).findFirst().orElse(null);
+            results.add(this.writeValueTierDataToUserGroup(valueTier, requestBean, v));
+        });
+
+        return results;
+    }
+
+    private Map<Integer, Set<String>> doQuantile(List<ValueTierResult> data, List<Double> quantilePoins, List<ValueTier> valueTiers){
+        Double sumAmount = data.stream().map(ValueTierResult::getTotalAmount).reduce(Double::sum)
+                .orElse(null);
+        Double accumulator = 0.0;
+        int index = 0;
+        for(ValueTierResult r : data){
+            accumulator = r.getTotalAmount() + accumulator;
+            r.setGroupId(valueTiers.get(index).getId());
+            if((accumulator / sumAmount) > quantilePoins.get(index)){
+                index++;
+            }
+        }
+        Map<Integer, Set<String>> groups = data.stream().collect(Collectors.toMap(
+                ValueTierResult::getGroupId,
+                v -> Collections.singleton(v.getUserId()),
+                (v1, v2) -> {
+                    Set<String> mergeVals = new HashSet<>();
+                    mergeVals.addAll(v1);
+                    mergeVals.addAll(v2);
+                    return mergeVals;
+                })
+        );
+
+        return groups;
+    }
+
+    private LifeCycleManager.StageResult writeValueTierDataToUserGroup(ValueTier valueTier, ValueTierRequestBean requestBean, Set<String> groupData) {
+        RedisDataIOFetcher redisConfig = requestBean.getRedisConfig();
+        UserGroupSerDeserializer userGroupSerDeserializer = new UserGroupSerDeserializer(redisConfig);
+        String groupId = requestBean.getRequestId() + "%" + valueTier.getId() + "_" + valueTier.getName();
+        int userCount;
+        synchronized (redisConfig){
+            redisConfig.setGroupId(groupId);
+            userCount = UserGroupUtil.writeDataToRedis(userGroupSerDeserializer, groupData);
+            log.info(String.format("write data to usergroup: %s finished.", groupId));
+        }
+        return new LifeCycleManager.StageResult(valueTier.getId(), groupId, userCount);
     }
 
     private void rewriteTindexQuery(GroupByQuery query, String buyAmountKey){
@@ -90,12 +142,12 @@ public class ValueTierManager {
     @JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
     private class ValueTierResult {
         private String userId;
-        private Integer totalAmount;
+        private Double totalAmount;
         private Integer groupId;
 
         @JsonCreator
         public ValueTierResult(@JsonProperty("userId") String userId,
-                               @JsonProperty("totalAmount") Integer totalAmount) {
+                               @JsonProperty("totalAmount") Double totalAmount) {
             this.userId = userId;
             this.totalAmount = totalAmount;
         }
@@ -104,7 +156,7 @@ public class ValueTierManager {
             return userId;
         }
 
-        public Integer getTotalAmount() {
+        public Double getTotalAmount() {
             return totalAmount;
         }
 
