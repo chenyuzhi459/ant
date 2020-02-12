@@ -434,6 +434,12 @@ public class UserGroupHelper implements AntService {
 		return result;
 	}
 
+	public void deleteUserGroups(List<RedisDataIOFetcher> toDeletes){
+		for(RedisDataIOFetcher redisDataIOFetcher : toDeletes){
+			redisDataIOFetcher.delete();
+		}
+	}
+
 	private Set<String> getDataWithCache(Map<String, Set<String>> cache, RedisDataIOFetcher fetcher){
 		UserGroupSerDeserializer itemSerDeserializer = new UserGroupSerDeserializer(fetcher);
 		return cache.computeIfAbsent(fetcher.getGroupId(),(k) ->{

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import io.sugo.common.redis.DataIOFetcher;
+import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.utils.ParamChecker;
 import io.sugo.common.utils.StringUtil;
 import io.sugo.common.utils.UserGroupUtil;
@@ -28,6 +30,22 @@ public class UserGroupResource {
 	@Inject
 	public UserGroupResource(UserGroupHelper userGroupHelper) {
 		this.userGroupHelper = userGroupHelper;
+	}
+
+	@DELETE
+	@Path("/delete")
+	@Produces({MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response handleDeleteUserGroup(List<RedisDataIOFetcher> userGroupList) {
+		try {
+			userGroupHelper.deleteUserGroups(userGroupList);
+			return Response.ok(ImmutableMap.of("status", "success")).build();
+		} catch (Exception e){
+			return Response.serverError().entity(
+					ImmutableMap.of("status", "success",
+							"msg", e.getMessage()
+					)).build();
+		}
 	}
 
 

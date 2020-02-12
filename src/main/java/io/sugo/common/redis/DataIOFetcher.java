@@ -18,5 +18,7 @@ public interface DataIOFetcher
 
 	String getGroupId();
 
+	void delete();
+
 	void close();
 }

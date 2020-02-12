@@ -136,21 +136,33 @@ public class RedisDataIOFetcher implements DataIOFetcher {
   @Override
   public void writeBytes(byte[] buf) {
     RedisClientWrapper wrapper = cache.getRedisClient(redisInfo);
-    byte[] dest = new byte[BATCH_SIZE];
-    int srcPos = 0;
-    int length = BATCH_SIZE;
-    int totalSize = buf.length;
-    wrapper.del(groupId);
-    while (srcPos < buf.length) {
-      if (length > totalSize - srcPos) {
-        length = totalSize - srcPos;
-        dest = new byte[length];
+    try {
+      byte[] dest = new byte[BATCH_SIZE];
+      int srcPos = 0;
+      int length = BATCH_SIZE;
+      int totalSize = buf.length;
+      wrapper.del(groupId);
+      while (srcPos < buf.length) {
+        if (length > totalSize - srcPos) {
+          length = totalSize - srcPos;
+          dest = new byte[length];
+        }
+        System.arraycopy(buf, srcPos, dest, 0, length);
+        srcPos += length;
+        wrapper.rpush(groupId, dest);
       }
-      System.arraycopy(buf, srcPos, dest, 0, length);
-      srcPos += length;
-      wrapper.rpush(groupId, dest);
+    } finally {
+      cache.releaseRedisClient(redisInfo, wrapper);
     }
-    cache.releaseRedisClient(redisInfo, wrapper);
+  }
+
+  public void delete(){
+    RedisClientWrapper wrapper = cache.getRedisClient(redisInfo);
+    try {
+      wrapper.del(groupId);
+    }finally {
+      cache.releaseRedisClient(redisInfo, wrapper);
+    }
   }
 
   @Override
