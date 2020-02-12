@@ -21,7 +21,7 @@ public class LifeCycleRequestBean implements ModelRequest {
             @JsonProperty("requestId") String requestId,
             @JsonProperty("datasets") DataSpec dataSpec,
             @JsonProperty("dimensions") LifeCycleDimensions dimensions,
-            @JsonProperty("stagesSpec") StagesSpec stagesSpec,
+            @JsonProperty("params") StagesSpec stagesSpec,
             @JsonProperty("redisConfig") RedisDataIOFetcher redisConfig,
             @JsonProperty("callbackUrl") String callbackUrl) {
         this.requestId = requestId;
@@ -47,7 +47,7 @@ public class LifeCycleRequestBean implements ModelRequest {
         return dimensions;
     }
 
-    @JsonProperty
+    @JsonProperty("params")
     public StagesSpec getStagesSpec() {
         return stagesSpec;
     }
