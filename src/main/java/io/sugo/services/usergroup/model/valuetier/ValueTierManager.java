@@ -67,7 +67,8 @@ public class ValueTierManager {
         List<ValueTierResult> filterResult = tindexData.stream()
                 .filter(r -> uindexUser.contains(r.getUserId())).collect(Collectors.toList());
         Map<Integer, Set<String>> groupData = this.doQuantile(filterResult, quantilePoins, valueTiers);
-        Integer totalUser = groupData.values().stream().map(Set::size).reduce((a, b) -> a + b).orElse(0);
+        //避免0为被除数的问题
+        Integer totalUser = groupData.values().stream().map(Set::size).reduce(Integer::sum).orElse(1);
         List<LifeCycleManager.StageResult> results = new ArrayList<>();
         groupData.forEach((k, v) ->{
             ValueTier valueTier = valueTiers.stream().filter(s -> k.equals(s.getId())).findFirst().orElse(null);

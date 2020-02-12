@@ -155,6 +155,8 @@ public class LifeCycleManager {
             }
 
         }
+        //避免0为被除数的问题
+        totalUserCount = totalUserCount > 0 ? totalUserCount : 1;
         for(StageResult stageResult : results){
             stageResult.setUserPercent(Double.valueOf(PERCENT_FORMAT.format(stageResult.getUserCount() * 100.0d / totalUserCount)) + "%");
         }

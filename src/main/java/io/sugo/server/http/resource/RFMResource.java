@@ -67,12 +67,11 @@ public class RFMResource {
     @Consumes({MediaType.APPLICATION_JSON})
     public Response handValueTier(final ValueTierRequestBean requestBean) {
         try {
-            List<LifeCycleManager.StageResult> result =  valueTierManager.handle(requestBean);
+//            List<LifeCycleManager.StageResult> result =  valueTierManager.handle(requestBean);
 
-//            modelManager.addToRedisQueue(requestBean);
+            modelManager.addToRedisQueue(requestBean);
             return Response.ok(ImmutableMap.of("requestId", requestBean.getRequestId(),
-                    "status", "success",
-                    "result", result)).build();
+                    "status", "success")).build();
         } catch (Throwable e) {
             log.error("add model request to queue error", e);
             return Response.serverError().entity(ImmutableMap.of("status","error","msg", e.getMessage())).build();

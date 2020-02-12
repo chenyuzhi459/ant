@@ -15,8 +15,10 @@ import io.sugo.services.cache.Caches;
 import io.sugo.services.usergroup.bean.ModelRequest;
 import io.sugo.services.usergroup.bean.lifecycle.LifeCycleRequestBean;
 import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
+import io.sugo.services.usergroup.bean.valuetier.ValueTierRequestBean;
 import io.sugo.services.usergroup.model.lifecycle.LifeCycleManager;
 import io.sugo.services.usergroup.model.rfm.RFMManager;
+import io.sugo.services.usergroup.model.valuetier.ValueTierManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -50,13 +52,15 @@ public class ModelManager implements AntService {
     private final Caches.RedisClientCache redisClientCache;
     private RFMManager rfmManager;
     private LifeCycleManager lifeCycleManager;
+    private ValueTierManager valueTierManager;
     public static Map<String, Object> RESULT_MAP = new CapacityMap<>(1);
 
     @Inject
     public ModelManager(@Json ObjectMapper jsonMapper,
                         Caches.RedisClientCache redisClientCache,
                         RFMManager rfmManager,
-                        LifeCycleManager lifeCycleManager) {
+                        LifeCycleManager lifeCycleManager,
+                        ValueTierManager valueTierManager) {
         log.info("create new ModelManager...");
         this.jsonMapper = jsonMapper;
         this.redisClientCache = redisClientCache;
@@ -68,6 +72,7 @@ public class ModelManager implements AntService {
                 configure.getProperty(SYSTEM_PROPS, REDIS_PASSWORD,null));
         this.rfmManager = rfmManager;
         this.lifeCycleManager = lifeCycleManager;
+        this.valueTierManager = valueTierManager;
     }
 
     public void start(){
@@ -150,7 +155,9 @@ public class ModelManager implements AntService {
             return rfmManager.handle((RFMRequestBean)request);
         }else if(request instanceof LifeCycleRequestBean){
             return lifeCycleManager.handle((LifeCycleRequestBean)request);
-        }else {
+        } else if(request instanceof ValueTierRequestBean){
+            return valueTierManager.handle((ValueTierRequestBean)request);
+        } else {
             throw new UnsupportedOperationException();
         }
     }
