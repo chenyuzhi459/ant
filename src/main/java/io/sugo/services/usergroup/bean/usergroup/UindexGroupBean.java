@@ -8,8 +8,8 @@ import com.google.common.base.Preconditions;
 import io.sugo.common.redis.RedisInfo;
 import io.sugo.common.utils.QueryUtil;
 import io.sugo.services.cache.Caches;
-import io.sugo.services.usergroup.query.Query;
-import io.sugo.services.usergroup.query.UserGroupQuery;
+import io.sugo.services.query.Query;
+import io.sugo.services.query.UserGroupQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

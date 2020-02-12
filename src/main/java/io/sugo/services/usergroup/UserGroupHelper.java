@@ -15,7 +15,7 @@ import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.RedisClientWrapper;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.services.usergroup.bean.usergroup.*;
-import io.sugo.services.usergroup.query.UserGroupQuery;
+import io.sugo.services.query.UserGroupQuery;
 import io.sugo.common.guice.annotations.Json;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

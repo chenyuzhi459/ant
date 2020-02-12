@@ -3,7 +3,7 @@ package io.sugo.services.usergroup.bean.usergroup;
 import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.Preconditions;
 import io.sugo.services.usergroup.UserGroupHelper;
-import io.sugo.services.usergroup.query.Query;
+import io.sugo.services.query.Query;
 
 import java.io.Closeable;
 import java.util.Set;

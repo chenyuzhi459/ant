@@ -3,8 +3,14 @@ package io.sugo.services.usergroup.bean.lifecycle;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.sugo.common.utils.RFMUtil;
+import io.sugo.common.utils.ModelUtil;
 import io.sugo.services.pathanalysis.dto.PathAnalysisDto;
+import io.sugo.services.query.aggregator.Aggregation;
+import io.sugo.services.query.aggregator.FilterAggregation;
+import io.sugo.services.query.filter.AndFilter;
+import io.sugo.services.query.filter.BetweenFilter;
+import io.sugo.services.query.filter.FieldType;
+import io.sugo.services.query.filter.NotNullFilter;
 
 import java.util.List;
 
@@ -34,18 +40,18 @@ public class Stage {
     }
 
     public FilterAggregation buildStageAggregation(String dimension){
-        RFMUtil.Aggregation countAgg = new RFMUtil.Aggregation();
+        Aggregation countAgg = new Aggregation();
         countAgg.setName(getAggregatorName(dimension));
         countAgg.setType("lucene_count");
-        PathAnalysisDto.AndFilter andFilter = new PathAnalysisDto.AndFilter();
-        List<PathAnalysisDto.FieldType> fieldTypes = andFilter.getFields();
+        AndFilter andFilter = new AndFilter();
+        List<FieldType> fieldTypes = andFilter.getFields();
         //非null过滤
-        PathAnalysisDto.NotNullField notNullField = new PathAnalysisDto.NotNullField();
+        NotNullFilter notNullField = new NotNullFilter();
         notNullField.setDimension(dimension);
         fieldTypes.add(notNullField);
 
         //时间过滤
-        PathAnalysisDto.BetweenField betweenField = new PathAnalysisDto.BetweenField();
+       BetweenFilter betweenField = new BetweenFilter();
         betweenField.setDimension(dimension);
         betweenField.setLower(intervalStart);
         betweenField.setUpper(intervalEnd);

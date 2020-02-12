@@ -13,16 +13,20 @@ import com.metamx.common.logger.Logger;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.common.utils.RFMUtil;
+import io.sugo.common.utils.ModelUtil;
 import io.sugo.common.utils.UserGroupUtil;
 import io.sugo.services.pathanalysis.dto.PathAnalysisDto;
-import io.sugo.services.usergroup.bean.lifecycle.FilterAggregation;
+import io.sugo.services.query.aggregator.Aggregation;
+import io.sugo.services.query.dimension.Dimension;
+import io.sugo.services.query.aggregator.FilterAggregation;
+import io.sugo.services.query.filter.NotNullFilter;
+import io.sugo.services.query.result.DruidResult;
 import io.sugo.services.usergroup.bean.rfm.DataBean;
 import io.sugo.services.usergroup.bean.valuetier.ValueTier;
 import io.sugo.services.usergroup.bean.valuetier.ValueTierRequestBean;
 import io.sugo.services.usergroup.model.lifecycle.LifeCycleManager;
-import io.sugo.services.usergroup.query.GroupByQuery;
-import io.sugo.services.usergroup.query.Query;
+import io.sugo.services.query.GroupByQuery;
+import io.sugo.services.query.Query;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,14 +58,14 @@ public class ValueTierManager {
         for(int i = 1; i < percents.size(); i++){
             quantilePoins.add(quantilePoins.get(i - 1) + percents.get(i));
         }
-        List<String> uindexUser = RFMUtil.getUindexData(uindexDataBean.getQuery(), uindexDataBean.getBroker(), jsonMapper);
+        List<String> uindexUser = ModelUtil.getUindexData(uindexDataBean.getQuery(), uindexDataBean.getBroker(), jsonMapper);
         Query tindexQuery = tindexDataBean.getQuery();
         Preconditions.checkState(tindexQuery instanceof GroupByQuery);
         this.rewriteTindexQuery((GroupByQuery)tindexQuery, requestBean.getDimensions().getBuyAmountKey());
-        List<ValueTierResult> tindexData =  RFMUtil.getTindexData(tindexQuery,
+        List<ValueTierResult> tindexData =  ModelUtil.getTindexData(tindexQuery,
                 tindexDataBean.getBroker(),
                 jsonMapper,
-                new TypeReference<List<RFMUtil.DruidResult <ValueTierResult>>>() {
+                new TypeReference<List<DruidResult<ValueTierResult>>>() {
                 });
 
         List<ValueTierResult> filterResult = tindexData.stream()
@@ -123,18 +127,18 @@ public class ValueTierManager {
     private void rewriteTindexQuery(GroupByQuery query, String buyAmountKey){
         //重写dimension, 设置outputName
         String groupByDimension = query.getDimensions().get(0).toString();
-        List<RFMUtil.Dimension> dimensions = new ArrayList<>();
-        RFMUtil.Dimension dimension = new RFMUtil.Dimension();
+        List<Dimension> dimensions = new ArrayList<>();
+        Dimension dimension = new Dimension();
         dimension.setDimension(groupByDimension);
         dimensions.add(dimension);
         query.setDimensions(dimensions);
 
         //设置指标
-        RFMUtil.Aggregation countAgg = new RFMUtil.Aggregation();
+        Aggregation countAgg = new Aggregation();
         countAgg.setName(AGGREGATOR_OUTPUT_NAME);
         countAgg.setType("lucene_count");
         //非null过滤
-        PathAnalysisDto.NotNullField notNullField = new PathAnalysisDto.NotNullField();
+        NotNullFilter notNullField = new NotNullFilter();
         notNullField.setDimension(buyAmountKey);
         FilterAggregation filterAggregation = new FilterAggregation(countAgg, notNullField);
         query.setAggregations(Collections.singleton(filterAggregation));

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import io.sugo.services.usergroup.query.GroupByQuery;
-import io.sugo.services.usergroup.query.UserGroupQuery;
+import io.sugo.services.query.GroupByQuery;
+import io.sugo.services.query.UserGroupQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.services.usergroup.query.Query;
+import io.sugo.services.query.Query;
 
 import java.util.HashSet;
 import java.util.Set;

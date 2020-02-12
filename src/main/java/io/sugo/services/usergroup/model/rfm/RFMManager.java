@@ -9,8 +9,9 @@ import com.metamx.common.logger.Logger;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.common.utils.RFMUtil;
+import io.sugo.common.utils.ModelUtil;
 import io.sugo.common.utils.UserGroupUtil;
+import io.sugo.services.query.result.DruidResult;
 import io.sugo.services.usergroup.bean.rfm.*;
 
 import java.util.List;
@@ -114,13 +115,13 @@ public class RFMManager {
                 .findFirst().orElse(null);
         Preconditions.checkNotNull(tindexDataBean, "can not found TindexDataBean from dataSet" );
 
-        List<RFMModel> rfmModelList = RFMUtil.getTindexData(
-                RFMUtil.rewriteTindexQuery(requestBean.getDimensions(), tindexDataBean),
+        List<RFMModel> rfmModelList = ModelUtil.getTindexData(
+                ModelUtil.rewriteTindexQuery(requestBean.getDimensions(), tindexDataBean),
                 tindexDataBean.getBroker(),
                 jsonMapper,
-                new TypeReference<List<RFMUtil.DruidResult<RFMModel>>>() {});
+                new TypeReference<List<DruidResult<RFMModel>>>() {});
         if(uindexDataBean != null){
-            List<String> uindexData = RFMUtil.getUindexData(
+            List<String> uindexData = ModelUtil.getUindexData(
                     uindexDataBean.getQuery(),
                     uindexDataBean.getBroker(),
                     jsonMapper);

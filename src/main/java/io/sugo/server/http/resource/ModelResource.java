@@ -6,7 +6,6 @@ import io.sugo.services.usergroup.bean.lifecycle.LifeCycleRequestBean;
 import io.sugo.services.usergroup.bean.rfm.RFMRequestBean;
 import io.sugo.services.usergroup.bean.valuetier.ValueTierRequestBean;
 import io.sugo.services.usergroup.model.ModelManager;
-import io.sugo.services.usergroup.model.lifecycle.LifeCycleManager;
 import io.sugo.services.usergroup.model.valuetier.ValueTierManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,18 +13,15 @@ import org.apache.logging.log4j.Logger;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 @Path("/ant/model")
-public class RFMResource {
-    private static final Logger log = LogManager.getLogger(RFMResource.class);
+public class ModelResource {
+    private static final Logger log = LogManager.getLogger(ModelResource.class);
     private final ModelManager modelManager;
-    private final ValueTierManager valueTierManager;
 
     @Inject
-    public RFMResource(ModelManager modelManager, ValueTierManager valueTierManager) {
+    public ModelResource(ModelManager modelManager) {
         this.modelManager = modelManager;
-        this.valueTierManager = valueTierManager;
     }
 
     @POST

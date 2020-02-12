@@ -5,7 +5,7 @@ import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
 import io.sugo.services.tag.DataUpdateHelper;
 import io.sugo.services.usergroup.UpdateSpec;
 import io.sugo.services.usergroup.UserGroupHelper;
-import io.sugo.services.usergroup.query.Query;
+import io.sugo.services.query.Query;
 import io.sugo.services.usergroup.parser.Parser;
 
 import java.util.*;

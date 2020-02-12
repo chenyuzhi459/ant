@@ -9,19 +9,26 @@ import com.metamx.common.logger.Logger;
 import io.sugo.common.guice.annotations.Json;
 import io.sugo.common.redis.RedisDataIOFetcher;
 import io.sugo.common.redis.serderializer.UserGroupSerDeserializer;
-import io.sugo.common.utils.RFMUtil;
+import io.sugo.common.utils.ModelUtil;
 import io.sugo.common.utils.UserGroupUtil;
 import io.sugo.services.pathanalysis.dto.PathAnalysisDto;
+import io.sugo.services.query.aggregator.Aggregation;
+import io.sugo.services.query.dimension.Dimension;
+import io.sugo.services.query.filter.AndFilter;
+import io.sugo.services.query.filter.BetweenFilter;
+import io.sugo.services.query.filter.FieldType;
+import io.sugo.services.query.filter.NotNullFilter;
+import io.sugo.services.query.result.DruidResult;
 import io.sugo.services.usergroup.bean.lifecycle.*;
 import io.sugo.services.usergroup.bean.rfm.DataBean;
-import io.sugo.services.usergroup.query.GroupByQuery;
-import io.sugo.services.usergroup.query.Query;
-import io.sugo.services.usergroup.query.ScanQuery;
+import io.sugo.services.query.GroupByQuery;
+import io.sugo.services.query.Query;
+import io.sugo.services.query.ScanQuery;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static io.sugo.common.utils.RFMUtil.Dimension.USER_ID;
+import static io.sugo.services.query.dimension.Dimension.USER_ID;
 import static io.sugo.services.usergroup.bean.lifecycle.StagesSpec.HISTORY_AGG_OUTPUT_NAME;
 import static io.sugo.services.usergroup.model.rfm.QuantileModel.PERCENT_FORMAT;
 
@@ -55,7 +62,7 @@ public class LifeCycleManager {
         StagesSpec stagesSpec = requestBean.getStagesSpec();
         DataBean uindexDataBean = dataSpec.getUindexDataBean();
         ScanQuery uindexScanQuery = (ScanQuery)uindexDataBean.getQuery();
-        List<String> uindexAllUser = RFMUtil.getUindexData(uindexScanQuery, uindexDataBean.getBroker(), jsonMapper);
+        List<String> uindexAllUser = ModelUtil.getUindexData(uindexScanQuery, uindexDataBean.getBroker(), jsonMapper);
 
         List<Stage> stages = stagesSpec.getStages();
         Stage stage1 = stages.get(0);
@@ -68,15 +75,15 @@ public class LifeCycleManager {
         List<StageResult> results = new ArrayList<>();
 
         //计算一个周期内注册用户
-        PathAnalysisDto.FieldType registerFilter =
+        FieldType registerFilter =
                 buildRegisterFilter(stage1.getIntervalStart(), stage1.getIntervalEnd(), dimensions.getRegisterTimeKey());
         uindexScanQuery.setFilter(registerFilter);
-        List<String> uindexRegisterUser = RFMUtil.getUindexData(uindexScanQuery, uindexDataBean.getBroker(), jsonMapper);
+        List<String> uindexRegisterUser = ModelUtil.getUindexData(uindexScanQuery, uindexDataBean.getBroker(), jsonMapper);
         Long totalUserCount = 0L;
         if(tindexBehaviorDataBean == null){
             String timeDimension = dimensions.getBuyTimeKey();
             //构造Tindex订单数据的 aggregator
-            Set<RFMUtil.Aggregation> aggs = sortedStage.stream()
+            Set<Aggregation> aggs = sortedStage.stream()
                     .map(s -> s.buildStageAggregation(timeDimension))
                     .distinct().collect(Collectors.toSet());
             aggs.add(stagesSpec.buildHistoryAggregator(timeDimension));
@@ -86,10 +93,10 @@ public class LifeCycleManager {
             GroupByQuery groupByQuery = (GroupByQuery) q;
             groupByQuery.setAggregations(aggs);
             rewriteGroupByDimensions(groupByQuery);
-            List<Map<String, Object>> tindexTradeData =  RFMUtil.getTindexData(groupByQuery,
+            List<Map<String, Object>> tindexTradeData =  ModelUtil.getTindexData(groupByQuery,
                     tindexTradeDatabean.getBroker(),
                     jsonMapper,
-                    new TypeReference<List<RFMUtil.DruidResult<Map<String, Object>>>>() {
+                    new TypeReference<List<DruidResult<Map<String, Object>>>>() {
                     });
 
             //处理stage1
@@ -109,7 +116,7 @@ public class LifeCycleManager {
             //处理tindexTradeDatabean
             String buyTimeKey = dimensions.getBuyTimeKey();
             //构造Tindex订单数据的 aggregator
-            Set<RFMUtil.Aggregation> tradeAggs = new HashSet<>();
+            Set<Aggregation> tradeAggs = new HashSet<>();
             tradeAggs.add(stagesSpec.buildHistoryAggregator(buyTimeKey));
 
             Query tradeQuery = tindexTradeDatabean.getQuery();
@@ -117,10 +124,10 @@ public class LifeCycleManager {
             GroupByQuery tradeGroupByQuery = (GroupByQuery) tradeQuery;
             tradeGroupByQuery.setAggregations(tradeAggs);
             rewriteGroupByDimensions(tradeGroupByQuery);
-            List<Map<String, Object>> tindexTradeData =  RFMUtil.getTindexData(tradeGroupByQuery,
+            List<Map<String, Object>> tindexTradeData =  ModelUtil.getTindexData(tradeGroupByQuery,
                     tindexTradeDatabean.getBroker(),
                     jsonMapper,
-                    new TypeReference<List<RFMUtil.DruidResult<Map<String, Object>>>>() {
+                    new TypeReference<List<DruidResult<Map<String, Object>>>>() {
                     });
 
             //处理stage1
@@ -133,7 +140,7 @@ public class LifeCycleManager {
             //处理tindexBehaviorDataBean
             String behaviorTimeKey = dimensions.getBehaviorTimeKey();
             //构造Tinde行为数据的 aggregator
-            Set<RFMUtil.Aggregation> behaviorAggs = sortedStage.stream()
+            Set<Aggregation> behaviorAggs = sortedStage.stream()
                     .map(s -> s.buildStageAggregation(behaviorTimeKey))
                     .collect(Collectors.toSet());
             Query behaviorQuery = tindexBehaviorDataBean.getQuery();
@@ -141,10 +148,10 @@ public class LifeCycleManager {
             GroupByQuery behaviorGroupByQuery = (GroupByQuery) behaviorQuery;
             behaviorGroupByQuery.setAggregations(behaviorAggs);
             rewriteGroupByDimensions(behaviorGroupByQuery);
-            List<Map<String, Object>> tindexBehaviorData =  RFMUtil.getTindexData(behaviorGroupByQuery,
+            List<Map<String, Object>> tindexBehaviorData =  ModelUtil.getTindexData(behaviorGroupByQuery,
                     tindexBehaviorDataBean.getBroker(),
                     jsonMapper,
-                    new TypeReference<List<RFMUtil.DruidResult<Map<String, Object>>>>() {
+                    new TypeReference<List<DruidResult<Map<String, Object>>>>() {
                     });
 
             Set<String> stageUsers;
@@ -280,24 +287,24 @@ public class LifeCycleManager {
 
     private void rewriteGroupByDimensions(GroupByQuery groupByQuery) {
         String groupByDimension = groupByQuery.getDimensions().get(0).toString();
-        List<RFMUtil.Dimension> dimensions = new ArrayList<>();
+        List<Dimension> dimensions = new ArrayList<>();
 
-        RFMUtil.Dimension dimension = new RFMUtil.Dimension();
+        Dimension dimension = new Dimension();
         dimension.setDimension(groupByDimension);
         dimensions.add(dimension);
         groupByQuery.setDimensions(dimensions);
     }
 
-    private PathAnalysisDto.FieldType buildRegisterFilter(String registerTimeStart, String registerTimeEnd ,String registerTimeKey){
-        PathAnalysisDto.AndFilter andFilter = new PathAnalysisDto.AndFilter();
-        List<PathAnalysisDto.FieldType> fieldTypes = andFilter.getFields();
+    private FieldType buildRegisterFilter(String registerTimeStart, String registerTimeEnd ,String registerTimeKey){
+        AndFilter andFilter = new AndFilter();
+        List<FieldType> fieldTypes = andFilter.getFields();
         //非空过滤
-        PathAnalysisDto.NotNullField notNullField = new PathAnalysisDto.NotNullField();
+        NotNullFilter notNullField = new NotNullFilter();
         notNullField.setDimension(registerTimeKey);
         fieldTypes.add(notNullField);
 
         //时间过滤
-        PathAnalysisDto.BetweenField betweenField = new PathAnalysisDto.BetweenField();
+        BetweenFilter betweenField = new BetweenFilter();
         betweenField.setDimension(registerTimeKey);
         betweenField.setLower(registerTimeStart);
         betweenField.setUpper(registerTimeEnd);

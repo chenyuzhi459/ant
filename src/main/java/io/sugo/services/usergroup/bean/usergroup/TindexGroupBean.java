@@ -9,9 +9,9 @@ import io.sugo.services.cache.Caches;
 import io.sugo.services.tag.DataUpdateHelper;
 import io.sugo.services.usergroup.UpdateSpec;
 import io.sugo.services.usergroup.UserGroupHelper;
-import io.sugo.services.usergroup.query.GroupByQuery;
-import io.sugo.services.usergroup.query.Query;
-import io.sugo.services.usergroup.query.UserGroupQuery;
+import io.sugo.services.query.GroupByQuery;
+import io.sugo.services.query.Query;
+import io.sugo.services.query.UserGroupQuery;
 import io.sugo.services.usergroup.parser.Parser;
 
 import java.util.*;

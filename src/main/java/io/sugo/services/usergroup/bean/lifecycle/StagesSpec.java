@@ -3,8 +3,13 @@ package io.sugo.services.usergroup.bean.lifecycle;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.sugo.common.utils.RFMUtil;
+import io.sugo.common.utils.ModelUtil;
 import io.sugo.services.pathanalysis.dto.PathAnalysisDto;
+import io.sugo.services.query.aggregator.Aggregation;
+import io.sugo.services.query.aggregator.FilterAggregation;
+import io.sugo.services.query.filter.AndFilter;
+import io.sugo.services.query.filter.FieldType;
+import io.sugo.services.query.filter.NotNullFilter;
 
 import java.util.Comparator;
 import java.util.List;
@@ -28,13 +33,13 @@ public class StagesSpec {
     }
 
     public FilterAggregation buildHistoryAggregator(String dimension) {
-        RFMUtil.Aggregation countAgg = new RFMUtil.Aggregation();
+        Aggregation countAgg = new Aggregation();
         countAgg.setName(HISTORY_AGG_OUTPUT_NAME);
         countAgg.setType("lucene_count");
-        PathAnalysisDto.AndFilter andFilter = new PathAnalysisDto.AndFilter();
-        List<PathAnalysisDto.FieldType> fieldTypes = andFilter.getFields();
+        AndFilter andFilter = new AndFilter();
+        List<FieldType> fieldTypes = andFilter.getFields();
         //非null过滤
-        PathAnalysisDto.NotNullField notNullField = new PathAnalysisDto.NotNullField();
+        NotNullFilter notNullField = new NotNullFilter();
         notNullField.setDimension(dimension);
         fieldTypes.add(notNullField);
 

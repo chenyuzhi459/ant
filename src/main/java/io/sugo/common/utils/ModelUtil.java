@@ -7,26 +7,25 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.metamx.common.logger.Logger;
+import io.sugo.services.query.aggregator.Aggregation;
+import io.sugo.services.query.dimension.Dimension;
+import io.sugo.services.query.result.DruidResult;
 import io.sugo.services.usergroup.bean.rfm.DataBean;
 import io.sugo.services.usergroup.bean.rfm.RFMDimensions;
 import io.sugo.services.usergroup.bean.rfm.ScanQueryResult;
-import io.sugo.services.usergroup.model.rfm.RFMModel;
-import io.sugo.services.usergroup.query.GroupByQuery;
-import io.sugo.services.usergroup.query.Query;
-import io.sugo.services.usergroup.query.ScanQuery;
+import io.sugo.services.query.GroupByQuery;
+import io.sugo.services.query.Query;
+import io.sugo.services.query.ScanQuery;
 import org.apache.logging.log4j.core.util.Throwables;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
-public class RFMUtil {
-    private static final Logger log = new Logger(RFMUtil.class);
+public class ModelUtil {
+    private static final Logger log = new Logger(ModelUtil.class);
 
 
     public static Query rewriteTindexQuery(RFMDimensions rfmDimensions, DataBean tindexDataBean) {
@@ -133,102 +132,4 @@ public class RFMUtil {
 
         return userList;
     }
-
-    public static class Dimension {
-        public static final String USER_ID = "userId";
-        String type = "default";
-        String dimension;
-        String outputName = USER_ID;
-
-        @JsonProperty
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        @JsonProperty
-        public String getDimension() {
-            return dimension;
-        }
-
-        public void setDimension(String dimension) {
-            this.dimension = dimension;
-        }
-
-        @JsonProperty
-        public String getOutputName() {
-            return outputName;
-        }
-
-        public void setOutputName(String outputName) {
-            this.outputName = outputName;
-        }
-    }
-
-    public static class Aggregation {
-        String name;
-        String type;
-        String fieldName = "";
-
-        @JsonProperty
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        @JsonProperty
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        @JsonProperty
-        public String getFieldName() {
-            return fieldName;
-        }
-
-        public void setFieldName(String fieldName) {
-            this.fieldName = fieldName;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Aggregation)) return false;
-            Aggregation that = (Aggregation) o;
-            return Objects.equals(getName(), that.getName()) &&
-                    Objects.equals(getType(), that.getType()) &&
-                    Objects.equals(getFieldName(), that.getFieldName());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getName(), getType(), getFieldName());
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class DruidResult<T> {
-        T event;
-
-        @JsonCreator
-        public DruidResult(
-                @JsonProperty("event") T event) {
-            this.event = event;
-        }
-
-        public T getEvent() {
-            return event;
-        }
-    }
-
 }

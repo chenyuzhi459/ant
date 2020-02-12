@@ -1,18 +1,19 @@
-package io.sugo.services.usergroup.bean.lifecycle;
+package io.sugo.services.query.aggregator;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.sugo.common.utils.RFMUtil;
 import io.sugo.services.pathanalysis.dto.PathAnalysisDto;
+import io.sugo.services.query.filter.BetweenFilter;
+import io.sugo.services.query.filter.FieldType;
 
 import java.util.Objects;
 
-public class FilterAggregation  extends RFMUtil.Aggregation {
+public class FilterAggregation  extends Aggregation {
     String type = "lucene_filtered" ;
-    RFMUtil.Aggregation aggregator;
+    Aggregation aggregator;
     //周期时间的过滤
-    PathAnalysisDto.FieldType filter;
+   FieldType filter;
 
-    public FilterAggregation(RFMUtil.Aggregation aggregator, PathAnalysisDto.FieldType filter) {
+    public FilterAggregation(Aggregation aggregator,FieldType filter) {
         this.aggregator = aggregator;
         this.filter = filter;
     }
@@ -24,20 +25,20 @@ public class FilterAggregation  extends RFMUtil.Aggregation {
 
 
     @JsonProperty
-    public RFMUtil.Aggregation getAggregator() {
+    public Aggregation getAggregator() {
         return aggregator;
     }
 
-    public void setAggregator(RFMUtil.Aggregation aggregator) {
+    public void setAggregator(Aggregation aggregator) {
         this.aggregator = aggregator;
     }
 
     @JsonProperty
-    public PathAnalysisDto.FieldType getFilter() {
+    public FieldType getFilter() {
         return filter;
     }
 
-    public void setFilter(PathAnalysisDto.BetweenField filter) {
+    public void setFilter(BetweenFilter filter) {
         this.filter = filter;
     }
 

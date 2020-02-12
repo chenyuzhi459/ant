@@ -92,7 +92,7 @@ public class ModelManager implements AntService {
                         }
                     },
                     0,
-                    configure.getInt(SYSTEM_PROPS, CONSUMER_RUN_INTERVAL, 5),
+                    configure.getInt(SYSTEM_PROPS, CONSUMER_RUN_INTERVAL, 30),
                     TimeUnit.SECONDS);
 
             log.info("start consumer for ModelManager...");
