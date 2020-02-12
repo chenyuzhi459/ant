@@ -91,6 +91,6 @@ public class Constants {
     public static final String QUERY_RESULT_DEFAULT_REDIS_KEY = "ant_usergroup_query_result";
 
     //营销模型 常量配置
-    public static final String MODEL_QUEUE_DEFAULT_REDIS_KEY = "ant_model_query_queue2";
+    public static final String MODEL_QUEUE_DEFAULT_REDIS_KEY = "ant_model_query_queue";
 
 }

@@ -130,7 +130,7 @@ public class ModelManager implements AntService {
                 Object result = handleRequest(requestBean);
                 ModelResult modelResult = new ModelResult(id, result);
                 log.info("finish request, id:  " + id);
-                RESULT_MAP.put(id, result);
+                RESULT_MAP.put(id, modelResult);
                 String callBackUrl = requestBean.getCallbackUrl();
                 if(callBackUrl != null){
                     HttpClinetUtil.post(callBackUrl, this.jsonMapper.writeValueAsString(modelResult));

@@ -49,7 +49,7 @@ public class ValueTierManager {
         //将[0.5,0.3,0.2]转化为[0.5,0.8,1.0];
         List<Double> quantilePoins = new ArrayList<>(percents.size() - 1);
         quantilePoins.add(percents.get(0));
-        for(int i = 1; i <= quantilePoins.size(); i++){
+        for(int i = 1; i < percents.size(); i++){
             quantilePoins.add(quantilePoins.get(i - 1) + percents.get(i));
         }
         List<String> uindexUser = RFMUtil.getUindexData(uindexDataBean.getQuery(), uindexDataBean.getBroker(), jsonMapper);
@@ -132,7 +132,7 @@ public class ValueTierManager {
         FilterAggregation filterAggregation = new FilterAggregation(countAgg, notNullField);
         query.setAggregations(Collections.singleton(filterAggregation));
 
-        Map<String, String> orderSepec = ImmutableMap.of("dimension", buyAmountKey, "direction", "descending");
+        Map<String, String> orderSepec = ImmutableMap.of("dimension", AGGREGATOR_OUTPUT_NAME, "direction", "descending");
         Map<String, Object> limitSpec = ImmutableMap.of("type", "default",
                 "columns", ImmutableList.of(orderSepec));
         query.setLimitSpec(limitSpec);
@@ -140,7 +140,7 @@ public class ValueTierManager {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL) //设置不打印null属性值
-    private class ValueTierResult {
+    private static class ValueTierResult {
         private String userId;
         private Double totalAmount;
         private Integer groupId;

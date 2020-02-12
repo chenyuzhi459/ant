@@ -78,7 +78,6 @@ public class RFMUtil {
         }
         final List<T> rfmModelList = new ArrayList<>();
         try {
-            JavaType javaType = jsonMapper.getTypeFactory().constructParametrizedType(List.class, ArrayList.class, DruidResult.class);
             List<DruidResult<T>> druidResults = jsonMapper.readValue(resultStr, type);
             druidResults.forEach(druidResult -> {
                 rfmModelList.add(druidResult.getEvent());
@@ -86,8 +85,8 @@ public class RFMUtil {
 
             log.info("Fetch %d RFM data from druid %s in %d ms.", druidResults.size(), broker, System.currentTimeMillis() - startQueryTime);
         } catch (IOException e) {
-            log.error(e, "Deserialize druid result to type [" + DruidResult.class.getName() +
-                    "] list failed, details:" + e.getMessage());
+            log.error(e, "Deserialize druid result to type [" + type.getType() +
+                    "] list failed, result details:" + resultStr);
             Throwables.rethrow(e);
 
         }
