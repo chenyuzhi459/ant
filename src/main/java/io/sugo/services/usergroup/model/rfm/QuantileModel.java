@@ -11,7 +11,7 @@ import java.util.TreeMap;
  */
 public class QuantileModel {
 
-    private static final java.text.DecimalFormat df = new java.text.DecimalFormat("#.00");
+    public static final java.text.DecimalFormat PERCENT_FORMAT = new java.text.DecimalFormat("#.00");
 
     /**
      * The quantile number of recency
@@ -145,7 +145,7 @@ public class QuantileModel {
             RFMGroup group = new RFMGroup();
             group.setName(entry.getKey());
             group.setUserCount(entry.getValue());
-            group.setUserPercent(Double.valueOf(df.format(entry.getValue() * 100.0d / totalUsers)) + "%");
+            group.setUserPercent(Double.valueOf(PERCENT_FORMAT.format(entry.getValue() * 100.0d / totalUsers)) + "%");
             if (groupUserIdsMap.get(entry.getKey()) != null) {
                 group.setUserIdList(groupUserIdsMap.get(entry.getKey()));
             }
