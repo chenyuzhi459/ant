@@ -8,6 +8,7 @@ import io.sugo.services.pathanalysis.dto.PathAnalysisDto;
 import io.sugo.services.query.aggregator.Aggregation;
 import io.sugo.services.query.aggregator.FilterAggregation;
 import io.sugo.services.query.filter.AndFilter;
+import io.sugo.services.query.filter.BetweenFilter;
 import io.sugo.services.query.filter.FieldType;
 import io.sugo.services.query.filter.NotNullFilter;
 
@@ -44,7 +45,7 @@ public class StagesSpec {
         fieldTypes.add(notNullField);
 
         //时间过滤
-        PathAnalysisDto.BetweenField betweenField = new PathAnalysisDto.BetweenField();
+        BetweenFilter betweenField = new BetweenFilter();
         betweenField.setDimension(dimension);
         betweenField.setLower(historyStart);
         betweenField.setUpper(historyEnd);
