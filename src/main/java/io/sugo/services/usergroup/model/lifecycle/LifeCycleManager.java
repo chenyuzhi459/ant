@@ -75,8 +75,12 @@ public class LifeCycleManager {
         List<StageResult> results = new ArrayList<>();
 
         //计算一个周期内注册用户
-        FieldType registerFilter =
+        AndFilter registerFilter =
                 buildRegisterFilter(stage1.getIntervalStart(), stage1.getIntervalEnd(), dimensions.getRegisterTimeKey());
+        Object uindexOrignalFilter = uindexScanQuery.getFilter();
+        if(uindexOrignalFilter != null){
+            registerFilter.getFields().add(uindexOrignalFilter);
+        }
         uindexScanQuery.setFilter(registerFilter);
         List<String> uindexRegisterUser = ModelUtil.getUindexData(uindexScanQuery, uindexDataBean.getBroker(), jsonMapper);
         Long totalUserCount = 0L;
@@ -295,7 +299,7 @@ public class LifeCycleManager {
         groupByQuery.setDimensions(dimensions);
     }
 
-    private FieldType buildRegisterFilter(String registerTimeStart, String registerTimeEnd ,String registerTimeKey){
+    private AndFilter buildRegisterFilter(String registerTimeStart, String registerTimeEnd ,String registerTimeKey){
         AndFilter andFilter = new AndFilter();
         List<FieldType> fieldTypes = andFilter.getFields();
         //非空过滤

@@ -9,18 +9,18 @@ import java.util.Objects;
 
 public class AndFilter  extends FieldType {
     String type = "and";
-    List<FieldType> fields = new ArrayList<>();
+    List fields = new ArrayList<>();
 
     public AndFilter() {
         super.type = type;
     }
 
     @JsonProperty
-    public List<FieldType> getFields() {
+    public List getFields() {
         return fields;
     }
 
-    public void setFields(List<FieldType> fields) {
+    public void setFields(List fields) {
         this.fields = fields;
     }
 
